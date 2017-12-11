@@ -1,5 +1,6 @@
+package cps.client;
+
 import java.io.*;
-import client.*;
 
 public class CPSClient
 {
@@ -11,7 +12,7 @@ public class CPSClient
     ClientController client;
 
     /**
-     * Constructs an instance of the CPSClient UI.
+     * Constructs an instance of the cps.client.CPSClient UI.
      *
      * @param host The host to connect to.
      * @param port The port to connect on.
@@ -24,13 +25,13 @@ public class CPSClient
         }
         catch(IOException exception)
         {
-            System.out.println("Error: Can't setup connection! Terminating client.");
+            System.out.println("Error: Can't setup connection! Terminating cps.client.");
             System.exit(1);
         }
     }
 
     /**
-     * This method waits for input from the console. Once it is received, it sends it to the client's message handler.
+     * This method waits for input from the console. Once it is received, it sends it to the cps.client's message handler.
      */
     public void accept()
     {
@@ -86,7 +87,7 @@ public class CPSClient
             host = "localhost";
         }
         CPSClient chat= new CPSClient(host, DEFAULT_PORT);
-        System.out.println("Connected to server at " + host);
+        System.out.println("Connected to cps.server at " + host);
         chat.accept();  //Wait for console data
     }
 }

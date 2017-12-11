@@ -2,13 +2,13 @@
 // "Object Oriented Software Engineering" and is issued under the open-source
 // license found at www.lloseng.com 
 
-package client;
+package cps.client;
 
 import java.io.*;
 
 /**
  * This class overrides some of the methods defined in the abstract
- * superclass in order to give more functionality to the client.
+ * superclass in order to give more functionality to the cps.client.
  *
  * @author Dr Timothy C. Lethbridge
  * @author Dr Robert Lagani&egrave;
@@ -22,9 +22,9 @@ public class ClientController extends ocsf.client.AbstractClient
   //Constructors ****************************************************
 
   /**
-   * Constructs an instance of the chat client.
+   * Constructs an instance of the chat cps.client.
    *
-   * @param host The server to connect to.
+   * @param host The cps.server to connect to.
    * @param port The port number to connect on.
    */
 
@@ -39,9 +39,9 @@ public class ClientController extends ocsf.client.AbstractClient
   //Instance methods ************************************************
 
   /**
-   * This method handles all data that comes in from the server.
+   * This method handles all data that comes in from the cps.server.
    *
-   * @param msg The message from the server.
+   * @param msg The message from the cps.server.
    */
   public void handleMessageFromServer(Object msg)
   {
@@ -61,13 +61,13 @@ public class ClientController extends ocsf.client.AbstractClient
     }
     catch(IOException e)
     {
-      System.out.println("Could not send message to server.  Terminating client.");
+      System.out.println("Could not send message to cps.server.  Terminating cps.client.");
       quit();
     }
   }
 
   /**
-   * This method terminates the client.
+   * This method terminates the cps.client.
    */
   public void quit()
   {
