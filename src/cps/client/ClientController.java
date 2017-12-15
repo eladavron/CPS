@@ -19,64 +19,64 @@ public class ClientController extends ocsf.client.AbstractClient
 
 {
 
-  //Constructors ****************************************************
+    //Constructors ****************************************************
 
-  /**
-   * Constructs an instance of the chat cps.client.
-   *
-   * @param host The cps.server to connect to.
-   * @param port The port number to connect on.
-   */
+    /**
+     * Constructs an instance of the chat cps.client.
+     *
+     * @param host The cps.server to connect to.
+     * @param port The port number to connect on.
+     */
 
-  public ClientController(String host, int port)
-          throws IOException
-  {
-    super(host, port); //Call the superclass constructor
-    openConnection();
-  }
-
-
-  //Instance methods ************************************************
-
-  /**
-   * This method handles all data that comes in from the cps.server.
-   *
-   * @param msg The message from the cps.server.
-   */
-  public void handleMessageFromServer(Object msg)
-  {
-
-  }
-
-  /**
-   * This method handles all data coming from the UI            
-   *
-   * @param message The message from the UI.    
-   */
-  public void handleMessageFromClientUI(String message)
-  {
-    try
+    public ClientController(String host, int port)
+            throws IOException
     {
-      sendToServer(message);
+        super(host, port); //Call the superclass constructor
+        openConnection();
     }
-    catch(IOException e)
-    {
-      System.out.println("Could not send message to cps.server.  Terminating cps.client.");
-      quit();
-    }
-  }
 
-  /**
-   * This method terminates the cps.client.
-   */
-  public void quit()
-  {
-    try
+
+    //Instance methods ************************************************
+
+    /**
+     * This method handles all data that comes in from the cps.server.
+     *
+     * @param msg The message from the cps.server.
+     */
+    public void handleMessageFromServer(Object msg)
     {
-      closeConnection();
+        System.out.println(msg);
     }
-    catch(IOException e) {}
-    System.exit(0);
-  }
+
+    /**
+     * This method handles all data coming from the UI
+     *
+     * @param message The message from the UI.
+     */
+    public void handleMessageFromClientUI(String message)
+    {
+        try
+        {
+            sendToServer(message);
+        }
+        catch(IOException e)
+        {
+            System.out.println("Could not send message to cps.server.  Terminating cps.client.");
+            quit();
+        }
+    }
+
+    /**
+     * This method terminates the cps.client.
+     */
+    public void quit()
+    {
+        try
+        {
+            closeConnection();
+        }
+        catch(IOException e) {}
+        System.exit(0);
+    }
 }
 //End of ClientController class

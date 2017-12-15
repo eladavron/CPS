@@ -53,25 +53,12 @@ public class CPSClient
         }
     }
 
-
-    /**
-     * This method overrides the method in the ChatIF interface.  It
-     * displays a message onto the screen.
-     *
-     * @param message The string to be displayed.
-     */
-    public void display(String message)
-    {
-        System.out.println("> " + message);
-    }
-
-
     //Class methods ***************************************************
 
     /**
      * This method is responsible for the creation of the Client UI.
      *
-     * @param args[0] The host to connect to.
+     * @param args The host to connect to.
      */
     public static void main(String[] args)
     {
@@ -86,7 +73,7 @@ public class CPSClient
         {
             host = "localhost";
         }
-        CPSClient chat= new CPSClient(host, DEFAULT_PORT);
+        CPSClient chat = new CPSClient(host, DEFAULT_PORT);
         System.out.println("Connected to cps.server at " + host);
         chat.accept();  //Wait for console data
     }

@@ -2,6 +2,9 @@ package cps.server;
 
 import ocsf.server.*;
 
+import java.io.IOException;
+import java.sql.ResultSet;
+
 import static cps.Helpers.RetryScanner;
 
 public class CPSServer extends AbstractServer
@@ -31,7 +34,28 @@ public class CPSServer extends AbstractServer
     public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
     {
-        System.out.println("Message received: " + msg + " from " + client);
+        System.out.println(client.getInetAddress()+ ": " + msg);
+        String[] command = ((String) msg).split("\\s"); //Split command
+        try{
+            switch (command[0]){
+                case "query":
+                    if (command.length != 2) //Not valid
+                    {
+                        client.sendToClient("Error! Missing table name to query");
+                    }
+                    else
+                    {
+                        client.sendToClient(dbController.GetData(command[1]));
+                    }
+                    break;
+                default: //Unknown command
+                    client.sendToClient(String.format("Command \"%s\" is not recognized!", command[0]));
+            }
+        } catch (IOException ex)
+        {
+            System.err.printf("Failed sending message to client at %s", client.getInetAddress().toString());
+            ex.printStackTrace();
+        }
     }
 
 
