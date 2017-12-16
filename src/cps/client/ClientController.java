@@ -46,6 +46,7 @@ public class ClientController extends ocsf.client.AbstractClient
     public void handleMessageFromServer(Object msg)
     {
         System.out.println(msg);
+        System.out.print("> ");
     }
 
     /**
@@ -61,7 +62,7 @@ public class ClientController extends ocsf.client.AbstractClient
         }
         catch(IOException e)
         {
-            System.out.println("Could not send message to cps.server.  Terminating cps.client.");
+            System.out.println("Could not send message to server.  Terminating client.");
             quit();
         }
     }
@@ -79,4 +80,3 @@ public class ClientController extends ocsf.client.AbstractClient
         System.exit(0);
     }
 }
-//End of ClientController class
