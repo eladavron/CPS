@@ -1,6 +1,7 @@
 package cps.client;
 
 import java.io.*;
+import org.apache.commons.cli.*;
 
 public class CPSClient
 {
@@ -8,6 +9,7 @@ public class CPSClient
      * The default port to connect on.
      */
     final public static int DEFAULT_PORT = 5555;
+    final public static String DEFAULT_HOST = "localhost";
 
     ClientController client;
 
@@ -21,11 +23,13 @@ public class CPSClient
     {
         try
         {
+            System.out.println(String.format("Attempting to connect to %s on port %d...", host, port));
             client = new ClientController(host, port);
+            System.out.println("Connected!");
         }
         catch(IOException exception)
         {
-            System.out.println("Error: Can't setup connection! Terminating cps.client.");
+            System.out.println("Error: Can't setup connection! Terminating client.");
             System.exit(1);
         }
     }
@@ -39,10 +43,17 @@ public class CPSClient
         {
             BufferedReader fromConsole = new BufferedReader(new InputStreamReader(System.in));
             String message;
+            System.out.print("> ");
 
             while (true)
             {
                 message = fromConsole.readLine();
+                if (message.equals("exit"))
+                {
+                    System.out.println("Thank you, come again!");
+                    System.exit(0);
+                    return;
+                }
                 client.handleMessageFromClientUI(message);
             }
         }
@@ -62,19 +73,39 @@ public class CPSClient
      */
     public static void main(String[] args)
     {
-        String host = "";
-        int port = 0;  //The port number
+
+        /**
+         * Command Line Parser
+         */
+        Options options = new Options();
+
+        Option optIP = new Option("h", "host", true, "Server hostname or IP address");
+        optIP.setRequired(false);
+
+        Option optPort = new Option("p", "port", true, "Server Port");
+        optPort.setRequired(false);
+
+        options.addOption(optIP);
+        options.addOption(optPort);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
 
         try
         {
-            host = args[0];
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("CPSClient ", options);
+            System.exit(1);
+            return;
         }
-        catch(ArrayIndexOutOfBoundsException e)
-        {
-            host = "localhost";
-        }
-        CPSClient chat = new CPSClient(host, DEFAULT_PORT);
-        System.out.println("Connected to cps.server at " + host);
+
+        String host = cmd.hasOption("host") ? cmd.getOptionValue("host") : DEFAULT_HOST;
+        int port = cmd.hasOption("port") ? Integer.valueOf(cmd.getOptionValue("port")) : DEFAULT_PORT;
+
+        CPSClient chat = new CPSClient(host, port);
         chat.accept();  //Wait for console data
     }
 }

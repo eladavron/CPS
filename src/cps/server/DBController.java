@@ -4,20 +4,19 @@ import cps.*;
 import java.sql.*;
 
 public class DBController {
-    final private static String DB_URL = "mysql://mysql.eladavron.com:3306/cps_prototype";
-    final private static String DB_USERNAME = "swe";
-    final private static String DB_PWD = "6R1Csn4B";
+        private Connection db_conn;
 
-    private Connection db_conn;
-
-    public DBController(String url, String username, String password){
-        String conn_url = url.isEmpty() ? DB_URL : url;
-        String conn_username = username.isEmpty() ? DB_USERNAME : username;
-        String conn_password = username.isEmpty() ? DB_PWD : password;
-        db_conn = connect(conn_url, conn_username, conn_password);
+    public DBController(String url, String username, String password) throws SQLException {
+        try {
+            db_conn = connect(url, username, password);
+        }
+        catch (SQLException ex)
+        {
+            throw ex;
+        }
     }
 
-    public static Connection connect(String url, String username, String password) {
+    public static Connection connect(String url, String username, String password) throws SQLException {
         try
         {
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
@@ -25,10 +24,9 @@ public class DBController {
             System.out.println("Database connected!");
             return conn;
         }
-        catch (Exception ex)
+        catch (SQLException ex)
         {
-            System.err.println("Database connection error: " + ex.getMessage());
-            return null;
+            throw ex;
         }
     }
 
@@ -42,23 +40,25 @@ public class DBController {
                 case "employees":
                     returnString = "UID\t\tName\t\t\tEmail\t\t\tCreation Date\n";
                     while (rs.next()) {
-                        returnString += rs.getInt("UID") +"\t\t" + rs.getString("name") + "\t\t" + rs.getString("email") + "\t" + rs.getTimestamp("create_time") + "\n";
+                        returnString += rs.getInt("UID") +"\t" + rs.getString("name") + "\t\t" + rs.getString("email") + "\t" + rs.getTimestamp("create_time") + "\n";
                     }
+                    rs.close();
                     return returnString;
                 case "parking_lots":
-                    returnString = "UID\t\tLocation\t\tSize\t\tManager ID\n";
+                    returnString = "UID\tLocation\t\tSize\t\tManager ID\n";
                     while (rs.next()) {
-                        returnString += rs.getInt("UID") +"\t\t"
-                                + rs.getString("location") + "\t"
-                                + rs.getInt("rows") + "x" + rs.getInt("columns") + "x" + rs.getInt("depth") + "\t"
-                                + rs.getTimestamp("create_time") + "\n";
+                        returnString += rs.getInt("UID") +"\t"
+                                + rs.getString("location") + "\t\t"
+                                + rs.getInt("rows") + "x" + rs.getInt("columns") + "x" + rs.getInt("depth") + "\t\t"
+                                + rs.getInt("manager_id") + "\n";
+
                     }
+                    rs.close();
                     return returnString;
                 default:
                     return "Unknown table \"" + table + "\"!";
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             System.err.printf("Error occurred getting data from table \"%s\":\n%s", table, e.getMessage());
             return "Error occurred!\nSee server output for details.";
         }
@@ -85,23 +85,25 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
-            stmt.executeUpdate(String.format("INSERT INTO employees VALUES ('%s', '%s', '%s')", employee.get_name(), employee.get_email(), employee.get_password()), Statement.RETURN_GENERATED_KEYS);
+            stmt.executeUpdate(String.format("INSERT INTO employees (name, email, password) VALUES ('%s', '%s', '%s')", employee.get_name(), employee.get_email(), employee.get_password()), Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next())
                 uid = rs.getInt(1);
             else
                 throw new SQLException("Couldn't get auto-generated UID");
 
-            rs = stmt.executeQuery(String.format("SELECT * FROM employees WHERE ID=%d", uid));
+            rs = stmt.executeQuery(String.format("SELECT * FROM employees WHERE UID=%d", uid));
             if (rs.next())
                 creationDate = new Date(rs.getTimestamp("create_time").getTime());
             else
                 throw new SQLException("Something went wrong retrieving the employee just inserted!");
 
+            employee.set_uid(uid);
+            employee.set_creationDate(creationDate);
+
             return true;
         } catch (SQLException e) {
-            System.err.printf("An error occured inserting employee %s:\n%s\n", employee, e.getMessage());
-            e.printStackTrace();
+            System.err.printf("An error occurred inserting %s:\n%s\n", employee, e.getMessage());
             return false;
         }
     }

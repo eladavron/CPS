@@ -1,16 +1,20 @@
 package cps.server;
 
+import cps.Employee;
 import ocsf.server.*;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.sql.ResultSet;
-
-import static cps.Helpers.RetryScanner;
+import java.sql.SQLException;
 
 public class CPSServer extends AbstractServer
 {
-    //Default Params
-    final public static int DEFAULT_PORT = 5555;
+    // Default Params. Will not be hard-coded in final product.
+    final private static int DEFAULT_PORT = 5555;
+    final private static String DEFAULT_URL = "mysql://mysql.eladavron.com:3306/cps_prototype";
+    final private static String DEFAULT_USERNAME = "swe";
+    final private static String DEFAULT_PWD = "6R1Csn4B";
+
 
     //Instance Parameters
     private static DBController dbController;
@@ -48,8 +52,25 @@ public class CPSServer extends AbstractServer
                         client.sendToClient(dbController.GetData(command[1]));
                     }
                     break;
+                case "create":
+                    switch (command[1]){
+                        case "employee":
+                            if (command.length != 5) //Not valid length
+                            {
+                                client.sendToClient("Error! Missing parameters.\nValid format for command is: create employee <name> <email> <password>");
+                            }
+                            else
+                            {
+                                Employee newEmployee = new Employee(command[2], command[3], command[4]);
+                                if (dbController.InsertEmployee(newEmployee))
+                                    client.sendToClient(String.format("Successfully created employee:\n%s", newEmployee.toString()));
+                                else
+                                    client.sendToClient("An error occurred adding the employee. See server for more details.");
+                            }
+                    }
+                    break;
                 default: //Unknown command
-                    client.sendToClient(String.format("Command \"%s\" is not recognized!", command[0]));
+                    client.sendToClient(String.format("Command \"%s\" is not recognized!\nAvailable commands:\n\tquery <table_name>\n\tcreate employee <name> <email> <password>", command[0]));
             }
         } catch (IOException ex)
         {
@@ -75,52 +96,92 @@ public class CPSServer extends AbstractServer
      */
     protected void serverStopped()
     {
-        System.out.println
-                ("Server has stopped listening for connections.");
+        System.out.println ("Server has stopped listening for connections.");
     }
 
     //Class methods ***************************************************
 
     public static void main(String[] args)
     {
-        int port = DEFAULT_PORT; //Port to listen on
-
-        String dbUsername= "";
-        String dbPwd = "";
-        String dbUrl = "";
-
         /**
-         * Command Line Parameters
+         * Command Line Parser
          */
-        if (args.length > 0)
+
+        //Command Line Argument Parser
+        Options options = new Options();
+
+        Option optDB = new Option("db", "database", true, String.format("Database URL (default: %s)", DEFAULT_URL));
+        optDB.setRequired(false);
+        options.addOption(optDB);
+
+        Option optUsername = new Option("u", "username", true, String.format("Database Username (default: %s)", DEFAULT_USERNAME));
+        optUsername.setRequired(false);
+        options.addOption(optUsername);
+
+        Option optPWD = new Option("pwd", "password", true, "Database Password");
+        optPWD.setRequired(false);
+        options.addOption(optPWD);
+
+        Option optPort = new Option("p", "port", true, String.format("Server Port (default: %d)", DEFAULT_PORT));
+        optPort.setRequired(false);
+        options.addOption(optPort);
+
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+
+        try
         {
-            for (String arg : args)
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            formatter.printHelp("CPSClient ", options);
+            System.exit(1);
+            return;
+        }
+
+        if (cmd.hasOption("database"))
+        {
+            if (!cmd.getOptionValue("database").matches("^((mysql):\\/)?\\/?([^:\\/\\s]+)(\\:\\d+)?((\\/\\w+)*\\/)([\\w\\-\\.]+[^#?\\s]+)(.*)?(#[\\w\\-]+)?$"))
             {
-                switch (arg)
-                {
-                    case "--db":
-                        dbUrl = RetryScanner(String.format("Input DB URL (default \"%s\"): ", dbUrl),"^((mysql):\\/)?\\/?([^:\\/\\s]+)(\\:\\d+)?((\\/\\w+)*\\/)([\\w\\-\\.]+[^#?\\s]+)(.*)?(#[\\w\\-]+)?$");
-                        dbUsername = RetryScanner(String.format("Input DB Username (default \"%s\"): ", dbUsername), "^\\S+$");
-                        dbPwd = RetryScanner("Input DB Password (default hidden): ", "^\\S+$");
-                        break;
-                    case "--port":
-                        port = Integer.valueOf(RetryScanner("Input port number for CPS system (default 5555): ", "^\\d+$"));
-                        break;
-                    default:
-                        System.out.println("Unknown parameter \"arg\"!\nUse either \"--db\" to override database connection settings or \"--port\" to override server port.");
-                        System.exit(1);
-                }
+                System.err.printf("\"%s\" is not a valid MySQL url!\nMake sure the database URL is formatted as \"mysql://hostname:port/db_name\"", cmd.getOptionValue("database"));
+                System.exit(1);
+                return;
             }
         }
+
+        int port = cmd.hasOption("port") ? Integer.valueOf(cmd.getOptionValue("port")) : DEFAULT_PORT;
+        String dbUsername = cmd.hasOption("username") ? cmd.getOptionValue("username") : DEFAULT_USERNAME;
+        String dbPwd = cmd.hasOption("password") ? cmd.getOptionValue("password") : DEFAULT_PWD;
+        String dbUrl = cmd.hasOption("database") ? cmd.getOptionValue("database") : DEFAULT_URL;
+
+        /**
+         * Connection Attempt
+         */
+
         CPSServer sv = new CPSServer(port);
-        dbController = new DBController(dbUsername, dbPwd, dbUrl);
+
+        try{
+            dbController = new DBController(dbUrl, dbUsername, dbPwd);
+        } catch (SQLException e) {
+            System.err.println("Failed to connect to database: " + e.getMessage());
+            if (e.getMessage().contains("No suitable driver found")){
+                System.err.println("Make sure the database URL is formed as \"mysql://hostname:port/db_name\"");
+            }
+            System.exit(1);
+            return;
+        }
+
         try
         {
             sv.listen(); //Start listening for connections
         }
         catch (Exception ex)
         {
-            System.out.println("ERROR - Could not listen for clients!");
+            System.err.println("ERROR - Could not listen for clients!");
+            System.exit(1);
+            return;
         }
     }
 }
