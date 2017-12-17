@@ -56,7 +56,9 @@ public class DBController {
                     rs.close();
                     return returnString;
                 default:
-                    return "Unknown table \"" + table + "\"!";
+                    returnString = "Unknown table \"" + table + "\"!\n";
+                    returnString += "Table Names are : parking_lots, employees"
+                    return returnString;
             }
         } catch (SQLException e) {
             System.err.printf("Error occurred getting data from table \"%s\":\n%s", table, e.getMessage());
