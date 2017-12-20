@@ -6,7 +6,8 @@ import org.apache.commons.cli.*;
 public class CPSClient
 {
     /**
-     * The default port to connect on.
+     * The default port and hostname.
+     * Can be overridden from command line
      */
     final public static int DEFAULT_PORT = 5555;
     final public static String DEFAULT_HOST = "localhost";
@@ -14,7 +15,7 @@ public class CPSClient
     ClientController client;
 
     /**
-     * Constructs an instance of the cps.client.CPSClient UI.
+     * Constructs an instance of the client and attempts connecting to server..
      *
      * @param host The host to connect to.
      * @param port The port to connect on.
@@ -35,7 +36,8 @@ public class CPSClient
     }
 
     /**
-     * This method waits for input from the console. Once it is received, it sends it to the cps.client's message handler.
+     * This method waits for input from the console.
+     * Once it is received, it sends it to the client's message handler.
      */
     public void accept()
     {
@@ -48,13 +50,13 @@ public class CPSClient
             while (true)
             {
                 message = fromConsole.readLine();
-                if (message.equals("exit"))
+                if (message.equals("exit")) //Exit command is handled client-side
                 {
                     System.out.println("Thank you, come again!");
                     System.exit(0);
                     return;
                 }
-                if (message.matches("^\\s*$")) //if empty string
+                else if (message.matches("^\\s*$")) //Empty string also handled client-side.
                 {
                     System.out.print("> ");
                 }
@@ -64,23 +66,20 @@ public class CPSClient
         }
         catch (Exception ex)
         {
-            System.out.println
-                    ("Unexpected error while reading from console!");
+            System.err.println("Unexpected error while reading from console!");
         }
     }
 
-    //Class methods ***************************************************
-
     /**
-     * This method is responsible for the creation of the Client UI.
+     * The main client method.
      *
-     * @param args The host to connect to.
+     * @param args arguments to override hard-coded settings.
      */
     public static void main(String[] args)
     {
 
         /**
-         * Command Line Parser
+         * Command Line Parser setup
          */
         Options options = new Options();
 
@@ -97,21 +96,29 @@ public class CPSClient
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
 
+        /**
+         * Parse command line arguments
+         */
         try
         {
             cmd = parser.parse(options, args);
-        } catch (ParseException e) {
+        }
+        catch (ParseException e)
+        {
             System.out.println(e.getMessage());
             formatter.printHelp("CPSClient ", options);
             System.exit(1);
             return;
         }
 
+        //Override defaults if needed
         String host = cmd.hasOption("host") ? cmd.getOptionValue("host") : DEFAULT_HOST;
         int port = cmd.hasOption("port") ? Integer.valueOf(cmd.getOptionValue("port")) : DEFAULT_PORT;
 
+        /**
+         * Create the chat client and wait.
+         */
         CPSClient chat = new CPSClient(host, port);
         chat.accept();  //Wait for console data
     }
 }
-//End of ConsoleChat class

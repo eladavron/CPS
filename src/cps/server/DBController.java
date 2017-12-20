@@ -5,13 +5,27 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * A class that interfaces with the database.
+ */
 public class DBController {
-        private static Connection db_conn;
-        private static ArrayList<String> listTables = new ArrayList<String>();
+        private static Connection db_conn; //The connection to the database.
+        private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database.
 
+    /**
+     * Create a Database Controller instance
+     * @param url URL of the MySQL server (formatted as mysql://hostname:port/db_name)
+     * @param username Username for MySQL server
+     * @param password Password for MySQL server
+     * @throws SQLException
+     */
     public DBController(String url, String username, String password) throws SQLException {
         try {
             db_conn = connect(url, username, password);
+
+            /**
+             * Get tables in database
+             */
             DatabaseMetaData meta = db_conn.getMetaData();
             ResultSet res = meta.getTables(null, null, "%", null);
             while (res.next()) {
@@ -24,6 +38,14 @@ public class DBController {
         }
     }
 
+    /**
+     * Connect to the Database and return the connection object
+     * @param url URL of the MySQL server (formatted as mysql://hostname:port/db_name)
+     * @param username Username for MySQL Server
+     * @param password Password for MySQL Server
+     * @return Connection object
+     * @throws SQLException If an error occurs in SQL
+     */
     public static Connection connect(String url, String username, String password) throws SQLException {
         try
         {
@@ -39,18 +61,25 @@ public class DBController {
     }
 
      /* Query Parsers */
-    public String GetData(String table)
+
+    /**
+     * Returns a string representing the table
+     * @param tableName name of the table to query
+     * @return a printable table.
+     */
+    public String GetData(String tableName)
     {
         try {
-            if (!listTables.contains(table)) {
+            if (!listTables.contains(tableName)) { //Check if the table exists in the database.
                 String returnString;
-                returnString = String.format("Unknown table \"%s\"!\n", table);
+                returnString = String.format("Unknown table \"%s\"!\n", tableName);
                 returnString += ListTables();
                 return returnString;
             }
-            ResultSet rs = this.QueryEntireTable(table);
-            switch (table) {
+            ResultSet rs = this.QueryEntireTable(tableName); //Query the table
+            switch (tableName) {
                 case "employees":
+                    //Format printout:
                     String columnNamesEmployees = String.format("%3s %15s %20s %25s", "UID", "Name", "Email", "Creation Time");
                     ArrayList<String> rowsEmployees = new ArrayList<>();
                     while (rs.next()) {
@@ -61,9 +90,10 @@ public class DBController {
                                 rs.getTimestamp("create_time"));
                         rowsEmployees.add(row);
                     }
-                    return PrintTable(columnNamesEmployees, rowsEmployees);
+                    return TableFormatter(columnNamesEmployees, rowsEmployees);
 
                 case "parking_lots":
+                    //Format printout:
                     String columnNamesParkingLots = String.format("%3s %15s %10s %15s", "UID", "Location", "Size", "Manager ID");
                     ArrayList<String> rowsParkingLots = new ArrayList<>();
                     while (rs.next()) {
@@ -75,20 +105,26 @@ public class DBController {
                         rowsParkingLots.add(row);
 
                     }
-                    return PrintTable(columnNamesParkingLots, rowsParkingLots);
-                default:
+                    return TableFormatter(columnNamesParkingLots, rowsParkingLots);
+                default: //Unknown table - fallback, technically shouldn't happen.
                     String returnString;
-                    returnString = "Unknown table \"" + table + "\"!\n";
-                    returnString += "Table Names are : parking_lots, employees";
+                    returnString = "Unknown table \"" + tableName + "\"!\n";
+                    returnString += ListTables();
                     return returnString;
             }
         } catch (SQLException e) {
-            System.err.printf("Error occurred getting data from table \"%s\":\n%s", table, e.getMessage());
+            System.err.printf("Error occurred getting data from table \"%s\":\n%s", tableName, e.getMessage());
             return "Error occurred!\nSee server output for details.";
         }
     }
 
-    private String PrintTable(String columnsString, ArrayList<String> rows)
+    /**
+     * Formats a table string.
+     * @param columnsString the columns of the table.
+     * @param rows The rows.
+     * @return A table in a string.
+     */
+    private String TableFormatter(String columnsString, ArrayList<String> rows)
     {
         String returnString =
                 String.join("", Collections.nCopies(columnsString.length(),"-"))
@@ -102,14 +138,20 @@ public class DBController {
     }
 
     /* Query Performers */
-    private ResultSet QueryEntireTable(String table)
+
+    /**
+     * Queries the given table for all its content.
+     * @param tableName  name of the table to query.
+     * @return The resultset.
+     */
+    private ResultSet QueryEntireTable(String tableName)
     {
         ResultSet result;
         try {
             Statement stmt = db_conn.createStatement();
-            result = stmt.executeQuery(String.format("SELECT * FROM %s",table));
+            result = stmt.executeQuery(String.format("SELECT * FROM %s",tableName));
         } catch (SQLException e) {
-            System.err.printf("An error occured querying table %s:\n%s\n", table, e.getMessage());
+            System.err.printf("An error occured querying table %s:\n%s\n", tableName, e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -117,6 +159,12 @@ public class DBController {
     }
 
     /* Insertion */
+
+    /**
+     * Insert a new employee into the database
+     * @param employee Employee objects to insert
+     * @return True if successful, False otherwise.
+     */
     public boolean InsertEmployee(Employee employee) {
         try {
             Statement stmt = db_conn.createStatement();
@@ -125,11 +173,11 @@ public class DBController {
             stmt.executeUpdate(String.format("INSERT INTO employees (name, email, password) VALUES ('%s', '%s', '%s')", employee.get_name(), employee.get_email(), employee.get_password()), Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next())
-                uid = rs.getInt(1);
+                uid = rs.getInt(1); //Get the UID from the DB.
             else
                 throw new SQLException("Couldn't get auto-generated UID");
 
-            rs = stmt.executeQuery(String.format("SELECT * FROM employees WHERE UID=%d", uid));
+            rs = stmt.executeQuery(String.format("SELECT * FROM employees WHERE UID=%d", uid)); //Get the creation time from the DB.
             if (rs.next())
                 creationDate = new Date(rs.getTimestamp("create_time").getTime());
             else
@@ -146,7 +194,12 @@ public class DBController {
     }
 
     /* Output Formatters */
-    public static String ListTables()
+
+    /**
+     * Returns a list of available tables in the DB.
+     * @return just that.
+     */
+    public String ListTables()
     {
         String returnString = "Available tables:\n";
         for (String tableName : listTables) {

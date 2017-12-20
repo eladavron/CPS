@@ -9,18 +9,27 @@ import java.sql.SQLException;
 
 public class CPSServer extends AbstractServer
 {
-    // Default Params. Will not be hard-coded in final product.
+    /**
+     * Default Params. Will not be hard-coded in final product.
+     */
     final private static int DEFAULT_PORT = 5555;
     final private static String DEFAULT_URL = "mysql://mysql.eladavron.com:3306/cps_prototype";
     final private static String DEFAULT_USERNAME = "swe";
     final private static String DEFAULT_PWD = "6R1Csn4B";
 
+    /**
+     * Default Strings
+     */
+    final private static String HELP_COMMANDS = "Available commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit\n";
+    final private static String HELP_CREATE = "Valid format for command is: create employee <name> <email> <password>\n";
 
-    //Instance Parameters
+    /**
+     * Instance Parameters
+     */
     private static DBController dbController;
 
     /**
-     * Constructs an instance of the echo cps.server.
+     * Constructs an instance of the echo server.
      *
      * @param port The port number to connect on.
      */
@@ -30,9 +39,9 @@ public class CPSServer extends AbstractServer
     }
 
     /**
-     * This method handles any messages received from the cps.client.
+     * This method handles any messages received from the client.
      *
-     * @param msg The message received from the cps.client.
+     * @param msg The message received from the client.
      * @param client The connection from which the message originated.
      */
     public void handleMessageFromClient
@@ -41,19 +50,15 @@ public class CPSServer extends AbstractServer
         System.out.println(client.getInetAddress()+ ": " + msg);
         String[] command = ((String) msg).split("\\s"); //Split command
         try{
-            if (command.length == 0)
+            if (command.length == 0) //No command given. Fallback: Shouldn't happen!
             {
-                client.sendToClient("Command not recognized!\nAvailable commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit");
+                client.sendToClient("Command not recognized!\n" + HELP_COMMANDS);
             }
-            switch (command[0]){
+            switch (command[0]){ //Check Command
                 case "query":
-                    if (command.length == 1)
+                    if (command.length == 1) //No Params
                     {
                         client.sendToClient(dbController.ListTables());
-                    }
-                    else if (command.length > 2) //Not valid
-                    {
-                        client.sendToClient("Error! Missing table name to query");
                     }
                     else
                     {
@@ -61,27 +66,30 @@ public class CPSServer extends AbstractServer
                     }
                     break;
                 case "create":
-                    switch (command[1]){
-                        case "employee":
-                            if (command.length != 5) //Not valid length
-                            {
-                                client.sendToClient("Error! Missing parameters.\nValid format for command is: create employee <name> <email> <password>");
-                            }
-                            else
-                            {
+                    if (command.length != 5) //Not valid length
+                    {
+                        client.sendToClient("Error! Wrong number of parameters:\n" + HELP_CREATE);
+                    }
+                    else
+                    {
+                        switch (command[1]) { //Check what we're trying to create
+                            case "employee":
                                 Employee newEmployee = new Employee(command[2], command[3], command[4]);
                                 if (dbController.InsertEmployee(newEmployee))
                                     client.sendToClient(String.format("Successfully created employee:\n%s", newEmployee.toString()));
                                 else
                                     client.sendToClient("An error occurred adding the employee. See server for more details.");
-                            }
+                                break;
+                            default:
+                                client.sendToClient("Can only create employees at this time!");
+                        }
                     }
                     break;
-                case "help":
-                    client.sendToClient("Available commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit");
+                case "help": //Display help message
+                    client.sendToClient(HELP_COMMANDS);
                     break;
                 default: //Unknown command
-                    client.sendToClient(String.format("Command \"%s\" is not recognized!\nAvailable commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit", command[0]));
+                    client.sendToClient(String.format("Command \"%s\" is not recognized!\n%s", command[0], HELP_COMMANDS));
             }
         } catch (IOException ex)
         {
@@ -92,33 +100,34 @@ public class CPSServer extends AbstractServer
 
 
     /**
-     * This method overrides the one in the superclass.  Called
-     * when the cps.server starts listening for connections.
+     * This method overrides the one in the superclass.
+     * Called when the server starts listening for connections.
      */
     protected void serverStarted()
     {
-        System.out.println
-                ("Server listening for connections on port " + getPort());
+        System.out.println("Server listening for connections on port " + getPort());
     }
 
     /**
-     * This method overrides the one in the superclass.  Called
-     * when the cps.server stops listening for connections.
+     * This method overrides the one in the superclass.
+     * Called when the server stops listening for connections.
      */
     protected void serverStopped()
     {
-        System.out.println ("Server has stopped listening for connections.");
+        System.out.println("Server has stopped listening for connections.");
     }
 
-    //Class methods ***************************************************
 
+    /**
+     * Starts the server.
+     * @param args override arguments (optional)
+     */
     public static void main(String[] args)
     {
         /**
-         * Command Line Parser
+         * Command Line Parser Setup
          */
 
-        //Command Line Argument Parser
         Options options = new Options();
 
         Option optDB = new Option("db", "database", true, String.format("Database URL (default: %s)", DEFAULT_URL));
@@ -137,15 +146,20 @@ public class CPSServer extends AbstractServer
         optPort.setRequired(false);
         options.addOption(optPort);
 
-
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
 
+        /**
+         * Parse Command Line Arguments
+         */
+
         try
         {
             cmd = parser.parse(options, args);
-        } catch (ParseException e) {
+        }
+        catch (ParseException e)
+        {
             System.err.println(e.getMessage());
             formatter.printHelp("CPSClient ", options);
             System.exit(1);
@@ -162,6 +176,10 @@ public class CPSServer extends AbstractServer
             }
         }
 
+        /**
+         * Override defaults if needed
+         */
+
         int port = cmd.hasOption("port") ? Integer.valueOf(cmd.getOptionValue("port")) : DEFAULT_PORT;
         String dbUsername = cmd.hasOption("username") ? cmd.getOptionValue("username") : DEFAULT_USERNAME;
         String dbPwd = cmd.hasOption("password") ? cmd.getOptionValue("password") : DEFAULT_PWD;
@@ -173,17 +191,24 @@ public class CPSServer extends AbstractServer
 
         CPSServer sv = new CPSServer(port);
 
-        try{
+        try
+        {
             dbController = new DBController(dbUrl, dbUsername, dbPwd);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e)
+        {
             System.err.println("Failed to connect to database: " + e.getMessage());
-            if (e.getMessage().contains("No suitable driver found")){
+            if (e.getMessage().contains("No suitable driver found"))
+            {
                 System.err.println("Make sure the database URL is formed as \"mysql://hostname:port/db_name\"");
             }
             System.exit(1);
             return;
         }
 
+        /**
+         * Start listening and handle messages.
+         */
         try
         {
             sv.listen(); //Start listening for connections
