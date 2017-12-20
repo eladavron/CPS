@@ -54,7 +54,12 @@ public class CPSClient
                     System.exit(0);
                     return;
                 }
-                client.handleMessageFromClientUI(message);
+                if (message.matches("^\\s*$")) //if empty string
+                {
+                    System.out.print("> ");
+                }
+                else
+                    client.handleMessageFromClientUI(message);
             }
         }
         catch (Exception ex)

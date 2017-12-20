@@ -41,9 +41,17 @@ public class CPSServer extends AbstractServer
         System.out.println(client.getInetAddress()+ ": " + msg);
         String[] command = ((String) msg).split("\\s"); //Split command
         try{
+            if (command.length == 0)
+            {
+                client.sendToClient("Command not recognized!\nAvailable commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit");
+            }
             switch (command[0]){
                 case "query":
-                    if (command.length != 2) //Not valid
+                    if (command.length == 1)
+                    {
+                        client.sendToClient(dbController.ListTables());
+                    }
+                    else if (command.length > 2) //Not valid
                     {
                         client.sendToClient("Error! Missing table name to query");
                     }
@@ -70,10 +78,10 @@ public class CPSServer extends AbstractServer
                     }
                     break;
                 case "help":
-                    client.sendToClient("Available commands:\n\tquery <table_name>\n\tcreate employee <name> <email> <password>\n\texit");
+                    client.sendToClient("Available commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit");
                     break;
                 default: //Unknown command
-                    client.sendToClient(String.format("Command \"%s\" is not recognized!\nAvailable commands:\n\tquery <table_name>\n\tcreate employee <name> <email> <password>\n\texit", command[0]));
+                    client.sendToClient(String.format("Command \"%s\" is not recognized!\nAvailable commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit", command[0]));
             }
         } catch (IOException ex)
         {
