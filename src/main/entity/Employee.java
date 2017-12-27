@@ -1,4 +1,4 @@
-package entity;
+package cps;
 
 import java.util.Date;
 
