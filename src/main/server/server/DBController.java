@@ -1,7 +1,6 @@
-package cps.server;
+package server;
 
-import cps.entity.Employee;
-
+import entity.Employee;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;

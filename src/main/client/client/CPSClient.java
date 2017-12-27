@@ -1,4 +1,4 @@
-package cps.client;
+package client;
 
 import java.io.*;
 import org.apache.commons.cli.*;

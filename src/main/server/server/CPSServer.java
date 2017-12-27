@@ -1,6 +1,6 @@
-package cps.server;
+package server;
 
-import cps.entity.Employee;
+import entity.Employee;
 import ocsf.server.*;
 import org.apache.commons.cli.*;
 
