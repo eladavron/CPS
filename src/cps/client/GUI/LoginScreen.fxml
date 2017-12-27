@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Accordion fx:id="loginRoot" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cps.client.GUI.LoginScreenController">
+   <panes>
+      <TitledPane fx:id="paneLogin" text="Login (Existing User)">
+         <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <VBox layoutY="-10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <FlowPane prefHeight="0.0" prefWidth="579.0">
+                           <children>
+                              <Label text="User ID:" />
+                              <TextField fx:id="txtLoginUsr" />
+                           </children>
+                        </FlowPane>
+                        <FlowPane prefHeight="0.0" prefWidth="579.0">
+                           <children>
+                              <Label text="Password:" />
+                              <PasswordField fx:id="txtLoginPwd" />
+                           </children>
+                        </FlowPane>
+                     </children>
+                  </VBox>
+                  <Button fx:id="btnLogin" mnemonicParsing="false" onAction="#AttemptLogin" text="Login" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+               </children>
+            </AnchorPane>
+         </content>
+      </TitledPane>
+      <TitledPane fx:id="paneRegister" expanded="false" prefHeight="229.0" prefWidth="600.0" text="Register (New User)">
+         <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+         </content>
+      </TitledPane>
+   </panes>
+</Accordion>
