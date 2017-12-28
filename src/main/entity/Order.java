@@ -1,16 +1,19 @@
 package entity;
 
+import lombok.Data;
 
 import java.util.Date;
 
 /**
  * A sample class of how an Order will look in the system.
  */
+@Data
 public class Order {
     /**
      * Private properties
      */
     private static int _orderUIDCounter = 0;
+
     private int _uId;
     private String _customerName;
     private Integer _carID;
@@ -32,6 +35,6 @@ public class Order {
         this._entryTime = new Date();
     }
 
-    // TODO: Add Lombok!
+
     // TODO : Add compare using equalTo. (for testing).
 }
