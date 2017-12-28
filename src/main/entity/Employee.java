@@ -1,4 +1,4 @@
-package cps;
+package entity;
 
 import java.util.Date;
 
@@ -27,88 +27,44 @@ public class Employee {
         this._password = _password;
     }
 
-    /**
-     * Getters and Setters
-     */
-
-    /**
-     *  Get the Employee's UID
-     * @return UID
-     */
-    public int get_uid() {
+    public int getUid() {
         return _uid;
     }
 
-    /**
-     * Set Employee UID
-     * @param _uid UID
-     */
-    public void set_uid(int _uid) {
-        this._uid = _uid;
+    public void setUid(int uid) {
+        this._uid = uid;
     }
 
-    /**
-     * Get Employee name
-     * @return Name
-     */
-    public String get_name() {
+    public String getName() {
         return _name;
     }
 
-    /**
-     * Set Employee Name
-     * @param _name Employee Name
-     */
-    public void set_name(String _name) {
-        this._name = _name;
+    public void setName(String name) {
+        this._name = name;
     }
 
-    /**
-     * Get Employee Email Address
-     * @return Employee Email
-     */
-    public String get_email() {
+    public String getEmail() {
         return _email;
     }
 
-    /**
-     * Set Employee Email Address
-     * @param _email Email Address
-     */
-    public void set_email(String _email) {
-        this._email = _email;
+    public void setEmail(String email) {
+        this._email = email;
     }
 
-    /**
-     * Get Employee Password
-     * @return Password
-     */
-    public String get_password() {
+    public String getPassword() {
         return _password;
     }
 
-    /**
-     * Set Employee Password
-     * @param _password Password
-     */
-    public void set_password(String _password) {
-        this._password = _password;
+    public void setPassword(String password) {
+        this._password = password;
     }
 
-    /**
-     * Get Creation Date
-     * @return Creation Date.
-     */
-    public Date get_creationDate() {
+    public Date getCreationDate() {
         return _creationDate;
     }
 
-    /**
-     * Set Creation Date
-     * @param _creationDate Create Date
-     */
-    public void set_creationDate(Date _creationDate) {
-        this._creationDate = _creationDate;
+    public void setCreationDate(Date creationDate) {
+        this._creationDate = creationDate;
     }
 
     /**
