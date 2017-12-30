@@ -3,6 +3,7 @@ package client.GUI;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import entity.Message;
 import entity.Order;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,6 +13,7 @@ import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -115,8 +117,11 @@ public class NewOrderController implements Initializable {
         Order newOrder = new Order("John Doe", Integer.valueOf(txtCarID.getText()), exitTime); //TODO: Get Name from User
 
         try {
+            ArrayList<Object> data = new ArrayList<>();
+            data.add(newOrder);
+            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, data);
             ObjectMapper mapper = new ObjectMapper();
-            String json = mapper.writeValueAsString(newOrder);
+            String json = mapper.writeValueAsString(newMessage);
             CPSClientGUI.getInstance().sendToServer(json);
         }
         catch (JsonProcessingException je)
