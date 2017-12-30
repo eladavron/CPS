@@ -16,7 +16,7 @@
                      <children>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="Enter Parking" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnEnterParking" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Enter Parking" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -24,7 +24,7 @@
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="Exit Parking" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <Button fx:id="btnExitParking" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Exit Parking" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </padding>
@@ -55,7 +55,7 @@
                      <children>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="Create Order" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnCreateOrder" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Create Order" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -63,7 +63,7 @@
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="Edit Order" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnEditOrder" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Edit Order" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -90,7 +90,7 @@
                      <children>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="Manage Subscription" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnManageSubs" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Manage Subscription" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -117,7 +117,7 @@
                      <children>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="File Complaint" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnFileComplaint" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="File Complaint" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -125,7 +125,7 @@
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1">
                            <children>
-                              <Button layoutX="116.0" layoutY="16.0" mnemonicParsing="false" text="Check Complaint Status" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnCheckComplaint" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Check Complaint Status" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

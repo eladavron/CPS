@@ -202,7 +202,7 @@
     -fx-border-width: 0 0 2 0;
     -fx-background-radius: 0;
     -fx-border-radius: 0;
-}
+ }
 
 .combo-box:focused, .choice-box:focused {
     -fx-border-color: -swatch-500;
@@ -426,6 +426,7 @@
  ******************************************************************************/
 .label {
     -fx-text-fill: -fx-text-base-color;
+    -fx-margin: 0px, 10px, 0px, 10px;
 }
 
 .label:disabled {

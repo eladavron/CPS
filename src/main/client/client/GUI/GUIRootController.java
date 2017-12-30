@@ -22,7 +22,7 @@ public class GUIRootController {
 
 
     @FXML
-    void PromptExit(ActionEvent event) {
+    void promptExit(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText("Are you sure you want to exit?");
         Optional<ButtonType> result = alert.showAndWait();

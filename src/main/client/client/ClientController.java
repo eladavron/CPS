@@ -1,7 +1,3 @@
-// This file contains material supporting section 3.7 of the textbook:
-// "Object Oriented Software Engineering" and is issued under the open-source
-// license found at www.lloseng.com 
-
 package client;
 
 import java.io.*;
@@ -10,21 +6,15 @@ import java.io.*;
  * This class overrides some of the methods defined in the abstract
  * superclass in order to give more functionality to the cps.client.
  *
- * @author Dr Timothy C. Lethbridge
- * @author Dr Robert Lagani&egrave;
- * @author Fran&ccedil;ois B&eacute;langer
- * @version July 2000
+ * @author Elad Avron
  */
 public class ClientController extends ocsf.client.AbstractClient
 
 {
-
-    //Constructors ****************************************************
-
     /**
      * Constructs an instance of the chat cps.client.
      *
-     * @param host The cps.server to connect to.
+     * @param host The server to connect to.
      * @param port The port number to connect on.
      */
 
@@ -35,9 +25,6 @@ public class ClientController extends ocsf.client.AbstractClient
         openConnection();
     }
 
-
-    //Instance methods ************************************************
-
     /**
      * This method handles all data that comes in from the cps.server.
      *
@@ -45,8 +32,7 @@ public class ClientController extends ocsf.client.AbstractClient
      */
     public void handleMessageFromServer(Object msg)
     {
-        System.out.println(msg);
-        System.out.print("> ");
+        //TODO: Parse Server Messages
     }
 
     /**
@@ -54,29 +40,7 @@ public class ClientController extends ocsf.client.AbstractClient
      *
      * @param message The message from the UI.
      */
-    public void handleMessageFromClientUI(String message)
-    {
-        try
-        {
-            sendToServer(message);
-        }
-        catch(IOException e)
-        {
-            System.out.println("Could not send message to server.  Terminating client.");
-            quit();
-        }
-    }
-
-    /**
-     * This method terminates the cps.client.
-     */
-    public void quit()
-    {
-        try
-        {
-            closeConnection();
-        }
-        catch(IOException e) {}
-        System.exit(0);
+    public void handleMessageFromClientUI(String message) throws IOException {
+        sendToServer(message);
     }
 }

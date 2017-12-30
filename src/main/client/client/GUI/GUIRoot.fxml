@@ -39,11 +39,14 @@
                </padding>
             </AnchorPane>
             <AnchorPane fx:id="pageRoot" prefHeight="380.0" prefWidth="600.0" VBox.vgrow="ALWAYS" />
-            <ToolBar prefHeight="40.0" prefWidth="200.0" style="-fx-alignment: center-right;">
-               <items>
-                  <Button fx:id="btnExit" cancelButton="true" mnemonicParsing="false" onAction="#PromptExit" prefWidth="68.0" text="Exit" />
-               </items>
-            </ToolBar>
+            <BorderPane prefHeight="47.0" prefWidth="90.0" styleClass="card">
+               <right>
+                  <Button fx:id="btnExit" cancelButton="true" mnemonicParsing="false" onAction="#promptExit" prefWidth="68.0" text="Exit" BorderPane.alignment="CENTER" />
+               </right>
+               <left>
+                  <Label fx:id="lblStatus" BorderPane.alignment="CENTER" />
+               </left>
+            </BorderPane>
          </children>
       </VBox>
    </children>

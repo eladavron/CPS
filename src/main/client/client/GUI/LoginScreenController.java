@@ -5,11 +5,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
+import javax.lang.model.element.Element;
 import java.io.IOException;
 
 public class LoginScreenController {
 
-    private AnchorPane pageRoot;
+    private CPSClientGUI parentGUI;
 
     @FXML
     private TextField txtLoginUsr;
@@ -39,12 +40,11 @@ public class LoginScreenController {
     }
 
     @FXML
-    void AttemptLogin(ActionEvent event) throws IOException {
+    void attemptLogin(ActionEvent event) throws IOException {
         //TODO: Attempt Login
-        if (!LoginValidation())
+        if (!loginValidation())
             return;
-        pageRoot = (AnchorPane) loginRoot.getParent();
-        Helpers.LoadGUI(pageRoot, "CustomerScreen.fxml");
+        CPSClientGUI.getInstance().changeGUI("CustomerScreen.fxml");
     }
 
     /**
@@ -52,17 +52,17 @@ public class LoginScreenController {
      * Also pops up a tooltip next the offending field.
      * @return True if valid, false otherwise.
      */
-    boolean LoginValidation()
+    boolean loginValidation()
     {
         boolean finalResult = true;
         if (txtLoginUsr.getText().length() < 4)
         {
-           Helpers.ShowTooltip(txtLoginUsr, "User ID must be at least 4 characters long!");
+           Helpers.showTooltip(txtLoginUsr, "User ID must be at least 4 characters long!");
            finalResult = false;
         }
         if (txtLoginPwd.getText().length() < 4)
         {
-            Helpers.ShowTooltip(txtLoginPwd, "Password must be at least 4 characters long!");
+            Helpers.showTooltip(txtLoginPwd, "Password must be at least 4 characters long!");
             finalResult = false;
         }
         return finalResult;
