@@ -16,10 +16,10 @@ import java.io.IOException;
  */
 public class MessageHandler {
 //TODO:: add validation for message
+    private static ObjectMapper mapper = new ObjectMapper();
+
     public static boolean handleMessage(String message)
     {
-        ObjectMapper mapper = new ObjectMapper();
-
 //JSON from String to Object
         try {
             Message msg = mapper.readValue(message, Message.class);
@@ -41,29 +41,24 @@ public class MessageHandler {
 
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }
 
     private static boolean handleQueries(Message query)
     {
-
         return true;
     }
 
-    private static boolean handleCreation(Message create)
+    private static boolean handleCreation(Message creation)
     {
-        Message.DataType creation = create.getDataType();
-        switch(creation)
+        switch(creation.getDataType())
         {
             case USER:
                 break;
             case ORDER:
-                for (Object orderObj : create.getData())
-                {
-                    Order order = (Order) orderObj;
-                    System.out.println("Customer Name is " + order.getCustomerName());
-                }
+                Order order = mapper.convertValue(creation.getData().get(0),Order.class);
                 break;
             case STRING:
                 break;
@@ -84,5 +79,4 @@ public class MessageHandler {
     {
         return true;
     }
-
-}
+    }
