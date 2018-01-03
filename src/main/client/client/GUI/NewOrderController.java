@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Message;
 import entity.Order;
+import entity.ParkingLotNumber;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -114,7 +115,7 @@ public class NewOrderController implements Initializable {
         int exitHour = cmbExitHour.getSelectionModel().getSelectedIndex();
         int exitMinute = cmbExitMinute.getSelectionModel().getSelectedIndex();
         Date exitTime = Helpers.getDateFromLocalDate(exitDate.getValue(), exitHour, exitMinute);
-        Order newOrder = new Order("John Doe", Integer.valueOf(txtCarID.getText()), exitTime); //TODO: Get Name from User
+        Order newOrder = new Order(1, Integer.valueOf(txtCarID.getText()), exitTime, new ParkingLotNumber(1)); //TODO: Get Name from User
 
         try {
             ArrayList<Object> data = new ArrayList<>();
