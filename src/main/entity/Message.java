@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class Message {
     public enum MessageType { QUERY, CREATE, UPDATE, DELETE };
-    public enum DataType { STRING, ORDER, USER, PARKING_LOT };
+    public enum DataType { STRING, ORDER, PREORDER, USER, PARKING_LOT };
 
     private ArrayList<Object> _data;
     private MessageType _type;
