@@ -16,6 +16,11 @@ public class PreOrder extends Order {
     private Date _estimatedEntryTime;
 
     /**
+     * Empty constructor for use with Jackson.
+     */
+    public PreOrder() {}
+
+    /**
      * Constructor
      * @param customerID customer's ID
      * @param carID Order's car plate
@@ -28,6 +33,8 @@ public class PreOrder extends Order {
         this._charge = charge;
         this._estimatedEntryTime =  estimatedEntryTime;
     }
+
+
 
     @Override
     public String toString() {

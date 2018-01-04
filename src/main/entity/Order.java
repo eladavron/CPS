@@ -23,6 +23,11 @@ public class Order {
     private double _price;
 
     /**
+     * Empty constructor for use with Jackson
+     */
+    public Order(){}
+
+    /**
      * Constructor
      * @param costumerID Order's Name
      * @param carID Order's car plate

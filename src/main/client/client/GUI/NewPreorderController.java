@@ -4,8 +4,8 @@ package client.GUI;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Message;
-import entity.Order;
 import entity.ParkingLotNumber;
+import entity.PreOrder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -16,13 +16,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 
 /**
+ * A controller for creating new Preorders.
  * @author Elad Avron
  */
-public class NewOrderController implements Initializable {
+public class NewPreorderController implements Initializable {
 
     @FXML
     private Button btnBack;
@@ -81,46 +82,73 @@ public class NewOrderController implements Initializable {
     }
 
     @FXML
-    void checkAvailability(ActionEvent event) {
+    void validateForm(ActionEvent event) {
+        Helpers.clearAllHighlighted();
+        boolean validate = true;
         if (cmbParkingLot.getValue() == null) //Makes sure parking lot is selected
         {
-            lblAvailability.setTextFill(Color.RED);
-            lblAvailability.setText("Please select parking lot!");
-            btnCreate.setDisable(true);
+            Helpers.showError(cmbParkingLot, "Please select parking lot!");
+            validate = false;
         }
-        else if (txtCarID.getText().equals("")) //Makes sure car ID is entered. //TODO: Make sure car ID is valid.
+        if (!txtCarID.getText().matches("\\d{7,8}")) //Makes sure car ID is entered and valid
         {
-            lblAvailability.setTextFill(Color.RED);
-            lblAvailability.setText("Please enter a valid car number!");
-            btnCreate.setDisable(true);
+            Helpers.showError(txtCarID, "Please enter a valid car number!");
+            validate = false;
         }
-        else if (entryDate.getValue() == null || exitDate.getValue() == null) //Makes sure dates and times are selected
+        if (entryDate.getValue() == null)
         {
-            // TODO: IMPORTANT: check validity with server
-            // TODO: Check for minimum of 1 hour parking
-            lblAvailability.setTextFill(Color.RED);
-            lblAvailability.setText("Please select valid dates for entry and exit");
-            btnCreate.setDisable(true);
+            Helpers.showError(entryDate, "Please select valid dates for entry!");
+            validate = false;
         }
-        else
+        if (exitDate.getValue() == null) //Makes sure dates and times are selected
         {
+            Helpers.showError(exitDate, "Please select valid dates for exit!");
+            validate = false;
+        }
+        if (validate) //Form valid, now check times
+        {
+            Date entry = Helpers.getDateFromControls(entryDate,cmbEntryHour, cmbEntryMinute);
+            Date exit = Helpers.getDateFromControls(exitDate, cmbExitHour, cmbExitMinute);
+            if (exit.before(entry)) //Exit date is before entry
+            {
+                Helpers.showError(cmbExitMinute, "You can't exit before you enter!");
+                Helpers.highlightControl(cmbExitHour);
+                Helpers.highlightControl(exitDate);
+                validate = false;
+            }
+            else if (TimeUnit.HOURS.convert((exit.getTime() - entry.getTime()), TimeUnit.MILLISECONDS) < 1)
+            {
+                Helpers.showError(cmbExitMinute, "You can't park for less than 1 hour!");
+                Helpers.highlightControl(cmbExitHour);
+                Helpers.highlightControl(exitDate);
+                validate = false;
+            }
+        }
+        if (validate)
+        {
+            //TODO: IMPORTANT: Check actual availability with Server
             lblAvailability.setTextFill(Color.GREEN);
             lblAvailability.setText("Available!");
             btnCreate.setDisable(false);
+        }
+        else
+        {
+            lblAvailability.setTextFill(Color.RED);
+            lblAvailability.setText("Please fix form and try again.");
+            btnCreate.setDisable(true);
         }
     }
 
     @FXML
     void createOrder(ActionEvent event) {
-        int exitHour = cmbExitHour.getSelectionModel().getSelectedIndex();
-        int exitMinute = cmbExitMinute.getSelectionModel().getSelectedIndex();
-        Date exitTime = Helpers.getDateFromLocalDate(exitDate.getValue(), exitHour, exitMinute);
-        Order newOrder = new Order(1, Integer.valueOf(txtCarID.getText()), exitTime, new ParkingLotNumber(1)); //TODO: Get Name from User
+        Date entryTime = Helpers.getDateFromControls(entryDate, cmbEntryHour, cmbEntryMinute);
+        Date exitTime = Helpers.getDateFromControls(exitDate, cmbExitHour, cmbExitMinute);
+        PreOrder newOrder = new PreOrder(0, Integer.valueOf(txtCarID.getText()), exitTime, new ParkingLotNumber(0), 0.0, entryTime); //TODO: Get Name from User, get Parking Lot from form, yada yada
 
         try {
             ArrayList<Object> data = new ArrayList<>();
             data.add(newOrder);
-            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, data);
+            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, data);
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(newMessage);
             CPSClientGUI.getInstance().sendToServer(json);
@@ -135,14 +163,7 @@ public class NewOrderController implements Initializable {
 
     @FXML
     void returnToMain(ActionEvent event) throws IOException {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setHeaderText("Go back to main menu?");
-        alert.setContentText("Your order will not be saved and any data you entered will be lost.");
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK)
-        {
-            CPSClientGUI.getInstance().changeGUI("CustomerScreen.fxml");
-        }
+        CustomerScreenController.backToMain();
     }
 
 

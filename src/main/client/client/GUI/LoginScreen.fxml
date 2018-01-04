@@ -8,17 +8,17 @@
    <panes>
       <TitledPane fx:id="paneLogin" text="Login (Existing User)">
          <content>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <AnchorPane minHeight="0.0" minWidth="0.0">
                <children>
                   <VBox layoutY="-10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <FlowPane prefHeight="0.0" prefWidth="579.0">
+                        <FlowPane>
                            <children>
                               <Label text="User ID:" />
                               <TextField fx:id="txtLoginUsr" />
                            </children>
                         </FlowPane>
-                        <FlowPane prefHeight="0.0" prefWidth="579.0">
+                        <FlowPane>
                            <children>
                               <Label text="Password:" />
                               <PasswordField fx:id="txtLoginPwd" />
@@ -31,9 +31,29 @@
             </AnchorPane>
          </content>
       </TitledPane>
-      <TitledPane fx:id="paneRegister" expanded="false" prefHeight="229.0" prefWidth="600.0" text="Register (New User)">
+      <TitledPane fx:id="paneRegister" expanded="false" text="Register (New User)">
          <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+         </content>
+      </TitledPane>
+      <TitledPane text="Connection Settings">
+         <content>
+            <VBox>
+               <children>
+                  <FlowPane hgap="10.0" vgap="10.0">
+                     <children>
+                        <Label text="Hostname or IP Address:" />
+                        <TextField fx:id="txtHostname" text="localhost" />
+                     </children>
+                  </FlowPane>
+                  <FlowPane hgap="10.0" vgap="10.0">
+                     <children>
+                        <Label text="Port:" />
+                        <TextField fx:id="txtPort" text="5555" />
+                     </children>
+                  </FlowPane>
+               </children>
+            </VBox>
          </content>
       </TitledPane>
    </panes>

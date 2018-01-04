@@ -42,7 +42,7 @@ public class CPSClientGUI extends Application{
 
         _pageRoot = (AnchorPane) scene.lookup("#pageRoot");
         _lblStatus = (Label) scene.lookup("#lblStatus");
-        changeGUI("Connection.fxml");
+        changeGUI("LoginScreen.fxml");
 
         primaryStage.setScene(scene);
         primaryStage.setMinHeight(rootPane.getPrefHeight());
@@ -86,10 +86,10 @@ public class CPSClientGUI extends Application{
     public void connect(String host, int port) throws IOException {
         try {
             _client = new ClientController(host, port);
-            _lblStatus.setText("Connected to " + host + " on port " + port);
+            setStatus("Connected to " + host + " on port " + port, Color.GREEN);
         } catch (IOException io)
         {
-            _lblStatus.setText("Connection failed!");
+            setStatus("Connection Failed!", Color.RED);
             throw io;
         }
     }
@@ -103,5 +103,11 @@ public class CPSClientGUI extends Application{
             _lblStatus.setText("Communication error!");
             _lblStatus.setTextFill(Color.RED);
         }
+    }
+
+    public void setStatus(String status, Color color)
+    {
+        _lblStatus.setText(status);
+        _lblStatus.setTextFill(color);
     }
 }

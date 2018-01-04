@@ -1,11 +1,12 @@
 package client.GUI;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 
-import javax.lang.model.element.Element;
 import java.io.IOException;
 
 public class LoginScreenController {
@@ -30,42 +31,58 @@ public class LoginScreenController {
     @FXML
     private PasswordField txtLoginPwd;
 
+    @FXML
+    private TextField txtPort;
+
+    @FXML
+    private Button btnConnect;
+
+    @FXML
+    private TextField txtHostname;
+
+    private CPSClientGUI _guiInstance;
 
     @FXML
     void initialize() {
+        _guiInstance = CPSClientGUI.getInstance();
         assert paneLogin != null : "fx:id=\"paneLogin\" was not injected: check your FXML file 'LoginScreen.fxml'.";
         assert loginRoot != null : "fx:id=\"loginRoot\" was not injected: check your FXML file 'LoginScreen.fxml'.";
         assert paneRegister != null : "fx:id=\"paneRegister\" was not injected: check your FXML file 'LoginScreen.fxml'.";
+        txtPort.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    txtPort.setText(newValue.replaceAll("[^\\d]",""));
+                }
+            }
+        });
         loginRoot.setExpandedPane(paneLogin);
     }
 
     @FXML
     void attemptLogin(ActionEvent event) throws IOException {
-        //TODO: Attempt Login
-        if (!loginValidation())
-            return;
-        CPSClientGUI.getInstance().changeGUI("CustomerScreen.fxml");
-    }
-
-    /**
-     * Validates the login form.
-     * Also pops up a tooltip next the offending field.
-     * @return True if valid, false otherwise.
-     */
-    boolean loginValidation()
-    {
-        boolean finalResult = true;
-        if (txtLoginUsr.getText().length() < 4)
-        {
-           Helpers.showTooltip(txtLoginUsr, "User ID must be at least 4 characters long!");
-           finalResult = false;
+        try {
+            if (txtHostname.getText().equals(""))
+            {
+                Helpers.showError(txtHostname,"Hostname can not be empty!");
+                _guiInstance.setStatus("Hostname can not be empty!", Color.RED);
+                return;
+            }
+            if (txtPort.getText().equals("") || Integer.valueOf(txtPort.getText()) < 0)
+            {
+                Helpers.showError(txtPort, "Invalid port number!");
+                _guiInstance.setStatus("Invalid port number!", Color.RED);
+                return;
+            }
+            String host = txtHostname.getText();
+            Integer port = Integer.valueOf(txtPort.getText());
+            _guiInstance.setStatus("Connecting...", Color.BLACK);
+            _guiInstance.connect(host, port); //TODO: Waiting screen
+            _guiInstance.changeGUI("CustomerScreen.fxml"); //TODO: Change screen according to use
         }
-        if (txtLoginPwd.getText().length() < 4)
+        catch (IOException io)
         {
-            Helpers.showTooltip(txtLoginPwd, "Password must be at least 4 characters long!");
-            finalResult = false;
+            _guiInstance.setStatus("Connection error! Please check information and try again.", Color.RED);
         }
-        return finalResult;
     }
-
 }

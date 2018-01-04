@@ -3,6 +3,7 @@ package server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Message;
 import entity.Order;
+import entity.PreOrder;
 
 import java.io.IOException;
 
@@ -59,6 +60,9 @@ public class MessageHandler {
                 break;
             case ORDER:
                 Order order = mapper.convertValue(creation.getData().get(0),Order.class);
+                break;
+            case PREORDER:
+                PreOrder preorder = mapper.convertValue(creation.getData().get(0), PreOrder.class);
                 break;
             case STRING:
                 break;
