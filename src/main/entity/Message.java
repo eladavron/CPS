@@ -15,10 +15,16 @@ public class Message {
     private MessageType _type;
     private DataType _dataType;
 
-    public Message(MessageType type, DataType dataType, ArrayList<Object> data) {
+    public Message(){}
+
+    public Message(MessageType type, DataType dataType, Object...data) {
         _type = type;
         _dataType = dataType;
-        _data = data;
+        _data = new ArrayList<Object>();
+        for (Object object : data)
+        {
+            _data.add(object);
+        }
     }
 
     public ArrayList<Object> getData() {

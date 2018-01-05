@@ -5,7 +5,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<?import java.lang.String?>
 <TitledPane animated="false" collapsible="false" prefHeight="408.0" prefWidth="537.0" stylesheets="@CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.NewPreorderController">
     <content>
         <VBox prefHeight="224.0" prefWidth="303.0" spacing="5.0">
@@ -15,121 +14,117 @@
                         <Label text="Parking Lot:" />
                         <ComboBox fx:id="cmbParkingLot" promptText="Select...">
                             <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Item 1" />
-                                    <String fx:value="Item 2" />
-                                    <String fx:value="Item 3" />
-                                </FXCollections>
+                                <FXCollections fx:factory="observableArrayList"/>
                             </items>
                         </ComboBox>
                     </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
                 </FlowPane>
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
                         <Label text="Car ID:" />
                         <TextField fx:id="txtCarID" />
                     </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
                 </FlowPane>
                 <FlowPane hgap="10.0" vgap="10.0">
-               <children>
-                  <TitledPane collapsible="false" text="Entry Date &amp; Time">
-                     <content>
-                        <HBox alignment="CENTER_LEFT">
-                           <children>
-                              <DatePicker fx:id="entryDate">
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </DatePicker>
-                              <Separator orientation="VERTICAL">
-                                 <HBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </HBox.margin>
-                              </Separator>
-                              <HBox fx:id="timeEnter" alignment="CENTER_LEFT" HBox.hgrow="NEVER">
-                                 <children>
-                                    <ComboBox fx:id="cmbEntryHour" promptText="00">
-                                       <items>
-                                          <FXCollections fx:factory="observableArrayList" />
-                                       </items>
-                                    </ComboBox>
-                                    <Label text=":">
-                                       <HBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </HBox.margin>
-                                    </Label>
-                                    <ComboBox fx:id="cmbEntryMinute" promptText="00">
-                                       <items>
-                                          <FXCollections fx:factory="observableArrayList" />
-                                       </items>
-                                    </ComboBox>
-                                 </children>
-                              </HBox>
-                           </children>
-                        </HBox>
-                     </content>
-                  </TitledPane>
-                  <TitledPane collapsible="false" text="Estimated Exit Date &amp; Time">
-                     <content>
-                        <HBox alignment="CENTER_LEFT">
-                           <children>
-                              <DatePicker fx:id="exitDate">
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </DatePicker>
-                              <Separator orientation="VERTICAL">
-                                 <HBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </HBox.margin>
-                              </Separator>
-                              <HBox fx:id="timeExit" alignment="CENTER_LEFT" HBox.hgrow="NEVER">
-                                 <children>
-                                    <ComboBox fx:id="cmbExitHour" promptText="00">
-                                       <items>
-                                          <FXCollections fx:factory="observableArrayList" />
-                                       </items>
-                                    </ComboBox>
-                                    <Label text=":">
-                                       <HBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </HBox.margin>
-                                    </Label>
-                                    <ComboBox fx:id="cmbExitMinute" promptText="00">
-                                       <items>
-                                          <FXCollections fx:factory="observableArrayList" />
-                                       </items>
-                                    </ComboBox>
-                                 </children>
-                              </HBox>
-                           </children>
-                        </HBox>
-                     </content>
-                  </TitledPane>
-               </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
+                    <children>
+                        <TitledPane collapsible="false" text="Entry Date &amp; Time">
+                            <content>
+                                <HBox alignment="CENTER_LEFT">
+                                    <children>
+                                        <DatePicker fx:id="entryDatePicker">
+                                            <HBox.margin>
+                                                <Insets right="10.0" />
+                                            </HBox.margin>
+                                        </DatePicker>
+                                        <Separator orientation="VERTICAL">
+                                            <HBox.margin>
+                                                <Insets left="10.0" right="10.0" />
+                                            </HBox.margin>
+                                        </Separator>
+                                        <HBox fx:id="timeEnter" alignment="CENTER_LEFT" HBox.hgrow="NEVER">
+                                            <children>
+                                                <ComboBox fx:id="cmbEntryHour" promptText="00">
+                                                    <items>
+                                                        <FXCollections fx:factory="observableArrayList" />
+                                                    </items>
+                                                </ComboBox>
+                                                <Label text=":">
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" right="10.0" />
+                                                    </HBox.margin>
+                                                </Label>
+                                                <ComboBox fx:id="cmbEntryMinute" promptText="00">
+                                                    <items>
+                                                        <FXCollections fx:factory="observableArrayList" />
+                                                    </items>
+                                                </ComboBox>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </HBox>
+                            </content>
+                        </TitledPane>
+                        <TitledPane collapsible="false" text="Estimated Exit Date &amp; Time">
+                            <content>
+                                <HBox alignment="CENTER_LEFT">
+                                    <children>
+                                        <DatePicker fx:id="exitDatePicker">
+                                            <HBox.margin>
+                                                <Insets right="10.0" />
+                                            </HBox.margin>
+                                        </DatePicker>
+                                        <Separator orientation="VERTICAL">
+                                            <HBox.margin>
+                                                <Insets left="10.0" right="10.0" />
+                                            </HBox.margin>
+                                        </Separator>
+                                        <HBox fx:id="timeExit" alignment="CENTER_LEFT" HBox.hgrow="NEVER">
+                                            <children>
+                                                <ComboBox fx:id="cmbExitHour" promptText="00">
+                                                    <items>
+                                                        <FXCollections fx:factory="observableArrayList" />
+                                                    </items>
+                                                </ComboBox>
+                                                <Label text=":">
+                                                    <HBox.margin>
+                                                        <Insets left="10.0" right="10.0" />
+                                                    </HBox.margin>
+                                                </Label>
+                                                <ComboBox fx:id="cmbExitMinute" promptText="00">
+                                                    <items>
+                                                        <FXCollections fx:factory="observableArrayList" />
+                                                    </items>
+                                                </ComboBox>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </HBox>
+                            </content>
+                        </TitledPane>
+                    </children>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
                 </FlowPane>
-            <BorderPane prefHeight="200.0" prefWidth="200.0">
-               <left>
-                  <FlowPane hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
-                     <children>
-                        <Button mnemonicParsing="false" onAction="#validateForm" text="Check Availability" />
-                        <Label fx:id="lblAvailability" />
-                     </children>
-                  </FlowPane>
-               </left>
-               <right>
-                  <Button fx:id="btnCreate" disable="true" mnemonicParsing="false" onAction="#createOrder" text="Create" BorderPane.alignment="CENTER" />
-               </right>
-            </BorderPane>
+                <BorderPane prefHeight="200.0" prefWidth="200.0">
+                    <left>
+                        <FlowPane hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
+                            <children>
+                                <Button mnemonicParsing="false" onAction="#validateForm" text="Check Availability" />
+                                <Label fx:id="lblAvailability" />
+                            </children>
+                        </FlowPane>
+                    </left>
+                    <right>
+                        <Button fx:id="btnCreate" disable="true" mnemonicParsing="false" onAction="#createOrder" text="Create" BorderPane.alignment="CENTER" />
+                    </right>
+                </BorderPane>
             </children>
         </VBox>
     </content>

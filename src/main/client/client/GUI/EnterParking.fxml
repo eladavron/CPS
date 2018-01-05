@@ -5,45 +5,36 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<?import java.lang.*?>
 <TitledPane animated="false" collapsible="false" stylesheets="@CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.EnterParkingController">
     <content>
         <VBox prefHeight="224.0" prefWidth="303.0" spacing="5.0">
             <children>
 
-      
-                        <FlowPane hgap="10.0" vgap="10.0">
-                      <children>
-                          <Label text="Select from Order:" />
-                          <ComboBox fx:id="cmbOrder" promptText="Select...">
-                              <items>
-                                  <FXCollections fx:factory="observableArrayList">
-                                      <String fx:value="Item 1" />
-                                      <String fx:value="Item 2" />
-                                      <String fx:value="Item 3" />
-                                  </FXCollections>
-                              </items>
-                          </ComboBox>
-                      </children>
-                      <VBox.margin>
-                          <Insets />
-                      </VBox.margin>
-                  </FlowPane>
-            <Separator prefWidth="200.0" />
-                  <FlowPane hgap="10.0" vgap="10.0">
-                      <children>
-                          <Label text="Parking Lot:" />
-                          <ComboBox fx:id="cmbParkingLot" promptText="Select...">
-                              <items>
-                                  <FXCollections fx:factory="observableArrayList">
-                                      <String fx:value="Item 1" />
-                                      <String fx:value="Item 2" />
-                                      <String fx:value="Item 3" />
-                                  </FXCollections>
-                              </items>
-                          </ComboBox>
-                      </children>
-                  </FlowPane>
+
+                <FlowPane hgap="10.0" vgap="10.0">
+                    <children>
+                        <Label text="Select from Order:" />
+                        <ComboBox fx:id="cmbOrder" promptText="Select...">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList" />
+                            </items>
+                        </ComboBox>
+                    </children>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
+                </FlowPane>
+                <Separator prefWidth="200.0" />
+                <FlowPane hgap="10.0" vgap="10.0">
+                    <children>
+                        <Label text="Parking Lot:" />
+                        <ComboBox fx:id="cmbParkingLot" promptText="Select...">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList" />
+                            </items>
+                        </ComboBox>
+                    </children>
+                </FlowPane>
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
                         <Label text="Car ID:" />
@@ -55,6 +46,7 @@
                 </FlowPane>
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
+
                         <TitledPane collapsible="false" text="Estimated Exit Date &amp; Time">
                             <content>
                                 <HBox alignment="CENTER_LEFT">
@@ -93,23 +85,23 @@
                         <Insets />
                     </VBox.margin>
                 </FlowPane>
-            <BorderPane prefHeight="200.0" prefWidth="200.0">
-               <right>
+                <BorderPane prefHeight="200.0" prefWidth="200.0">
+                    <right>
                         <Button fx:id="btnCreate" disable="true" mnemonicParsing="false" onAction="#enterParking" text="Enter" BorderPane.alignment="CENTER" />
-               </right>
-               <left>
+                    </right>
+                    <left>
                         <FlowPane hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
                             <children>
                                 <Button fx:id="btnCheckAvailable" mnemonicParsing="false" onAction="#validateForm" text="Check Availability" />
                                 <Label fx:id="lblAvailability" />
                             </children>
                         </FlowPane>
-               </left>
-            </BorderPane>
+                    </left>
+                </BorderPane>
             </children>
         </VBox>
     </content>
-   <graphic>
+    <graphic>
         <HBox>
             <children>
                 <FlowPane hgap="10.0" vgap="10.0">
@@ -124,5 +116,5 @@
                 </FlowPane>
             </children>
         </HBox>
-   </graphic>
+    </graphic>
 </TitledPane>

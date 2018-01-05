@@ -1,9 +1,11 @@
 package client.GUI;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Message;
 import entity.Order;
+import entity.ParkingLot;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,10 +14,8 @@ import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
 
 public class EnterParkingController implements Initializable {
 
@@ -23,16 +23,16 @@ public class EnterParkingController implements Initializable {
     private Button btnBack;
 
     @FXML
-    private ComboBox cmbOrder;
+    private ComboBox<Order> cmbOrder;
 
     @FXML
-    private ComboBox cmbExitMinute;
+    private ComboBox<String> cmbExitMinute;
 
     @FXML
     private Button btnCheckAvailable;
 
     @FXML
-    private ComboBox cmbParkingLot;
+    private ComboBox<ParkingLot> cmbParkingLot;
 
     @FXML
     private Button btnCreate;
@@ -44,32 +44,30 @@ public class EnterParkingController implements Initializable {
     private Label lblAvailability;
 
     @FXML
-    private ComboBox cmbExitHour;
+    private ComboBox<String> cmbExitHour;
 
     @FXML
     private DatePicker exitDate;
 
+    private DateTimeCombo _exitDateTime;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
-        cmbParkingLot.getItems().clear();
-        cmbParkingLot.getItems().addAll("Temporary Sample 1", "Temporary Sample 2");//TODO: Populate from database!
-
-        cmbExitMinute.getItems().clear();
-        for (int i = 0; i < 60; i++) //Minute Fill
-        {
-            cmbExitMinute.getItems().add((i<10 ? "0" : "") + i);
-        }
-
-        cmbExitHour.getItems().clear();
-        for (int i = 0; i < 24; i++) //Hour Fill
-        {
-            cmbExitHour.getItems().add((i<10 ? "0" : "") + i);
-        }
+        Helpers.initParkingLots(cmbParkingLot);
+        Helpers.initOrders(cmbOrder);
+        cmbOrder.valueProperty().addListener(new ChangeListener<Order>() {
+                                                 @Override
+                                                 public void changed(ObservableValue<? extends Order> observable, Order oldValue, Order newValue) {
+                                                     fillOrder(null);
+                                                 }
+                                             }
+        );
+        _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
     }
 
     @FXML
-    void validateForm(ActionEvent event) {
+    boolean validateForm(ActionEvent event) {
         Helpers.clearAllHighlighted();
         boolean validate = true;
         if (cmbParkingLot.getValue() == null) //Makes sure parking lot is selected
@@ -82,41 +80,21 @@ public class EnterParkingController implements Initializable {
             Helpers.showError(txtCarID, "Please enter a valid car number!");
             validate = false;
         }
-        if (exitDate.getValue() == null) //Makes sure dates and times are selected
-        {
-            // TODO: IMPORTANT: check validity with server
-            Helpers.showError(exitDate, "Please select valid dates for exit!");
-            validate = false;
-        }
-        if (validate) //Form valid, now check times
-        {
-            Date entry = new Date();
-            Date exit = Helpers.getDateFromControls(exitDate, cmbExitHour, cmbExitMinute);
-            if (exit.before(entry)) //Exit date is before entry
-            {
-                Helpers.showError(cmbExitMinute, "You can't exit in the past!");
-                Helpers.highlightControl(cmbExitHour);
-                Helpers.highlightControl(exitDate);
-                validate = false;
-            } else if (TimeUnit.HOURS.convert((exit.getTime() - entry.getTime()), TimeUnit.MILLISECONDS) < 1) {
-                Helpers.showError(cmbExitMinute, "You can't park for less than 1 hour!");
-                Helpers.highlightControl(cmbExitHour);
-                Helpers.highlightControl(exitDate);
-                validate = false;
-            }
-        }
+        validate = Helpers.validateTimes(null, _exitDateTime) && validate;
         if (validate)
         {
             //TODO: IMPORTANT: Check actual availability with Server
             lblAvailability.setTextFill(Color.GREEN);
             lblAvailability.setText("Available!");
             btnCreate.setDisable(false);
+            return true;
         }
         else
         {
             lblAvailability.setTextFill(Color.RED);
             lblAvailability.setText("Please fix form and try again.");
             btnCreate.setDisable(true);
+            return false;
         }
     }
 
@@ -126,22 +104,40 @@ public class EnterParkingController implements Initializable {
      */
     @FXML
     void enterParking(ActionEvent event) {
-        Date exitTime = Helpers.getDateFromControls(exitDate, cmbExitHour, cmbExitMinute);
+        if (!validateForm(event))
+            return;
+        Date exitTime = _exitDateTime.getDateTime();
         Order newOrder = new Order(0, Integer.valueOf(txtCarID.getText()),exitTime,0);
 
         try {
-            ArrayList<Object> data = new ArrayList<>();
-            data.add(newOrder);
-            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, data);
-            ObjectMapper mapper = new ObjectMapper();
-            String json = mapper.writeValueAsString(newMessage);
-            CPSClientGUI.getInstance().sendToServer(json);
+            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
+            Helpers.sendToServer(newMessage);
         }
         catch (JsonProcessingException je)
         {
             lblAvailability.setText("An error occurred!");
             lblAvailability.setTextFill(Color.RED);
         }
+    }
+
+    /**
+     * Fills an order based on a selection.
+     * @param event
+     */
+    @FXML
+    void fillOrder(ActionEvent event) {
+        Order selectedOrder = cmbOrder.getValue();
+        if (selectedOrder == null) //Clear
+        {
+            //TODO: Clear Form
+        } else
+        {
+            cmbParkingLot.getSelectionModel().select(selectedOrder.getParkingLotNumber()); //TODO: Should select actual object!
+            txtCarID.setText(selectedOrder.getCarID().toString());
+            _exitDateTime.setDateTime(selectedOrder.getEstimatedExitTime());
+            validateForm(event);
+        }
+
     }
 
     @FXML

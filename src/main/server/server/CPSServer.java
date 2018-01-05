@@ -1,11 +1,9 @@
 package server;
 
-import entity.Employee;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
 
-import java.io.IOException;
 import java.sql.SQLException;
 
 public class CPSServer extends AbstractServer
@@ -49,54 +47,55 @@ public class CPSServer extends AbstractServer
     (Object msg, ConnectionToClient client)
     {
         System.out.println(client.getInetAddress()+ ": " + msg);
-        String[] command = ((String) msg).split("\\s"); //Split command
-        try{
-            if (command.length == 0) //No command given. Fallback: Shouldn't happen!
-            {
-                client.sendToClient("Command not recognized!\n" + HELP_COMMANDS);
-            }
-            switch (command[0]){ //Check Command
-                case "query":
-                    if (command.length == 1) //No Params
-                    {
-                        client.sendToClient(dbController.ListTables());
-                    }
-                    else
-                    {
-                        client.sendToClient(dbController.GetData(command[1]));
-                    }
-                    break;
-                case "create":
-                    if (command.length != 5) //Not valid length
-                    {
-                        client.sendToClient("Error! Wrong number of parameters:\n" + HELP_CREATE);
-                    }
-                    else
-                    {
-                        switch (command[1]) { //Check what we're trying to create
-                            case "employee":
-                                Employee newEmployee = new Employee(command[2], command[3], command[4]);
-                                if (dbController.InsertEmployee(newEmployee))
-                                    client.sendToClient(String.format("Successfully created employee:\n%s", newEmployee.toString()));
-                                else
-                                    client.sendToClient("An error occurred adding the employee. See server for more details.");
-                                break;
-                            default:
-                                client.sendToClient("Can only create employees at this time!");
-                        }
-                    }
-                    break;
-                case "help": //Display help message
-                    client.sendToClient(HELP_COMMANDS);
-                    break;
-                default: //Unknown command
-                    client.sendToClient(String.format("Command \"%s\" is not recognized!\n%s", command[0], HELP_COMMANDS));
-            }
-        } catch (IOException ex)
-        {
-            System.err.printf("Failed sending message to client at %s", client.getInetAddress().toString());
-            ex.printStackTrace();
-        }
+        MessageHandler.handleMessage((String)msg);
+//
+//        String[] command = ((String) msg).split("\\s"); //Split command
+//        try{
+//            if (command.length == 0) //No command given. Fallback: Shouldn't happen!
+//            {
+//                client.sendToClient("Command not recognized!\n" + HELP_COMMANDS);
+//            }
+//            switch (command[0]){ //Check Command
+//                case "query":
+//                    if (command.length == 1) //No Params
+//                    {
+//                        client.sendToClient(dbController.ListTables());
+//                    }
+//                    else
+//                    {
+//                        client.sendToClient(dbController.GetData(command[1]));
+//                    }
+//                    break;
+//                case "create":
+//                    if (command.length != 5) //Not valid length
+//                    {
+//                        client.sendToClient("Error! Wrong number of parameters:\n" + HELP_CREATE);
+//                    }
+//                    else
+//                    {
+//                        switch (command[1]) { //Check what we're trying to create
+//                            case "employee":
+//                                Employee newEmployee = new Employee(command[2], command[3], command[4]);
+//                                if (dbController.InsertEmployee(newEmployee))
+//                                    client.sendToClient(String.format("Successfully created employee:\n%s", newEmployee.toString()));
+//                                else
+//                                    client.sendToClient("An error occurred adding the employee. See server for more details.");
+//                                break;
+//                            default:
+//                                client.sendToClient("Can only create employees at this time!");
+//                        }
+//                    }
+//                    break;
+//                case "help": //Display help message
+//                    client.sendToClient(HELP_COMMANDS);
+//                    break;
+//                default: //Unknown command
+//                    client.sendToClient(String.format("Command \"%s\" is not recognized!\n%s", command[0], HELP_COMMANDS));
+//    } catch (IOException ex)
+//    {
+//        System.err.printf("Failed sending message to client at %s", client.getInetAddress().toString());
+//        ex.printStackTrace();
+//    }
     }
 
 
