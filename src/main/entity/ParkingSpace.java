@@ -1,7 +1,5 @@
 package entity;
 
-import entity.Order;
-
 /**
  * A sample class of how a Parking Space class will look like in the system.
  *

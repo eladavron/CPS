@@ -1,12 +1,11 @@
 package controller;
 
+import entity.Billing.priceList;
 import entity.Order;
-import entity.ParkingLotNumber;
 import entity.PreOrder;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class OrderController {
 
@@ -17,15 +16,15 @@ public class OrderController {
     }
 
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
-    public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, ParkingLotNumber parkingLotNumber){
+    public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         _ordersList.add(newOrder);
         return newOrder;
     }
 
     //TODO : After entering with the car into the parking lot the entry time of Order (super) should be set!)
-    public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, ParkingLotNumber parkingLotNumber, Date estimatedEntryTime){
-        Double charge = calculateCharge(estimatedEntryTime, estimatedExitTime, PriceList.PRE_ORDER_ONE_TIME_PARKING);
+    public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
+        Double charge = BillingController.getInstance().calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceList.PRE_ORDER_ONE_TIME_PARKING);
         Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, charge, estimatedEntryTime);
         _ordersList.add(newPreOrder);
         return newPreOrder;
@@ -43,7 +42,6 @@ public class OrderController {
         return order;
     }
 
-
     //TODO : Add different options to reach the specific order maybe using the customer's profile or so.
     /**
      *  When a customer wants to finish his order (and move the car out) this function is called,
@@ -51,33 +49,9 @@ public class OrderController {
      * @param order : the customer's order to be finished
      * @return order : the finished order with the final price updated
      */
-    public Order finishOrder(Order order, PriceList pricePerHour){
+    public Order finishOrder(Order order, priceList priceType){
         order.setActualExitTime(new Date());
-        order.setPrice(calculateCharge(order.getEntryTime(), order.getActualExitTime(),pricePerHour));
+        order.setPrice(BillingController.getInstance().calculateParkingCharge(order.getEntryTime(), order.getActualExitTime(), priceType));
         return order;
-    }
-
-    //TODO : move to billing once the class is made.
-
-    public enum PriceList {
-        ONE_TIME_PARKING(5), PRE_ORDER_ONE_TIME_PARKING(4),
-        MONTHLY_REGULAR_SUBSCRIPTION(60*PRE_ORDER_ONE_TIME_PARKING.getPrice()),
-        MONTHLY_REGULAR_MULTIPLE_SUBSCRIPTIONS_PER_CAR(54*PRE_ORDER_ONE_TIME_PARKING.getPrice()),
-        MONTHLY_FULL_SUBSCRIPTION(72*PRE_ORDER_ONE_TIME_PARKING.getPrice())
-        ;
-        private final double price;
-
-        public double getPrice(){
-            return  this.price;
-        }
-
-        PriceList(double price) {
-            this.price = price;
-        }
-    }
-
-    private double calculateCharge(Date entryTime, Date exitTime, PriceList pricePerHour ){
-        double minutes = TimeUnit.MILLISECONDS.toMinutes(Math.abs(exitTime.getTime() - entryTime.getTime()));
-        return (minutes * pricePerHour.getPrice()) / 60 ;
     }
 }

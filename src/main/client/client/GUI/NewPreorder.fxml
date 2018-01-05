@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.*?>
-<?import javafx.geometry.*?>
-<?import java.lang.*?>
 <?import javafx.collections.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <?import java.lang.String?>
-
 <TitledPane animated="false" collapsible="false" prefHeight="408.0" prefWidth="537.0" stylesheets="@CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.NewPreorderController">
     <content>
         <VBox prefHeight="224.0" prefWidth="303.0" spacing="5.0">

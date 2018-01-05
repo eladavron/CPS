@@ -1,7 +1,10 @@
 package client;
 
-import java.io.*;
 import org.apache.commons.cli.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class CPSClient
 {

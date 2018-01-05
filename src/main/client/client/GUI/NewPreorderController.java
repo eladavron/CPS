@@ -4,7 +4,6 @@ package client.GUI;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.Message;
-import entity.ParkingLotNumber;
 import entity.PreOrder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -143,7 +142,7 @@ public class NewPreorderController implements Initializable {
     void createOrder(ActionEvent event) {
         Date entryTime = Helpers.getDateFromControls(entryDate, cmbEntryHour, cmbEntryMinute);
         Date exitTime = Helpers.getDateFromControls(exitDate, cmbExitHour, cmbExitMinute);
-        PreOrder newOrder = new PreOrder(0, Integer.valueOf(txtCarID.getText()), exitTime, new ParkingLotNumber(0), 0.0, entryTime); //TODO: Get Name from User, get Parking Lot from form, yada yada
+        PreOrder newOrder = new PreOrder(0, Integer.valueOf(txtCarID.getText()), exitTime, 0, 0.0, entryTime); //TODO: Get Name from User, get Parking Lot from form, yada yada
 
         try {
             ArrayList<Object> data = new ArrayList<>();

@@ -1,6 +1,6 @@
 package client;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * This class overrides some of the methods defined in the abstract

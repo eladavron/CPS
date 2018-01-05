@@ -2,8 +2,6 @@ package entity;
 
 import java.util.ArrayList;
 
-import entity.Order;
-
 
 /**
  * A sample class of how a Customer class will look like in the system.

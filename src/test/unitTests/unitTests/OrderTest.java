@@ -1,19 +1,19 @@
 package unitTests;
 
 import controller.OrderController;
+import entity.Billing.priceList;
 import entity.Order;
-import entity.ParkingLotNumber;
 import entity.PreOrder;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.util.Date;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderTest extends ApplicationTest {
     private OrderController orderController = new OrderController();
-    private ParkingLotNumber parkingTemp = new ParkingLotNumber(1);
+    private Integer parkingTemp = 1;
     private Order simpleOrder = new Order (0, 777, new Date(), parkingTemp);
     private Date estimated = new Date();
 
@@ -21,10 +21,13 @@ public class OrderTest extends ApplicationTest {
     public void make_simple_order_test(){
         Order actual = orderController.makeNewSimpleOrder(0, 777, estimated, parkingTemp);
         Order expected = simpleOrder;
+        expected.setEntryTime(actual.getEntryTime());
 
         assertThat(actual).isEqualTo(expected);
+
         estimated = new Date(estimated.getTime() + 5000);
         Order notExpected = new Order(0, 777, estimated, parkingTemp);
+
         assertThat(notExpected).isNotEqualTo(actual);
     }
 
@@ -49,9 +52,10 @@ public class OrderTest extends ApplicationTest {
         simpleOrder.setEntryTime(new Date(estimated.getTime() - 500000));
         Order notExpected = new Order(simpleOrder);
         expected  = new Order(simpleOrder);
-        Order actual = orderController.finishOrder(simpleOrder, OrderController.PriceList.ONE_TIME_PARKING);
+        Order actual = orderController.finishOrder(simpleOrder, priceList.ONE_TIME_PARKING);
         notExpected.setPrice(4);
         expected.setPrice(0.6666666666666666);
+        expected.setActualExitTime(actual.getActualExitTime());
 
         assertThat(actual).isEqualTo(expected);
         assertThat(actual).isNotEqualTo(notExpected);

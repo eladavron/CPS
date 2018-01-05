@@ -13,13 +13,13 @@ public class Order {
      */
     private static int _orderUIDCounter = 0;
 
-    private int _orderID;
+    private Integer _orderID;
     private Integer _carID;
     private Date _entryTime;
     private Date _estimatedExitTime;
     private Date _actualExitTime;
-    private ParkingLotNumber _parkingLotNumber;
-    private int _customerID;
+    private Integer _parkingLotNumber;
+    private Integer _customerID;
     private double _price;
 
     /**
@@ -34,7 +34,7 @@ public class Order {
      * @param estimatedExitTime Order's estimated exit time
      * @param parkingLotNumber
      */
-    public Order(int costumerID, Integer carID, Date estimatedExitTime, ParkingLotNumber parkingLotNumber) {
+    public Order(int costumerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) {
         this._orderID = _orderUIDCounter++;
         this._customerID = costumerID;
         this._carID = carID;
@@ -107,10 +107,10 @@ public class Order {
     }
 
     public Integer getParkingLotNumber() {
-        return _parkingLotNumber.getParkingLotNumber();
+        return _parkingLotNumber;
     }
 
-    public void setParkingLotNumber(ParkingLotNumber parkingLotNumber) {
+    public void setParkingLotNumber(Integer parkingLotNumber) {
         this._parkingLotNumber = parkingLotNumber;
     }
 
@@ -159,7 +159,7 @@ public class Order {
                 ", entry time=" + _entryTime +
                 ", estimated exit time=" + _estimatedExitTime +
                 ", actual exit time=" + _actualExitTime +
-                ", parking lot number=" + _parkingLotNumber.toString()+
+                ", parking lot number=" + _parkingLotNumber+
                 ", price=" + _price
                 ;
     }

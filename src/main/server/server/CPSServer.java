@@ -1,7 +1,8 @@
 package server;
 
 import entity.Employee;
-import ocsf.server.*;
+import ocsf.server.AbstractServer;
+import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;

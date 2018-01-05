@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Objects;
 
 /**
- * A sample class of how an Order will look in the system.
+ * An extension to Order's class with new an entry time and pre-charge.
  */
 
 public class PreOrder extends Order {
@@ -28,7 +28,7 @@ public class PreOrder extends Order {
      * @param charge Order's estimated price
      * @param estimatedEntryTime Order's estimated entry time
      */
-    public PreOrder(int customerID, Integer carID, Date estimatedExitTime, ParkingLotNumber parkingLotNumber, double charge, Date estimatedEntryTime) {
+    public PreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, double charge, Date estimatedEntryTime) {
         super(customerID, carID, estimatedExitTime, parkingLotNumber);
         this._charge = charge;
         this._estimatedEntryTime =  estimatedEntryTime;
