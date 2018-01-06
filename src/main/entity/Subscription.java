@@ -2,6 +2,8 @@ package entity;
 
 import java.util.Date;
 
+import static utils.TimeUtils.addTimeToDate;
+
 /**
  * A sample class of how a Subscription class will look like in the system.
  *
@@ -10,33 +12,44 @@ public class Subscription {
 	/**
 	 * Private attributes of Subscription class.
 	 */
-	private int _carID;
+    private static int _subscriptionUIDCounter = 0;
+
+    private Integer _subscriptionID;
+	private Integer _carID;
 	private Date _expiration;
-	
+
+	@Override
+	public String toString() {
+		return "Subscription " +
+				"car ID=" + _carID +
+				", expiration=" + _expiration;
+	}
+
 	/**
 	 * Class Constructor.
-	 * @param carid The subscription's car id.
-	 * @param expiration The expiration of the subscription.
+	 * @param carID The subscription's car id.
+	 *
 	 */
-	public Subscription(int carid, Date expiration) {
-		this._carID = carid;
-		this._expiration = expiration;
+	public Subscription(Integer carID) {
+	    this._subscriptionID = _subscriptionUIDCounter++;
+		this._carID = carID;
+		this._expiration = addTimeToDate(new Date(), 30);
 	}
-	
+
 	/**
 	 * Get the subscription's car id
 	 * @return The subscription's car id
 	 */
-	public int getCarid() {
+	public int getCarID() {
 		return _carID;
 	}
 
 	/**
 	 * Set the subscription's car id
-	 * @param _carid Car ID to set the subscription's car id
+	 * @param carID Car ID to set the subscription's car id
 	 */
-	public void setCarid(int _carid) {
-		this._carID = _carid;
+	public void setCarID(int carID) {
+		this._carID = carID;
 	}
 
 	/**
@@ -46,14 +59,14 @@ public class Subscription {
 	public Date getExpiration() {
 		return _expiration;
 	}
-	
+
 	/**
 	 * Set the expiration of the subscription.
-	 * @param _expiration The expiration of the subscription.
+	 * @param expiration The expiration of the subscription.
 	 */
-	public void setExpiration(Date _expiration) {
-		this._expiration = _expiration;
+	public void setExpiration(Date expiration) {
+		this._expiration = expiration;
 	}
 
-	
+
 }

@@ -32,6 +32,7 @@ public class BillingController {
     public static BillingController getInstance() {
         return instance;
     }
+
     public double calculateParkingCharge(Date entryTime, Date exitTime, Billing.priceList priceType){
         double minutes = TimeUnit.MILLISECONDS.toMinutes(Math.abs(exitTime.getTime() - entryTime.getTime()));
         return (minutes * priceType.getPrice()) / 60 ;
