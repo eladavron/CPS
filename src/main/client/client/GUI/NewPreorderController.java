@@ -1,10 +1,7 @@
 package client.GUI;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import entity.Message;
 import entity.ParkingLot;
-import entity.PreOrder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,7 +10,6 @@ import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
@@ -106,20 +102,19 @@ public class NewPreorderController implements Initializable {
     void createOrder(ActionEvent event) {
         if (!validateForm(event))
             return;
-
-        Date entryTime = _entryDateTime.getDateTime();
-        Date exitTime = _exitDateTime.getDateTime();
-        PreOrder newOrder = new PreOrder(0, Integer.valueOf(txtCarID.getText()), exitTime, 0, 0.0, entryTime); //TODO: Get Name from User, get Parking Lot from form, yada yada
-
-        try {
-            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);
-            Helpers.sendToServer(newMessage);
-        }
-        catch (JsonProcessingException je)
-        {
-            lblAvailability.setText("An error occurred!");
-            lblAvailability.setTextFill(Color.RED);
-        }
+//        WaitScreenController waitScreenController = new WaitScreenController();
+//        Task<Message> createOrder = new Task<Message>() {
+//            @Override
+//            protected Message call() throws Exception {
+//                updateMessage("Sending order...");
+//                Date entryTime = _entryDateTime.getDateTime();
+//                Date exitTime = _exitDateTime.getDateTime();
+//                PreOrder newOrder = new PreOrder(0, Integer.valueOf(txtCarID.getText()), exitTime, 0, 0.0, entryTime); //TODO: Get Name from User, get Parking Lot from form, yada yada
+//                Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);
+//                CPSClientGUI.getInstance().sendToServer(newMessage);
+//                updateMessage("Sent, waiting for server...");
+//            }
+//        }
 
     }
 

@@ -1,5 +1,9 @@
 package client;
 
+import client.GUI.CPSClientGUI;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import entity.Message;
+
 import java.io.IOException;
 
 /**
@@ -25,6 +29,7 @@ public class ClientController extends ocsf.client.AbstractClient
         openConnection();
     }
 
+
     /**
      * This method handles all data that comes in from the cps.server.
      *
@@ -32,15 +37,17 @@ public class ClientController extends ocsf.client.AbstractClient
      */
     public void handleMessageFromServer(Object msg)
     {
-        //TODO: Parse Server Messages
+        String json = (String) msg;
+        Message receivedMessage = new Message(json);
+        CPSClientGUI.addMessageToQueue(receivedMessage);
     }
 
     /**
-     * This method handles all data coming from the UI
-     *
-     * @param message The message from the UI.
+     * Packages a message object nicely and sends it to the server.
+     * @param message The message object to send
+     * @throws JsonProcessingException When the message isn't converted ok.
      */
-    public void handleMessageFromClientUI(String message) throws IOException {
-        sendToServer(message);
+    public void sendMessageToServer(Message message) throws IOException {
+        sendToServer(message.toJson());
     }
 }

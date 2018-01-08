@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -7,6 +12,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+
 <AnchorPane fx:id="guiRoot" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.GUIRootController">
    <children>
       <VBox prefHeight="575.0" prefWidth="600.0" styleClass="root" stylesheets="@CSS/material.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -36,10 +42,16 @@
             <AnchorPane fx:id="pageRoot" prefHeight="380.0" prefWidth="600.0" VBox.vgrow="ALWAYS" />
             <BorderPane prefHeight="47.0" prefWidth="90.0" styleClass="card">
                <right>
-                  <Button fx:id="btnExit" cancelButton="true" mnemonicParsing="false" onAction="#promptExit" prefWidth="68.0" text="Exit" BorderPane.alignment="CENTER" />
+                  <Button fx:id="btnExit" cancelButton="true" mnemonicParsing="false" onAction="#promptExit" prefWidth="68.0" text="Exit" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets right="10.0" />
+                     </BorderPane.margin></Button>
                </right>
                <left>
-                  <Label fx:id="lblStatus" BorderPane.alignment="CENTER" />
+                  <Label fx:id="lblStatus" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets left="10.0" />
+                     </BorderPane.margin></Label>
                </left>
             </BorderPane>
          </children>

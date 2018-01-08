@@ -1,8 +1,5 @@
 package client.GUI;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import entity.Message;
 import entity.Order;
 import entity.ParkingLot;
 import javafx.event.EventHandler;
@@ -25,16 +22,7 @@ public class Helpers {
 
     private static ArrayList<Node> _highlightedControllers = new ArrayList<>();
 
-    /**
-     * Packages a message object nicely and sends it to the server.
-     * @param message The message object to send
-     * @throws JsonProcessingException When the message isn't converted ok.
-     */
-    public static void sendToServer(Message message) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(message);
-        CPSClientGUI.getInstance().sendToServer(json);
-    }
+
 
     /**
      * Validates that the times aren't reversed or in the past or something.

@@ -1,6 +1,5 @@
 package client.GUI;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import entity.Message;
 import entity.Order;
 import entity.ParkingLot;
@@ -108,16 +107,8 @@ public class EnterParkingController implements Initializable {
             return;
         Date exitTime = _exitDateTime.getDateTime();
         Order newOrder = new Order(0, Integer.valueOf(txtCarID.getText()),exitTime,0);
-
-        try {
-            Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
-            Helpers.sendToServer(newMessage);
-        }
-        catch (JsonProcessingException je)
-        {
-            lblAvailability.setText("An error occurred!");
-            lblAvailability.setTextFill(Color.RED);
-        }
+        Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
+        CPSClientGUI.sendToServer(newMessage);
     }
 
     /**

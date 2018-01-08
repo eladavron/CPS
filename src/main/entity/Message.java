@@ -1,6 +1,11 @@
 package entity;
 
+import Exceptions.InvalidMessageException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * A message object between client and server
@@ -8,9 +13,19 @@ import java.util.ArrayList;
  * @author Aviad Bar-David
  */
 public class Message {
-    public enum MessageType { QUERY, CREATE, UPDATE, DELETE };
+    public enum MessageType {
+        LOGIN,
+        QUERY,
+        CREATE,
+        UPDATE,
+        DELETE,
+        QUEUED,
+        FINISHED,
+        FAILED
+    };
     public enum DataType { STRING, ORDER, PREORDER, USER, PARKING_LOT };
 
+    private long _sID;
     private ArrayList<Object> _data;
     private MessageType _type;
     private DataType _dataType;
@@ -18,12 +33,60 @@ public class Message {
     public Message(){}
 
     public Message(MessageType type, DataType dataType, Object...data) {
+        Random rnd = new Random();
+        _sID = rnd.nextLong();
         _type = type;
         _dataType = dataType;
         _data = new ArrayList<Object>();
         for (Object object : data)
         {
             _data.add(object);
+        }
+    }
+
+    public Message(String json) {
+        //TODO: Validate JSON string
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Message msg = mapper.readValue(json, Message.class);
+            _sID = msg.getSID();
+            _type = msg.getType();
+            _dataType = msg.getDataType();
+            _data = new ArrayList<Object>();
+            for (Object dataObject : msg.getData())
+            {
+                switch (_dataType) {
+                    case STRING:
+                        _data.add(dataObject);
+                        break;
+                    case PREORDER:
+                        PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
+                        _data.add(preOrder);
+                        break;
+                    case ORDER:
+                        Order order = mapper.convertValue(dataObject, Order.class);
+                        _data.add(order);
+                        break;
+                    case USER:
+                        User user = mapper.convertValue(dataObject, User.class);
+                        _data.add(user);
+                        break;
+                    case PARKING_LOT:
+                        ParkingLot parkingLot = mapper.convertValue(dataObject, ParkingLot.class);
+                        _data.add(parkingLot);
+                        break;
+                        default:
+                            throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
+                }
+            }
+        }
+        catch (InvalidMessageException im)
+        {
+            throw im;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidMessageException("Failed to process message:\n" + json);
         }
     }
 
@@ -49,5 +112,15 @@ public class Message {
 
     public void setDataType(DataType _dataType) {
         this._dataType = _dataType;
+    }
+
+    public long getSID() { return _sID; }
+
+    public void setSID(long sID) { this._sID = sID ;}
+
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(this);
+        return json;
     }
 }

@@ -4,6 +4,7 @@ import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 public class CPSServer extends AbstractServer
@@ -47,7 +48,11 @@ public class CPSServer extends AbstractServer
     (Object msg, ConnectionToClient client)
     {
         System.out.println(client.getInetAddress()+ ": " + msg);
-        MessageHandler.handleMessage((String)msg);
+        try {
+            MessageHandler.handleMessage((String)msg, client);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 //
 //        String[] command = ((String) msg).split("\\s"); //Split command
 //        try{
