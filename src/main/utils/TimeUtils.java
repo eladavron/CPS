@@ -6,16 +6,24 @@ import java.util.Date;
 public class TimeUtils {
 
     /**
-     * @param time The time object to add days to.
-     * @param daysToAdd the amount of days to add to "time"
-     * @return an updated time.
+     * An enum of types of time units.
      */
-    public static Date addTimeToDate(Date time, Integer daysToAdd)
-    {
-        Calendar cal = Calendar.getInstance(); //Gets a Calendar instance
-        cal.setTime(time); //Sets the instance to the now object you created earlier
-        cal.add(Calendar.DAY_OF_MONTH, daysToAdd); //Adds 30 days to the calendar, which will now be at today+30
-        return cal.getTime(); //Returns a Date object from the Calendar
-    }
+    public static enum Units {
+        DAYS(Calendar.DAY_OF_MONTH), HOURS(Calendar.HOUR_OF_DAY), MINUTES(Calendar.MINUTE);
 
+        private final int value;
+        private Units(int value)
+        {
+            this.value = value;
+        }
+    };
+
+    public static Date addTime(Date original, Units unit, int num)
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(original);
+        int field;
+        cal.add(unit.value, num);
+        return cal.getTime();
+    }
 }

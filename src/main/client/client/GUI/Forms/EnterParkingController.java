@@ -1,0 +1,146 @@
+package client.GUI.Forms;
+
+import client.GUI.CPSClientGUI;
+import client.GUI.Helpers.DateTimeCombo;
+import client.GUI.Helpers.Common;
+import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.RunnableWithMessage;
+import entity.Message;
+import entity.Order;
+import entity.ParkingLot;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
+import java.util.ResourceBundle;
+
+/**
+ * The controller for entering a parking session.
+ */
+public class EnterParkingController implements Initializable {
+
+    @FXML
+    private Button btnBack;
+
+    @FXML
+    private ComboBox<Order> cmbOrder;
+
+    @FXML
+    private ComboBox<String> cmbExitMinute;
+
+    @FXML
+    private ComboBox<ParkingLot> cmbParkingLot;
+
+    @FXML
+    private Button btnCreate;
+
+    @FXML
+    private TextField txtCarID;
+
+    @FXML
+    private ComboBox<String> cmbExitHour;
+
+    @FXML
+    private DatePicker exitDate;
+
+    private DateTimeCombo _exitDateTime;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        btnBack.setTooltip(new Tooltip("Back"));
+        Common.initParkingLots(cmbParkingLot);
+        Common.initOrders(cmbOrder);
+        cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());
+        _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
+    }
+
+    /**
+     * Validates the form. Highlights any problematic fields and displays an error message if fails.
+     * @return true if form is valid, false otherwise.
+     */
+    private boolean validateForm() {
+        Common.clearAllHighlighted();
+        boolean validate = true;
+        if (cmbParkingLot.getValue() == null) //Makes sure parking lot is selected
+        {
+            Common.showError(cmbParkingLot, "Please select parking lot!");
+            validate = false;
+        }
+        if (!txtCarID.getText().matches("\\d{7,8}")) //Makes sure car ID is entered and valid
+        {
+            Common.showError(txtCarID, "Please enter a valid car number!");
+            validate = false;
+        }
+        return Common.validateTimes(null, _exitDateTime) && validate;
+    }
+
+    /**
+     * A new parking session is created by creating an "Order".
+     * @param event the action of clicking the "Enter Parking" button.
+     */
+    @FXML
+    void enterParking(ActionEvent event) {
+        if (!validateForm())
+            return;
+
+        WaitScreen waitScreen = new WaitScreen();
+        Date exitTime = _exitDateTime.getDateTime();
+        Integer parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getUID();
+        Order newOrder = new Order(CPSClientGUI.getCurrentUser().getUID(), Integer.valueOf(txtCarID.getText()),exitTime,parkingLotNumber);
+        Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
+
+        RunnableWithMessage onSuccess = new RunnableWithMessage() {
+            @Override
+            public void run() {
+                Order order = (Order) getIncoming().getData().get(0);
+                waitScreen.showSuccess("Car Parked!", "Order details:\n" +
+                        "Customer ID: " + order.getCostumerID() + "\n" +
+                        "Order ID: " + order.getOrderID() +"\n" +
+                        "Parking Lot ID: " + order.getParkingLotNumber() +"\n" +
+                        "Parking Start: " + order.getEntryTime() + "\n" +
+                        "Estimated Exit: " + order.getEstimatedExitTime());
+                waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
+            }
+        };
+        RunnableWithMessage onFailure = new RunnableWithMessage() {
+            @Override
+            public void run() {
+                waitScreen.showError("Parking Failed!", (String)getIncoming().getData().get(0));
+            }
+        };
+        MessageTasker createOrder = new MessageTasker("Attempting to park...",
+                "Checking availability...",
+                "Parking successful!",
+                "Parking failed!",
+                newMessage,
+                onSuccess,
+                onFailure);
+        waitScreen.run(createOrder, 10);
+    }
+
+    /**
+     * Fills the order once selected in the drop down menu
+     */
+    private void fillOrder() {
+        Order selectedOrder = cmbOrder.getValue();
+        if (selectedOrder == null) //Clear
+        {
+            //TODO: Clear Form
+        } else
+        {
+            cmbParkingLot.getSelectionModel().select(selectedOrder.getParkingLotNumber()); //TODO: Should select actual object!
+            txtCarID.setText(selectedOrder.getCarID().toString());
+            _exitDateTime.setDateTime(selectedOrder.getEstimatedExitTime());
+            validateForm();
+        }
+    }
+
+    @FXML
+    void returnToMain(ActionEvent event) throws IOException {
+        CPSClientGUI.backToMain();
+    }
+}

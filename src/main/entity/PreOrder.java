@@ -34,6 +34,15 @@ public class PreOrder extends Order {
         this._estimatedEntryTime =  estimatedEntryTime;
     }
 
+    /**
+     * Copy Constructor
+     * @param other Other PreOrder to copy
+     */
+    public PreOrder(PreOrder other) {
+        super(other.getCostumerID(), other.getCarID(), other.getEstimatedExitTime(), other.getParkingLotNumber());
+        this._charge = other.getCharge();
+        this._estimatedEntryTime = other.getEstimatedEntryTime();
+    }
 
 
     @Override

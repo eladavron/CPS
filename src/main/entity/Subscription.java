@@ -1,8 +1,10 @@
 package entity;
 
+import utils.TimeUtils;
+
 import java.util.Date;
 
-import static utils.TimeUtils.addTimeToDate;
+import static utils.TimeUtils.addTime;
 
 /**
  * A sample class of how a Subscription class will look like in the system.
@@ -25,7 +27,7 @@ public class Subscription {
 	public Subscription(Integer carID) {
 	    this._subscriptionID = _subscriptionUIDCounter++;
 		this._carID = carID;
-		this._expiration = addTimeToDate(new Date(), 30);
+		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 30);
 	}
 	
 	/**

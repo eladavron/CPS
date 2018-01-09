@@ -1,7 +1,6 @@
 package entity;
 
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * A sample class of how an Employee class will look in the system.
@@ -20,7 +19,7 @@ public class Employee extends User{
      * @param email Employee's email
      * @param password Employee's Password
      */
-    public Employee(long uID, String name, String email, String password) {
+    public Employee(Integer uID, String name, String email, String password) {
         super(uID,name,email);
         this._password = password;
         this._creationDate = new Date();

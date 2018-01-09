@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 /**
@@ -30,21 +31,26 @@ public class Message {
     private MessageType _type;
     private DataType _dataType;
 
-    public Message(){}
+    public Message(){
+        _data = new ArrayList<>();
+    }
 
-    public Message(MessageType type, DataType dataType, Object...data) {
+    public Message(MessageType type, DataType dataType)
+    {
         Random rnd = new Random();
         _sID = rnd.nextLong();
         _type = type;
         _dataType = dataType;
-        _data = new ArrayList<Object>();
-        for (Object object : data)
-        {
-            _data.add(object);
-        }
+        _data = new ArrayList<>();
     }
 
-    public Message(String json) {
+    public Message(MessageType type, DataType dataType, Object...data) {
+        this(type, dataType);
+        _data = new ArrayList<Object>();
+        Collections.addAll(_data, data);
+    }
+
+    public Message(String json) throws InvalidMessageException {
         //TODO: Validate JSON string
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -53,30 +59,35 @@ public class Message {
             _type = msg.getType();
             _dataType = msg.getDataType();
             _data = new ArrayList<Object>();
-            for (Object dataObject : msg.getData())
-            {
-                switch (_dataType) {
-                    case STRING:
-                        _data.add(dataObject);
-                        break;
-                    case PREORDER:
-                        PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
-                        _data.add(preOrder);
-                        break;
-                    case ORDER:
-                        Order order = mapper.convertValue(dataObject, Order.class);
-                        _data.add(order);
-                        break;
-                    case USER:
-                        User user = mapper.convertValue(dataObject, User.class);
-                        _data.add(user);
-                        break;
-                    case PARKING_LOT:
-                        ParkingLot parkingLot = mapper.convertValue(dataObject, ParkingLot.class);
-                        _data.add(parkingLot);
-                        break;
+            if (_type == MessageType.QUERY) {
+                User sender = mapper.convertValue(msg.getData().get(0), User.class);
+                _data.add(sender);
+            }
+            else {
+                for (Object dataObject : msg.getData()) {
+                    switch (_dataType) {
+                        case STRING:
+                            _data.add(dataObject);
+                            break;
+                        case PREORDER:
+                            PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
+                            _data.add(preOrder);
+                            break;
+                        case ORDER:
+                            Order order = mapper.convertValue(dataObject, Order.class);
+                            _data.add(order);
+                            break;
+                        case USER:
+                            User user = mapper.convertValue(dataObject, User.class);
+                            _data.add(user);
+                            break;
+                        case PARKING_LOT:
+                            ParkingLot parkingLot = mapper.convertValue(dataObject, ParkingLot.class);
+                            _data.add(parkingLot);
+                            break;
                         default:
                             throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
+                    }
                 }
             }
         }
@@ -94,8 +105,14 @@ public class Message {
         return _data;
     }
 
-    public void setData(ArrayList<Object> _data) {
-        this._data = _data;
+    public void setData(ArrayList<Object> data)
+    {
+        this._data = data;
+    }
+
+    public void addData(Object...data)
+    {
+        Collections.addAll(this._data, data);
     }
 
     public MessageType getType() {

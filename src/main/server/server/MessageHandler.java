@@ -1,11 +1,15 @@
 package server;
 
 import Exceptions.InvalidMessageException;
+import Exceptions.NotImplementedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import entity.*;
 import ocsf.server.ConnectionToClient;
+import utils.TimeUtils;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * Handles messages from client GUI:
@@ -16,7 +20,7 @@ import java.io.IOException;
  *  @author Aviad Bar-David
  */
 public class MessageHandler {
-//TODO:: add validation for message
+    //TODO:: add validation for message
     private static ObjectMapper mapper = new ObjectMapper();
 
     public static void sendToClient(Message message, ConnectionToClient client) throws IOException {
@@ -36,15 +40,16 @@ public class MessageHandler {
             }else{
                 throw new InvalidMessageException("Failed to process message " + msg.getSID(), msg.getSID());
             }
-                switch(msgType)
+            switch(msgType)
             {
                 case LOGIN:
                     handleLogin(msg, client);
                     break;
                 case QUERY:
+                    handleQueries(msg, client);
                     break;
                 case CREATE:
-                    handleCreation(msg);
+                    handleCreation(msg, client);
                     break;
                 case DELETE:
                     break;
@@ -53,7 +58,6 @@ public class MessageHandler {
                 default:
                     return false;
             }
-
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -61,6 +65,8 @@ public class MessageHandler {
             Message replyInvalid = new Message(Message.MessageType.FAILED, Message.DataType.STRING, e.getMessage());
             replyInvalid.setSID(e.getSID());
             sendToClient(replyInvalid, client);
+            e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -79,27 +85,74 @@ public class MessageHandler {
         sendToClient(loginResponse, client);
     }
 
+    private static boolean handleQueries(Message query, ConnectionToClient client) throws IOException {
 
-    private static boolean handleQueries(Message query)
-    {
+        /**
+         * Important!
+         * In all queries, the first data object in the request will be the user requesting the query.
+         */
+
+        Message response = new Message();
+        response.setDataType(query.getDataType());
+        User user = (User)query.getData().get(0);
+
+        switch (query.getDataType())
+        {
+            case PREORDER:
+
+                //TODO: Query DB for all orders for this users.
+                //In the meantime, here's a dummy response:
+                PreOrder dummyOrder1 = new PreOrder(user.getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0, 0.0, new Date());
+                PreOrder dummyOrder2 = new PreOrder(user.getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1, 0.0, new Date());
+                response.addData(dummyOrder1, dummyOrder2);
+                break;
+
+            case PARKING_LOT:
+                //TODO: Query DB for available parking lots.
+                //In the meantime, here's a dummy response:
+                ParkingLot dummyLot1 = new ParkingLot("Haifa");
+                ParkingLot dummyLot2 = new ParkingLot("Tel-Aviv");
+                ParkingLot dummbyLot3 = new ParkingLot("Petah-Tikva");
+                response.addData(dummyLot1, dummyLot2, dummbyLot3);
+                break;
+            case STRING:
+                break;
+            case ORDER:
+                break;
+            case USER:
+                break;
+            default:
+                throw new NotImplementedException("Unknown data type: " + query.getDataType().toString());
+
+        }
+        response.setType(Message.MessageType.FINISHED);
+        response.setSID(query.getSID());
+        sendToClient(response, client);
         return true;
     }
 
-    private static boolean handleCreation(Message creation)
-    {
+    private static boolean handleCreation(Message creation, ConnectionToClient client) throws IOException {
+        Message reply = new Message();
         switch(creation.getDataType())
         {
             case USER:
-                User user = new User(707070, "dum-dum-dummy", "weCallYou@DontCallUs.com");
+                User user = new User(707070, "dum-dum-dummy", "weCallYou@DontCallUs.com"); //TODO: Get from server!
                 break;
             case ORDER:
+                //TODO: return order from DB
+                //Meanwhile, here's a dummy
                 Order order = mapper.convertValue(creation.getData().get(0),Order.class);
-                Message orderReply = new Message(Message.MessageType.FINISHED, Message.DataType.ORDER, order);
+                order.setOrderID(new Random().nextInt()); //TODO: Get from server! This is a dummy response!
+                reply = new Message(Message.MessageType.FINISHED, Message.DataType.ORDER, order);
+
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(creation.getData().get(0), PreOrder.class);
                 //TODO: return pre-order from DB
-                Message preorderReply = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, preorder);
+                //Meanwhile, here's a dummy
+                PreOrder dummyOrder = new PreOrder(preorder);
+                dummyOrder.setOrderID(new Random().nextInt()); //TODO: Get from database! This is a dummy response!
+                reply = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, dummyOrder);
                 break;
             case STRING:
                 break;
@@ -112,6 +165,8 @@ public class MessageHandler {
             default:
                 return false;
         }
+        reply.setSID(creation.getSID());
+        sendToClient(reply, client);
         return true;
     }
 
@@ -124,4 +179,4 @@ public class MessageHandler {
     {
         return true;
     }
-    }
+}

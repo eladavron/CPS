@@ -1,8 +1,6 @@
 package entity;
 
 import java.util.ArrayList;
-import entity.Order;
-import entity.Subscription;
 
 
 /**
@@ -25,7 +23,7 @@ public class Customer extends User{
 	 * @param carIDList Customer's cars' ids list.
 	 * @param subscriptionList Customer's subscriptions' list.
 	 */
-	public Customer(long uID, String name, String email, ArrayList<Integer> carIDList, ArrayList<Subscription> subscriptionList) {
+	public Customer(Integer uID, String name, String email, ArrayList<Integer> carIDList, ArrayList<Subscription> subscriptionList) {
 		super(uID,name,email);
 		this._carIDList = carIDList;
 		this._subscriptionList = new ArrayList<>();

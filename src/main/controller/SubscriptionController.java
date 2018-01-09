@@ -3,11 +3,12 @@ package controller;
 import entity.FullSubscription;
 import entity.RegularSubscription;
 import entity.Subscription;
+import utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-import static utils.TimeUtils.addTimeToDate;
+import static utils.TimeUtils.addTime;
 
 /**
  * Controller responsible of making new Subscriptions (full or regular), renew old ones,
@@ -78,7 +79,7 @@ public class SubscriptionController {
      */
     public void renewSubscription(Subscription subscriptionToRenew)
     {
-        subscriptionToRenew.setExpiration(addTimeToDate(new Date(), 30));
+        subscriptionToRenew.setExpiration(addTime(new Date(), TimeUtils.Units.DAYS, 30));
     }
 
 }

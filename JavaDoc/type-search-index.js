@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"client.GUI","l":"CPSClientGUI"}]

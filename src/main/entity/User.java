@@ -10,7 +10,7 @@ public class User {
 	/**
      * Private attributes
      */
-	protected long _uID = -1;
+	protected Integer _uID = -1;
 	protected String _name;
 	protected String _email;
 	
@@ -20,7 +20,7 @@ public class User {
 	 * @param name User's name
 	 * @param email User's email
 	 */
-	public User(long uID, String name, String email){
+	public User(Integer uID, String name, String email){
 		this._uID = uID;
 		this._name = name;
 		this._email = email;
@@ -35,7 +35,7 @@ public class User {
 	 * Get the user's UID.
 	 * @return User's UID
 	 */
-	public long getUID() {
+	public Integer getUID() {
 		return _uID;
 	}
 	
@@ -43,7 +43,7 @@ public class User {
 	 * Set the user's UID.
 	 * @param uID uid to set to user's uid.
 	 */
-	public void setUID(long uID) {
+	public void setUID(Integer uID) {
 		this._uID = uID;
 	}
 	
