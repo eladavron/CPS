@@ -1,57 +1,35 @@
 package entity;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * A sample class of how an Employee class will look in the system.
  */
-public class Employee {
+public class Employee extends User{
     /**
      * Private properties
      */
-    private int _uid = -1;
-    private String _name;
-    private String _email;
     private String _password;
     private Date _creationDate;
 
     /**
      * Constructor
-     * @param _name Employee Name
-     * @param _email Employee Email
-     * @param _password Employee Password
+     * @param uID Employee's UID
+     * @param name Employee's name
+     * @param email Employee's email
+     * @param password Employee's Password
      */
-    public Employee(String _name, String _email, String _password) {
-        this._name = _name;
-        this._email = _email;
-        this._password = _password;
+    public Employee(long uID, String name, String email, String password) {
+        super(uID,name,email);
+        this._password = password;
+        this._creationDate = new Date();
     }
-
-    public int getUid() {
-        return _uid;
-    }
-
-    public void setUid(int uid) {
-        this._uid = uid;
-    }
-
-    public String getName() {
-        return _name;
-    }
-
-    public void setName(String name) {
-        this._name = name;
-    }
-
-    public String getEmail() {
-        return _email;
-    }
-
-    public void setEmail(String email) {
-        this._email = email;
-    }
-
-    public String getPassword() {
+   
+    /**
+     * Getters and Setters.
+     */
+	public String getPassword() {
         return _password;
     }
 
@@ -67,12 +45,24 @@ public class Employee {
         this._creationDate = creationDate;
     }
 
-    /**
-     * A string representation of the Employee.
-     * @return A representation formatted: "Employee No. [UID] [NAME] [EMAIL]"
-     */
+
     @Override
     public String toString() {
-        return String.format("Employee No. %d: %s (%s)", this._uid, this._name, this._email);
+        return super.toString() +
+                ", " +
+                "user type = EMPLOYEE ."; 
+    }
+	
+	@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Employee)) return false;
+        if (!super.equals(o)) return false;
+        Employee employee = (Employee) o;
+        return (super._name.equals(employee._name)) &&
+                (super._email.equals(employee._email)) &&
+                (super._uID == employee._uID) &&
+        		(_password.equals(employee._password)) &&
+        		(_creationDate.equals(employee._creationDate));
     }
 }

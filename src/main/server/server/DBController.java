@@ -184,7 +184,7 @@ public class DBController {
             else
                 throw new SQLException("Something went wrong retrieving the employee just inserted!");
 
-            employee.setUid(uid);
+            employee.setUID(uid);
             employee.setCreationDate(creationDate);
 
             return true;

@@ -13,17 +13,9 @@ public class Subscription {
 	 * Private attributes of Subscription class.
 	 */
     private static int _subscriptionUIDCounter = 0;
-
     private Integer _subscriptionID;
 	private Integer _carID;
 	private Date _expiration;
-
-	@Override
-	public String toString() {
-		return "Subscription " +
-				"car ID=" + _carID +
-				", expiration=" + _expiration;
-	}
 
 	/**
 	 * Class Constructor.
@@ -34,6 +26,20 @@ public class Subscription {
 	    this._subscriptionID = _subscriptionUIDCounter++;
 		this._carID = carID;
 		this._expiration = addTimeToDate(new Date(), 30);
+	}
+	
+	/**
+	 * @return the _subscriptionID
+	 */
+	public Integer getSubscriptionID() {
+		return _subscriptionID;
+	}
+
+	/**
+	 * @param _subscriptionID the _subscriptionID to set
+	 */
+	public void setSubscriptionID(Integer subscriptionID) {
+		this._subscriptionID = subscriptionID;
 	}
 
 	/**
@@ -67,6 +73,21 @@ public class Subscription {
 	public void setExpiration(Date expiration) {
 		this._expiration = expiration;
 	}
+	
+	@Override
+	public String toString() {
+		return "Subscription " +
+				"car ID=" + _carID +
+				", expiration=" + _expiration;
+	}
 
-
+	@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Subscription)) return false;
+        Subscription subscription = (Subscription) o;
+        return (_subscriptionUIDCounter == subscription._subscriptionID) &&
+        		(_carID == subscription._carID) &&
+        		(_expiration == subscription._expiration);
+    }
 }
