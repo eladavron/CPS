@@ -11,7 +11,7 @@ public class Order {
     /**
      * Private properties
      */
-    private static int _orderUIDCounter = 0;
+    private static int _orderUIDCounter = -1;
 
     private Integer _orderID;
     private Integer _carID;
@@ -20,6 +20,7 @@ public class Order {
     private Date _actualExitTime;
     private Integer _parkingLotNumber;
     private Integer _customerID;
+    private Date _creationTime;
     private double _price;
 
     /**
@@ -35,12 +36,13 @@ public class Order {
      * @param parkingLotNumber
      */
     public Order(int costumerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) {
-        this._orderID = _orderUIDCounter++;
+        //this._orderID = _orderUIDCounter++;
         this._customerID = costumerID;
         this._carID = carID;
         this._estimatedExitTime = estimatedExitTime;
         this._entryTime = new Date();
         this._parkingLotNumber = parkingLotNumber;
+
     }
 
     public Order(Order other) {
@@ -130,6 +132,13 @@ public class Order {
     public void setOrderID(int orderID) {
         this._orderID = orderID;
     }
+    public Date getCreationTime() {
+        return _creationTime;
+    }
+    public void setCreationTime(Date creationTime) {
+        this._creationTime = creationTime;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -142,7 +151,8 @@ public class Order {
                 Objects.equals(_entryTime, order._entryTime) &&
                 Objects.equals(_estimatedExitTime, order._estimatedExitTime) &&
                 Objects.equals(_actualExitTime, order._actualExitTime) &&
-                Objects.equals(_parkingLotNumber, order._parkingLotNumber);
+                Objects.equals(_parkingLotNumber, order._parkingLotNumber) &&
+                Objects.equals(_creationTime, order._creationTime);
     }
 
     @Override
@@ -160,7 +170,8 @@ public class Order {
                 ", estimated exit time=" + _estimatedExitTime +
                 ", actual exit time=" + _actualExitTime +
                 ", parking lot number=" + _parkingLotNumber+
-                ", price=" + _price
+                ", price=" + _price+
+                ", creation time=" +_creationTime
                 ;
     }
 

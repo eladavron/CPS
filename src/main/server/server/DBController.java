@@ -1,6 +1,7 @@
 package server;
 
 import entity.Employee;
+import entity.Order;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.Collections;
  */
 public class DBController {
         private static Connection db_conn; //The connection to the database.
-        private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database.
+        private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
 
     /**
      * Create a Database Controller instance
@@ -190,6 +191,41 @@ public class DBController {
             return true;
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", employee, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Insert new order / preOrder to DB
+     * @param order order object to insert
+     * @return True if successful, False otherwise.
+     */
+    public boolean InsertOrder(Order order){
+        try {
+            Statement stmt = db_conn.createStatement();
+            Date creationDate;
+            int uid = -1;
+            stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime, exitTimeEstimated, exitTimeActual, price) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+                    order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(), order.getEntryTime(), order.getEstimatedExitTime(), order.getActualExitTime(), order.getPrice()), Statement.RETURN_GENERATED_KEYS);
+            //PreparedStatement insertOrder = con.preaparedStatement("INSERT INTO ORDERS (idCar, idCustomer, idParkingLot, entryTime, exitTimeEstimated, exitTimeActual, price) "+
+             //                                                                   " VALUES (?, ?, ?, ?, ?, ?, ?");
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next())
+                uid = rs.getInt(1); //Get the UID from the DB.
+            else
+                throw new SQLException("Couldn't get auto-generated UID");
+
+            rs = stmt.executeQuery(String.format("SELECT * FROM ORDERS WHERE UID=%d", uid)); //Get the creation time from the DB.
+            if (rs.next())
+                creationDate = new Date(rs.getTimestamp("orderCreationTime").getTime());
+            else
+                throw new SQLException("Something went wrong retrieving the order just inserted!");
+
+            order.setOrderID(uid);
+            order.setCreationTime(creationDate);
+            return true;
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting %s:\n%s\n", order, e.getMessage());
             return false;
         }
     }
