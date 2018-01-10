@@ -30,18 +30,44 @@ public class Order {
 
     /**
      * Constructor
-     * @param costumerID Order's Name
+     * @param customerID Order's Name
      * @param carID Order's car plate
      * @param estimatedExitTime Order's estimated exit time
      * @param parkingLotNumber
      */
-    public Order(int costumerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) {
+    public Order(int customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) {
         //this._orderID = _orderUIDCounter++;
-        this._customerID = costumerID;
+        this._customerID = customerID;
         this._carID = carID;
         this._estimatedExitTime = estimatedExitTime;
         this._entryTime = new Date();
         this._parkingLotNumber = parkingLotNumber;
+
+    }
+
+    /**
+     * Ctor from db entry
+     * @param orderID
+     * @param customerID
+     * @param carID
+     * @param parkingLotNumber
+     * @param entryTime
+     * @param estimatedExitTime
+     * @param actualExitTime
+     * @param price
+     * @param creationTime
+     */
+    public Order(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Date entryTime, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime) {
+        //this._orderID = _orderUIDCounter++;
+        this._orderID = orderID;
+        this._customerID = customerID;
+        this._carID = carID;
+        this._entryTime = entryTime;
+        this._estimatedExitTime = estimatedExitTime;
+        this._actualExitTime = actualExitTime;
+        this._parkingLotNumber = parkingLotNumber;
+        this._price = price;
+        this._creationTime = creationTime;
 
     }
 
@@ -132,9 +158,11 @@ public class Order {
     public void setOrderID(int orderID) {
         this._orderID = orderID;
     }
+
     public Date getCreationTime() {
         return _creationTime;
     }
+
     public void setCreationTime(Date creationTime) {
         this._creationTime = creationTime;
     }
@@ -169,9 +197,9 @@ public class Order {
                 ", entry time=" + _entryTime +
                 ", estimated exit time=" + _estimatedExitTime +
                 ", actual exit time=" + _actualExitTime +
-                ", parking lot number=" + _parkingLotNumber+
-                ", price=" + _price+
-                ", creation time=" +_creationTime
+                ", parking lot number=" + _parkingLotNumber +
+                ", price=" + _price +
+                ", creation time=" + _creationTime
                 ;
     }
 

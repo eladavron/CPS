@@ -78,7 +78,7 @@ public class DBController {
                 returnString += ListTables();
                 return returnString;
             }
-            ResultSet rs = this.QueryEntireTable(tableName); //Query the table
+            ResultSet rs = this.QueryTable(tableName); //Query the table
             switch (tableName) {
                 case "employees":
                     //Format printout:
@@ -146,14 +146,39 @@ public class DBController {
      * @param tableName  name of the table to query.
      * @return The resultset.
      */
-    private ResultSet QueryEntireTable(String tableName)
+    private ResultSet QueryTable(String tableName)
     {
-        ResultSet result;
+        return QueryTable(tableName, null, -1);
+        /*ResultSet result;
         try {
             Statement stmt = db_conn.createStatement();
             result = stmt.executeQuery(String.format("SELECT * FROM %s",tableName));
         } catch (SQLException e) {
             System.err.printf("An error occured querying table %s:\n%s\n", tableName, e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+        return result;*/
+    }
+    /**
+     * Queries the given table for all its content.
+     * @param tableName  name of the table to query.
+     * @return The resultset.
+     */
+    private ResultSet QueryTable(String tableName, String field, int value) {
+        String query = String.format("SELECT * FROM %s", tableName);
+
+        if ((field != null) && (value != 0)) {
+            query += String.format(" WHERE %s = %s", field, value);
+        }
+
+        ResultSet result;
+        try {
+            Statement stmt = db_conn.createStatement();
+            //result = stmt.executeQuery(String.format("SELECT * FROM %s",tableName));
+            result = stmt.executeQuery(query);
+        } catch (SQLException e) {
+            System.err.printf("An error occurred querying table %s:\n%s\n", tableName, e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -228,6 +253,55 @@ public class DBController {
             System.err.printf("An error occurred inserting %s:\n%s\n", order, e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * get orders from DB (all orders)
+     * @return all orders in list
+     */
+    public ArrayList<Order> getOrders() {
+        return getOrders(-1);
+    }
+
+    /**
+     * get orders from DB
+     * @param orderId specific order identifier, '-1' for all orders
+     * @return specific / all orders , null if error
+     */
+    public ArrayList<Order> getOrders(int orderId) {
+        ArrayList<Order> myOrders = new ArrayList<>();
+        ResultSet rs;
+
+        if (orderId == -1) { // get all rows
+            rs = QueryTable("ORDERS");
+
+        } else { // get specific order
+            rs = QueryTable("ORDERS", "idOrders", orderId);
+        }
+
+        if (rs == null)
+            return null;
+        else {
+            try {
+                while (rs.next()) {
+                    Order rowOrder = new Order(rs.getInt("idOrders"),
+                            rs.getInt("customerId"),
+                            rs.getInt("carId"),
+                            rs.getInt("parkingLotNumber"),
+                            rs.getDate("entryTime"),
+                            rs.getDate("estimatedExitTime"),
+                            rs.getDate("actualExitTime"),
+                            rs.getDouble("price"),
+                            rs.getDate("creationTime"));
+                    myOrders.add(rowOrder);
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Orders", e.getMessage());
+                 return null;
+            }
+        }
+
+        return myOrders;
     }
 
     /* Output Formatters */
