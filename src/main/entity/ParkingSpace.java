@@ -1,5 +1,6 @@
 package entity;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import entity.Order;
@@ -10,44 +11,73 @@ import entity.Order;
  */
 public class ParkingSpace {
 	/**
-	 * The order which occupies the parking space.
+	 * _occupyingOrderID is the occupying order ID which occupies the parking space.
+	 * _status is the parking space status.
 	 */
-	private Order _occupyingOrder;
+	private Integer _occupyingOrderID;
+	private ParkingStatus _status;
 
 	/**
-	 * Class constructor
-	 * @param occupyingOrder The order which occupies the parking space.
+	 * FREE - Free parking space and can be ordered/occupied.
+	 * ORDERED - Ordered parking space and cannot be used.
+	 * UNAVAILABLE - Unavailable parking space for some reason.
+	 * OCCUPIED - Occupied parking space.
 	 */
-	public ParkingSpace(Order occupyingOrder) {
-		this._occupyingOrder = occupyingOrder;
+	public enum ParkingStatus{
+		FREE,
+		ORDERED,
+		UNAVAILABLE,
+		OCCUPIED
 	}
 
 	/**
-	 * Get the order which occupies the parking space.
-	 * @return The order which occupies the parking space.
+	 * Default constructor for initiating parking lot purposes. Setting its status to FREE.
 	 */
-	public Order getOccupyingorder() {
-		return _occupyingOrder;
+	public ParkingSpace() {
+		this._occupyingOrderID = -1;
+		this._status = ParkingStatus.FREE;
 	}
 
 	/**
-	 * Set the order which occupies the parking space.
-	 * @param _occupyingorder The order which occupies the parking space.
+	 * Class constructor providing it the occupying order ID of the parking space and setting its status to OCCUPIED.
+	 * @param occupyingOrderID The occupying order ID which occupies the parking space.
 	 */
-	public void setOccupyingorder(Order occupyingOrder) {
-		this._occupyingOrder = occupyingOrder;
+	public ParkingSpace(Integer occupyingOrderID) {
+		this._occupyingOrderID = occupyingOrderID;
+		this._status = ParkingStatus.OCCUPIED;
 	}
-	
+
+	/**
+	 * Setters and getters.
+	 */
+	public Integer getOccupyingOrderID() {
+		return _occupyingOrderID;
+	}
+
+	public void setOccupyingOrderID(Integer occupyingOrderID) {
+		this._occupyingOrderID = occupyingOrderID;
+	}
+
+	public ParkingStatus getStatus() {
+		return _status;
+	}
+
+	public void setStatus(ParkingStatus status) {
+		this._status = status;
+	}
+
 	@Override
     public String toString() {
-        return String.format("Parking space of customer id. : %s with order id. : %d: ", this._occupyingOrder.getCostumerID(), this._occupyingOrder.getOrderID());
+        return String.format("Parking space of order id. : %d: ", this._occupyingOrderID);
     }
 
 	@Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ParkingSpace)) return false;
-        ParkingSpace parkingSpace = (ParkingSpace) o;
-        return Objects.equals(_occupyingOrder, parkingSpace._occupyingOrder);
-    }
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ParkingSpace that = (ParkingSpace) o;
+		return Objects.equals(_occupyingOrderID, that._occupyingOrderID) &&
+				_status == that._status;
+	}
+
 }

@@ -123,9 +123,9 @@ public class MessageHandler {
             case PARKING_LOT:
                 //TODO: Query DB for available parking lots.
                 //In the meantime, here's a dummy response:
-                ParkingLot dummyLot1 = new ParkingLot("Haifa");
-                ParkingLot dummyLot2 = new ParkingLot("Tel-Aviv");
-                ParkingLot dummbyLot3 = new ParkingLot("Petah-Tikva");
+                ParkingLot dummyLot1 = new ParkingLot(1,1,1,"Haifa");
+                ParkingLot dummyLot2 = new ParkingLot(2,2,2,"Tel-Aviv");
+                ParkingLot dummbyLot3 = new ParkingLot(3,3,3,"Petah-Tikva");
                 response.addData(dummyLot1, dummyLot2, dummbyLot3);
                 break;
             case STRING:

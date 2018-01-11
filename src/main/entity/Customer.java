@@ -21,9 +21,8 @@ public class Customer extends User{
 	 * @param name Customer's name
 	 * @param email Customer's email
 	 * @param carIDList Customer's cars' ids list.
-	 * @param subscriptionList Customer's subscriptions' list.
 	 */
-	public Customer(Integer uID, String name, String email, ArrayList<Integer> carIDList, ArrayList<Subscription> subscriptionList) {
+	public Customer(Integer uID, String name, String email, ArrayList<Integer> carIDList) {
 		super(uID,name,email);
 		this._carIDList = carIDList;
 		this._subscriptionList = new ArrayList<>();
