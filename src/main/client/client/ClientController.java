@@ -26,7 +26,6 @@ public class ClientController extends ocsf.client.AbstractClient
         openConnection();
     }
 
-
     /**
      * This method handles all data that comes in from the server.
      * It converts the string to a new Message objects and sends it for queueing.
@@ -35,6 +34,10 @@ public class ClientController extends ocsf.client.AbstractClient
      */
     public void handleMessageFromServer(Object msg)
     {
+        if (CPSClientGUI.IS_DEBUG)
+        {
+            System.out.println("RECIEVED: " + (String)msg);
+        }
         String json = (String) msg;
         Message receivedMessage = new Message(json);
         CPSClientGUI.addMessageToQueue(receivedMessage);

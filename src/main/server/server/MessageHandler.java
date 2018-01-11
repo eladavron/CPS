@@ -25,6 +25,10 @@ public class MessageHandler {
 
     public static void sendToClient(Message message, ConnectionToClient client) throws IOException {
         String json = mapper.writeValueAsString(message);
+        if (CPSServer.IS_DEBUG)
+        {
+            System.out.println("SENT (" + client.getInetAddress() + "): " + json);
+        }
         client.sendToClient(json);
     }
 
@@ -52,6 +56,7 @@ public class MessageHandler {
                     handleCreation(msg, client);
                     break;
                 case DELETE:
+                    //TODO: implement ASAP :)
                     break;
                 case UPDATE:
                     break;
@@ -75,9 +80,15 @@ public class MessageHandler {
         Message loginResponse;
         String username =(String) msg.getData().get(0);
         String pwd =(String) msg.getData().get(1);
-        if (username.equals("username") && pwd.equals("password")){
-            User LoginUser = new User(666, username, pwd);
-            loginResponse = new Message(Message.MessageType.FINISHED, Message.DataType.USER, LoginUser);
+        ParkingLot parkingLot = (ParkingLot) msg.getData().get(2);
+        if (username.equals("username") && pwd.equals("password")){ //TODO: Validate Actual User Login!!!
+            Session session = new Session();
+            User user = new User(666, username, pwd); //TODO: Get Actual User from db!
+            session.setUser(user);
+            session.setParkingLot(parkingLot);
+            session.setSid(new Random().nextInt()); //TODO: Or however you get session IDs
+            //TODO: Save session locally
+            loginResponse = new Message(Message.MessageType.FINISHED, Message.DataType.SESSION, session.getSid(), session.getUser(), session.getParkingLot());
         }else{
             loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.STRING, "Wrong Username or Password");
         }
@@ -85,7 +96,7 @@ public class MessageHandler {
         sendToClient(loginResponse, client);
     }
 
-    private static boolean handleQueries(Message query, ConnectionToClient client) throws IOException {
+    private static boolean handleQueries(Message queryMsg, ConnectionToClient client) throws IOException {
 
         /**
          * Important!
@@ -93,17 +104,19 @@ public class MessageHandler {
          */
 
         Message response = new Message();
-        response.setDataType(query.getDataType());
-        User user = (User)query.getData().get(0);
+        response.setDataType(queryMsg.getDataType());
+        User user = (User)queryMsg.getData().get(0);
 
-        switch (query.getDataType())
+        switch (queryMsg.getDataType())
         {
             case PREORDER:
-
                 //TODO: Query DB for all orders for this users.
                 //In the meantime, here's a dummy response:
                 PreOrder dummyOrder1 = new PreOrder(user.getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0, 0.0, new Date());
                 PreOrder dummyOrder2 = new PreOrder(user.getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1, 0.0, new Date());
+                //TODO: IMPORTANT return order ID from DB
+                dummyOrder1.setOrderID(11);
+                dummyOrder2.setOrderID(22);
                 response.addData(dummyOrder1, dummyOrder2);
                 break;
 
@@ -118,22 +131,28 @@ public class MessageHandler {
             case STRING:
                 break;
             case ORDER:
+                Order dummy1 = new Order(user.getUID(),1234567,TimeUtils.addTime(new Date(), TimeUtils.Units.HOURS, 1) ,0);
+                Order dummy2 = new Order(user.getUID(),7654321,TimeUtils.addTime(new Date(), TimeUtils.Units.HOURS, 1) ,1);
+                //TODO: IMPORTANT return order ID from DB.
+                dummy1.setOrderID(11);
+                dummy2.setOrderID(22);
+                response.addData(dummy1, dummy2);
                 break;
             case USER:
                 break;
             default:
-                throw new NotImplementedException("Unknown data type: " + query.getDataType().toString());
+                throw new NotImplementedException("Unknown data type: " + queryMsg.getDataType().toString());
 
         }
         response.setType(Message.MessageType.FINISHED);
-        response.setSID(query.getSID());
+        response.setSID(queryMsg.getSID());
         sendToClient(response, client);
         return true;
     }
 
-    private static boolean handleCreation(Message creation, ConnectionToClient client) throws IOException {
+    private static boolean handleCreation(Message createMsg, ConnectionToClient client) throws IOException {
         Message reply = new Message();
-        switch(creation.getDataType())
+        switch(createMsg.getDataType())
         {
             case USER:
                 User user = new User(707070, "dum-dum-dummy", "weCallYou@DontCallUs.com"); //TODO: Get from server!
@@ -141,18 +160,14 @@ public class MessageHandler {
             case ORDER:
                 //TODO: return order from DB
                 //Meanwhile, here's a dummy
-                Order order = mapper.convertValue(creation.getData().get(0),Order.class);
+                Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
                 order.setOrderID(new Random().nextInt()); //TODO: Get from server! This is a dummy response!
                 reply = new Message(Message.MessageType.FINISHED, Message.DataType.ORDER, order);
-
                 break;
             case PREORDER:
-                PreOrder preorder = mapper.convertValue(creation.getData().get(0), PreOrder.class);
-                //TODO: return pre-order from DB
-                //Meanwhile, here's a dummy
-                PreOrder dummyOrder = new PreOrder(preorder);
-                dummyOrder.setOrderID(new Random().nextInt()); //TODO: Get from database! This is a dummy response!
-                reply = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, dummyOrder);
+                PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
+                Order newPreOrder = controller.OrderController.getInstance().makeNewPreOrder(preorder);
+                reply = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, newPreOrder);
                 break;
             case STRING:
                 break;
@@ -165,17 +180,17 @@ public class MessageHandler {
             default:
                 return false;
         }
-        reply.setSID(creation.getSID());
+        reply.setSID(createMsg.getSID());
         sendToClient(reply, client);
         return true;
     }
 
-    private static boolean handleUpdate(Message update)
+    private static boolean handleUpdate(Message updateMsg)
     {
         return true;
     }
 
-    private static boolean handleDelete(Message delete)
+    private static boolean handleDelete(Message deleteMsg)
     {
         return true;
     }

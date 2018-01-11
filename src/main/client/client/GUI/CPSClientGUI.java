@@ -3,7 +3,7 @@ package client.GUI;
 import client.ClientController;
 import client.GUI.Helpers.ErrorHandlers;
 import entity.Message;
-import entity.User;
+import entity.Session;
 import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -45,6 +45,11 @@ public class CPSClientGUI extends Application{
     public final static int DEFAULT_TIMEOUT = 10;
     public final static int DEFAULT_WAIT_TIME = 3;
 
+    public static boolean IS_DEBUG;
+
+    public enum ConnectionStatus { CONNECTED, DISCONNECTED, RESET };
+    private static ConnectionStatus _connectionStatus = ConnectionStatus.DISCONNECTED;
+
     /**
      * FXML decelerations
      */
@@ -84,15 +89,20 @@ public class CPSClientGUI extends Application{
     private static HashMap<Long, LinkedList<Message>> _incomingMessages = new HashMap<Long, LinkedList<Message>>();
 
     /**
-     * The currently logged in user.
+     * The current session.
      */
-    private static User _currentUser;
+    private static Session _session = new Session();
 
     /**
      * The main method of the application.
-     * @param args Command line arguments.
+     * @param args Command line arguments. Supports "debug" for debugging.
      */
     public static void main(String[] args) {
+        if (args.length > 0 && args[0].equals("debug"))
+            IS_DEBUG = true;
+        else
+            IS_DEBUG = false;
+
         launch(args);
     }
 
@@ -152,7 +162,7 @@ public class CPSClientGUI extends Application{
         try {
             URL guiURL = CPSClientGUI.class.getResource(filename);
             Node guiRoot = FXMLLoader.load(guiURL);
-            _pageRoot.getChildren().removeAll();
+            _pageRoot.getChildren().clear();
             _pageRoot.getChildren().add(guiRoot);
             AnchorPane.setTopAnchor(guiRoot, 0.0);
             AnchorPane.setBottomAnchor(guiRoot, 0.0);
@@ -188,6 +198,7 @@ public class CPSClientGUI extends Application{
      */
     public static void connect(String host, int port) throws IOException {
         _client = new ClientController(host, port);
+        _connectionStatus = ConnectionStatus.CONNECTED;
     }
 
     /**
@@ -196,11 +207,51 @@ public class CPSClientGUI extends Application{
      * @param message A message object to send.
      */
     public static void sendToServer(Message message) throws IOException {
-
-        //TODO: Verify JSON string
-        _client.sendToServer(message.toJson());
+        String json = message.toJson();
+        if (IS_DEBUG)
+        {
+            System.out.println("SENT: " + json);
+        }
+        _client.sendToServer(json);
     }
 
+    public static boolean isConnected()
+    {
+        if (_client != null && _client.isConnected())
+        {
+            _connectionStatus = ConnectionStatus.CONNECTED;
+        }
+        else
+        {
+            _connectionStatus = ConnectionStatus.DISCONNECTED;
+        }
+        return (_connectionStatus == ConnectionStatus.CONNECTED);
+    }
+
+    /**
+     * To use in case of an error.
+     * Resets the connection and all the session properties.
+     */
+    public static void resetConnection() {
+        try {
+            if (_client != null) {
+                _client.closeConnection();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            _connectionStatus = ConnectionStatus.RESET;
+            _client = null;
+            _session = null;
+            changeGUI(LOGIN_SCREEN);
+        }
+    }
+
+    public static ConnectionStatus getConnectionStatus()
+    {
+        return _connectionStatus;
+    }
 
     //endregion
 
@@ -253,14 +304,14 @@ public class CPSClientGUI extends Application{
 
     //region getters and setters
 
-    public static User getCurrentUser() {
-        return _currentUser;
+    public static Session getSession()
+    {
+        return _session;
     }
 
-    public static void setCurrentUser(User currentUser) {
-        _currentUser = currentUser;
+    public static void setSession(Session session) {
+        _session = session;
     }
-
 
     public static ClientController getClient() {
         return _client;

@@ -2,13 +2,14 @@ package client.GUI.Forms;
 
 
 import client.GUI.CPSClientGUI;
-import client.GUI.Helpers.DateTimeCombo;
 import client.GUI.Helpers.Common;
+import client.GUI.Helpers.DateTimeCombo;
+import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.RunnableWithMessage;
 import entity.Message;
 import entity.ParkingLot;
 import entity.PreOrder;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -63,11 +64,21 @@ public class NewPreorderController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
-        Common.initParkingLots(cmbParkingLot);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Common.initParkingLots(cmbParkingLot);
+            }
+        });
         _entryDateTime = new DateTimeCombo(entryDatePicker, cmbEntryHour, cmbEntryMinute);
         _exitDateTime = new DateTimeCombo(exitDatePicker, cmbExitHour, cmbExitMinute);
     }
 
+
+    /**
+     * Validate the form
+     * @return true if valid, false if not.
+     */
     private boolean validateForm() {
         Common.clearAllHighlighted();
         boolean validate = true;
@@ -86,6 +97,10 @@ public class NewPreorderController implements Initializable {
         return Common.validateTimes(_entryDateTime, _exitDateTime) && validate;
     }
 
+    /**
+     * Create the order and send it to the server
+     * @param event the button click event.
+     */
     @FXML
     void createOrder(ActionEvent event) {
         if (!validateForm())
@@ -95,12 +110,13 @@ public class NewPreorderController implements Initializable {
         Date entryTime = _entryDateTime.getDateTime();
         Date exitTime = _exitDateTime.getDateTime();
         int parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getUID();
-        PreOrder newOrder = new PreOrder(CPSClientGUI.getCurrentUser().getUID(), Integer.valueOf(txtCarID.getText()), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
+        PreOrder newOrder = new PreOrder(CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(txtCarID.getText()), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
+        newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);
-        RunnableWithMessage onSuccess = new RunnableWithMessage() {
+        MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                PreOrder preorder = (PreOrder) getIncoming().getData().get(0);
+                PreOrder preorder = (PreOrder) getMessage().getData().get(0);
                 waitScreen.showSuccess("Order created successfully!", "Order details:\n" +
                         "Customer ID: " + preorder.getCostumerID() + "\n" +
                         "Order ID: " + preorder.getOrderID() +"\n" +
@@ -110,10 +126,10 @@ public class NewPreorderController implements Initializable {
                 waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
             }
         };
-        RunnableWithMessage onFailure = new RunnableWithMessage() {
+        MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showError("Order failed!", (String)getIncoming().getData().get(0));
+                waitScreen.showError("Order failed!", getErrorString());
             }
         };
         MessageTasker createOrder = new MessageTasker("Sending order...",

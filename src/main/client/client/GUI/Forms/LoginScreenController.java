@@ -2,10 +2,11 @@ package client.GUI.Forms;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Helpers.Common;
+import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.RunnableWithMessage;
 import entity.Message;
-import entity.User;
+import entity.ParkingLot;
+import entity.Session;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -15,6 +16,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 
+import java.io.IOException;
+import java.net.SocketException;
+
 public class LoginScreenController {
 
     private CPSClientGUI parentGUI;
@@ -23,7 +27,7 @@ public class LoginScreenController {
     private TextField txtLoginUsr;
 
     @FXML
-    private Button btnLogin;
+    private ComboBox cmbParkingLots;
 
     @FXML
     private TitledPane paneLogin;
@@ -44,7 +48,11 @@ public class LoginScreenController {
     private TextField txtPort;
 
     @FXML
+    private Button btnLogin;
+
+    @FXML
     private Button btnConnect;
+
 
     @FXML
     private TextField txtHostname;
@@ -62,17 +70,39 @@ public class LoginScreenController {
                 }
             }
         });
-        loginRoot.setExpandedPane(paneLogin);
+        if (CPSClientGUI.getConnectionStatus() != CPSClientGUI.ConnectionStatus.RESET)
+        {
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    attemptConnect(); //This is in a "runlater" so that it runs AFTER the gui is loaded.
+                }
+            });
+        } else {
+            setConnectedGUI(false);
+        }
     }
 
+    /**
+     * Handle the "connect" button.
+     * @param event the clicking event.
+     */
     @FXML
-    private void attemptConnect(ActionEvent globalEvent)
+    private void attemptConnect(ActionEvent event)
+    {
+        attemptConnect();
+    }
+
+    /**
+     * Attempts a connection to the server.
+     */
+    private void attemptConnect()
     {
         WaitScreen waitScreen = new WaitScreen();
-        if (CPSClientGUI.getClient() != null) //If already connected
+        if (CPSClientGUI.getClient() != null && CPSClientGUI.getClient().isConnected()) //If already connected
         {
-            paneConnection.setDisable(true);
-            attemptLogin(globalEvent);
+            Common.initParkingLots(cmbParkingLots);
+            setConnectedGUI(true);
         }
 
         /*
@@ -97,19 +127,37 @@ public class LoginScreenController {
             @Override
             protected Void call() throws Exception {
                 updateMessage("Connecting...");
-                CPSClientGUI.connect(host, port);
+                try {
+                    CPSClientGUI.connect(host, port);
+                } catch (IOException io){
+                    throw io;
+                }
                 return null;
             }
         };
         _attemptConnect.setOnFailed(event ->
-                Platform.runLater(() ->
-                        waitScreen.showError("Connection error!",
-                                _attemptConnect.getException().getMessage(),
-                                5)));
+        {
+            waitScreen.setOnClose(new Runnable() {
+                @Override
+                public void run() {
+                    setConnectedGUI(false);
+                }
+            });
+            waitScreen.showError("Connection error!",
+                    _attemptConnect.getException().getMessage(),
+                    5);
+        });
+
         _attemptConnect.setOnSucceeded(event -> {
             waitScreen.hide();
-            paneConnection.setDisable(true);
-            attemptLogin(globalEvent);
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    Common.initParkingLots(cmbParkingLots);
+                }
+            });
+            cmbParkingLots.getItems().add(0, "Remote Login");
+            setConnectedGUI(true);
         });
         waitScreen.run(_attemptConnect);
     }
@@ -119,6 +167,7 @@ public class LoginScreenController {
      * Assumes connection is already established.
      * @param event The event from the click or keystroke.
      */
+    @FXML
     private void attemptLogin(ActionEvent event){
         if (txtLoginUsr.getText().equals(""))
         {
@@ -132,20 +181,35 @@ public class LoginScreenController {
         }
 
         WaitScreen waitScreen = new WaitScreen();
-        Message loginMessage = new Message(Message.MessageType.LOGIN, Message.DataType.STRING, txtLoginUsr.getText(), txtLoginPwd.getText());
-        RunnableWithMessage onSuccess = new RunnableWithMessage() {
+        ParkingLot parkingLot;
+        if (cmbParkingLots.getSelectionModel().getSelectedIndex() <= 0)
+        {
+            parkingLot = new ParkingLot();
+            parkingLot.setUID(-1);
+            parkingLot.setLocation("Remote Access");
+        }
+        else
+        {
+            parkingLot = (ParkingLot)cmbParkingLots.getSelectionModel().getSelectedItem();
+        }
+        Message loginMessage = new Message(Message.MessageType.LOGIN, Message.DataType.STRING, txtLoginUsr.getText(), txtLoginPwd.getText(), parkingLot);
+        MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                User user = (User)getIncoming().getData().get(0);
-                CPSClientGUI.setCurrentUser(user);
+                Session session = (Session) getMessage().getData().get(0);
+                CPSClientGUI.setSession(session);
                 waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
-                waitScreen.showSuccess("Welcome " + CPSClientGUI.getCurrentUser().getName(),"You are being redirected to the main screen.", 3);
+                waitScreen.showSuccess("Welcome " + session.getUser().getName(),"Welcome to the CPS service!", 2);
             }
         };
-        RunnableWithMessage onFailure = new RunnableWithMessage() {
+        MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showError("Login Failed!", (String)getIncoming().getData().get(0), 3);
+                if (getException() instanceof SocketException)
+                {
+                    setConnectedGUI(false);
+                }
+                waitScreen.showError("Login Failed!", getErrorString(), 3);
             }
         };
         MessageTasker _loginTask = new MessageTasker("Sending user details...",
@@ -156,5 +220,24 @@ public class LoginScreenController {
                 onSuccess,
                 onFailure);
         waitScreen.run(_loginTask, 10);
+    }
+
+    /**
+     * A quick way to toggle between "Connect" and "Login" modes.
+     * @param isConnected is the server currently connected.
+     */
+    private void setConnectedGUI(boolean isConnected)
+    {
+        paneLogin.setDisable(!isConnected);
+        paneRegister.setDisable(!isConnected);
+        paneConnection.setDisable(isConnected);
+        if (isConnected)
+        {
+            loginRoot.setExpandedPane(paneLogin);
+        }
+        else
+        {
+            loginRoot.setExpandedPane(paneConnection);
+        }
     }
 }

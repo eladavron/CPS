@@ -19,6 +19,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Timer;
@@ -42,11 +43,10 @@ public class WaitScreen extends AnchorPane implements Initializable {
     @FXML
     private Label lblTitle;
 
-    private AnchorPane _root;
-
     private Thread worker;
     private Timer timer;
     private Runnable _onClose;
+    private Task _task;
 
     private static int timeToClose;
 
@@ -60,9 +60,11 @@ public class WaitScreen extends AnchorPane implements Initializable {
         });
     }
 
+    /**
+     * Default constructor.
+     */
     public WaitScreen(){
         try {
-            _root = CPSClientGUI.getPageRoot();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("WaitScreen.fxml"));
             loader.setRoot(this);
             loader.setController(this);
@@ -72,6 +74,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
         }
     }
 
+    //region Worker Thread related methods
     /**
      * @param task Task to run while displaying waiting window
      */
@@ -86,6 +89,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
      */
     public void run(Task<?> task, int timeout)
     {
+        _task = task;
         this.bindMessageProperty(task.messageProperty());
         this.show();
         worker = new Thread(task);
@@ -110,22 +114,49 @@ public class WaitScreen extends AnchorPane implements Initializable {
         worker.start();
     }
 
+    /**
+     * Checks if the main worker thread is currently active
+     * @return true if it is, false if it is not.
+     */
     public boolean isTaskRunning()
     {
         return (worker != null && worker.isAlive());
     }
 
+    /**
+     * Binds the window's status message to a given string property.
+     * Use this to bind the window's message to a thread.
+     * @param sp the <code>StringProperty</code> method.
+     */
     public void bindMessageProperty(ReadOnlyStringProperty sp) {
         lblMessage.textProperty().bind(sp);
     }
 
+    /**
+     * Abort any time-out counter so that it doesn't interfere with error or success messages.
+     */
+    public void cancelTimeout()
+    {
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
+    }
+
+    //endregion
+
+    //region Hide and Show methods
+    /**
+     * Show the wait screen and bring it to front.
+     * Disables anything else in the current GUI.
+     */
     public void show()
     {
-        for (Node node : _root.getChildren())
+        for (Node node : CPSClientGUI.getPageRoot().getChildren())
         {
             node.setDisable(true);
         }
-        _root.getChildren().add(this);
+        CPSClientGUI.getPageRoot().getChildren().add(this);
         this.toFront();
         AnchorPane.setRightAnchor(this,0.0);
         AnchorPane.setLeftAnchor(this,0.0);
@@ -133,10 +164,15 @@ public class WaitScreen extends AnchorPane implements Initializable {
         AnchorPane.setTopAnchor(this,0.0);
     }
 
+    /**
+     * Hides and resets the wait screen.
+     * Re-enables anything below it.
+     * If {@link #setOnClose(Runnable)} is used, will run whatever is set by it afterwards.
+     */
     public void hide()
     {
-        _root.getChildren().remove(this);
-        for (Node node : _root.getChildren())
+        CPSClientGUI.getPageRoot().getChildren().remove(this);
+        for (Node node : CPSClientGUI.getPageRoot().getChildren())
         {
             node.setDisable(false);
         }
@@ -147,6 +183,11 @@ public class WaitScreen extends AnchorPane implements Initializable {
         }
     }
 
+    /**
+     * Auto-hide the wait screen after a given amount of time.
+     * Also updates the "ok/cancel" button with the number of seconds left before closing.
+     * @param seconds number of seconds to close in.
+     */
     public void hideIn(int seconds)
     {
         timeToClose = seconds;
@@ -171,21 +212,61 @@ public class WaitScreen extends AnchorPane implements Initializable {
             }
         }, 0, 1000);
     }
+    //endregion
 
-    public void setTitle(String title) {
-        this.lblTitle.setText(title);
-    }
-
-    public String getTitle()
+    //region Error and Success messages
+    /**
+     * Show the default error message.
+     */
+    public void showDefaultError()
     {
-        return this.lblTitle.getText();
+        showDefaultError(-1);
     }
 
+    /**
+     * Show a self-closing default error message.
+     * @param secondsToShow time to show error.
+     */
+    public void showDefaultError(int secondsToShow)
+    {
+        showDefaultError("", secondsToShow);
+    }
+
+    /**
+     * Show the default error message with an additional text.
+     * @param message The text to add to the default error message.
+     */
+    public void showDefaultError(String message)
+    {
+        showDefaultError(message, -1);
+    }
+
+    /**
+     * Show a self-closing default error message with an additional text.
+     * @param message The text to add to the default error message.
+     * @param secondsToShow The amount of time in seconds to show the error for.
+     */
+    public void showDefaultError(String message, int secondsToShow)
+    {
+        showError("Something went wrong...", "Sorry, there was an error with your request.\n" + message, secondsToShow);
+    }
+
+    /**
+     * Show an error message.
+     * @param title The title of the error message.
+     * @param message The message itself.
+     */
     public void showError(String title, String message)
     {
         showError(title, message, -1);
     }
 
+    /**
+     * Show a self-closing error message.
+     * @param title The title of the error message.
+     * @param message The message itself.
+     * @param secondsToShow The amount of time in seconds to show the error.
+     */
     public void showError(String title, String message, int secondsToShow)
     {
         cancelTimeout();
@@ -197,15 +278,36 @@ public class WaitScreen extends AnchorPane implements Initializable {
         lblMessage.setTextFill(Color.RED);
 
         btnCancel.setText("Ok");
+
+        if (_task != null && _task.getException() instanceof SocketException)
+        {
+            this.setOnClose(new Runnable() {
+                @Override
+                public void run() {
+                    CPSClientGUI.resetConnection();
+                }
+            });
+        }
         if (secondsToShow > 0)
             hideIn(secondsToShow);
     }
 
+    /**
+     * Show a success message.
+     * @param title Title of the success message.
+     * @param message Message for success.
+     */
     public void showSuccess(String title, String message)
     {
         showSuccess(title, message, -1);
     }
 
+    /**
+     * Show a self-closing success message.
+     * @param title Title of the success message.
+     * @param message For great success!
+     * @param secondsToShow Time to show - in seconds!
+     */
     public void showSuccess(String title, String message, int secondsToShow)
     {
         cancelTimeout();
@@ -221,15 +323,12 @@ public class WaitScreen extends AnchorPane implements Initializable {
         if (secondsToShow > 0)
             hideIn(secondsToShow);
     }
+    //endregion
 
-    public void cancelTimeout()
-    {
-        if (timer != null) {
-            timer.cancel();
-            timer.purge();
-        }
-    }
-
+    //region Exit and Reset methods
+    /**
+     * Reset the wait window and any timers, properties, etc.
+     */
     public void reset()
     {
         lblTitle.setText("");
@@ -252,8 +351,17 @@ public class WaitScreen extends AnchorPane implements Initializable {
             worker.interrupt();
             worker = null;
         }
+        if (_task != null)
+        {
+            _task = null;
+        }
     }
 
+    /**
+     * Set a custom action to execute when the window closes.
+     * If you want it to happen AFTER the window closes, or just to be safe, use <code>Platform.runLater</code>
+     * @param action
+     */
     public void setOnClose(Runnable action)
     {
         _onClose = action;
@@ -272,4 +380,16 @@ public class WaitScreen extends AnchorPane implements Initializable {
             }
         };
     }
+    //endregion
+
+    //region Getters and Setters
+    public void setTitle(String title) {
+        this.lblTitle.setText(title);
+    }
+
+    public String getTitle()
+    {
+        return this.lblTitle.getText();
+    }
+    //endregion
 }

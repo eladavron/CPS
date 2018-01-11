@@ -1,10 +1,10 @@
 package client.GUI.Forms;
 
 import client.GUI.CPSClientGUI;
-import client.GUI.Helpers.DateTimeCombo;
 import client.GUI.Helpers.Common;
+import client.GUI.Helpers.DateTimeCombo;
+import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.RunnableWithMessage;
 import entity.Message;
 import entity.Order;
 import entity.ParkingLot;
@@ -78,6 +78,8 @@ public class EnterParkingController implements Initializable {
         return Common.validateTimes(null, _exitDateTime) && validate;
     }
 
+
+
     /**
      * A new parking session is created by creating an "Order".
      * @param event the action of clicking the "Enter Parking" button.
@@ -90,13 +92,14 @@ public class EnterParkingController implements Initializable {
         WaitScreen waitScreen = new WaitScreen();
         Date exitTime = _exitDateTime.getDateTime();
         Integer parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getUID();
-        Order newOrder = new Order(CPSClientGUI.getCurrentUser().getUID(), Integer.valueOf(txtCarID.getText()),exitTime,parkingLotNumber);
+        Order newOrder = new Order(CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(txtCarID.getText()),exitTime,parkingLotNumber);
+        newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
 
-        RunnableWithMessage onSuccess = new RunnableWithMessage() {
+        MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                Order order = (Order) getIncoming().getData().get(0);
+                Order order = (Order) getMessage().getData().get(0);
                 waitScreen.showSuccess("Car Parked!", "Order details:\n" +
                         "Customer ID: " + order.getCostumerID() + "\n" +
                         "Order ID: " + order.getOrderID() +"\n" +
@@ -106,10 +109,10 @@ public class EnterParkingController implements Initializable {
                 waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
             }
         };
-        RunnableWithMessage onFailure = new RunnableWithMessage() {
+        MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showError("Parking Failed!", (String)getIncoming().getData().get(0));
+                waitScreen.showError("Parking Failed!", getErrorString());
             }
         };
         MessageTasker createOrder = new MessageTasker("Attempting to park...",

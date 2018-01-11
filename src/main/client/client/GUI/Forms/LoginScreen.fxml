@@ -1,59 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <Accordion fx:id="loginRoot" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.LoginScreenController">
    <panes>
-      <TitledPane fx:id="paneLogin" text="Login (Existing User)">
+      <TitledPane fx:id="paneLogin" animated="false" text="Login (Existing User)">
          <content>
             <AnchorPane minHeight="0.0" minWidth="0.0">
                <children>
                   <VBox layoutY="-10.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <FlowPane>
+                        <FlowPane hgap="10.0" vgap="10.0">
                            <children>
-                              <Label text="User ID:" />
-                              <TextField fx:id="txtLoginUsr" onAction="#attemptConnect" />
+                              <Label text="Location:" />
+                              <ComboBox fx:id="cmbParkingLots" promptText="Select Location..." />
                            </children>
                         </FlowPane>
-                        <FlowPane>
+                        <FlowPane hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="User ID:" />
+                              <TextField fx:id="txtLoginUsr" onAction="#attemptLogin" />
+                           </children>
+                        </FlowPane>
+                        <FlowPane hgap="10.0" vgap="10.0">
                            <children>
                               <Label text="Password:" />
-                              <PasswordField fx:id="txtLoginPwd" onAction="#attemptConnect" />
+                              <PasswordField fx:id="txtLoginPwd" onAction="#attemptLogin" />
                            </children>
                         </FlowPane>
                      </children>
                   </VBox>
-                  <Button fx:id="btnLogin" mnemonicParsing="false" onAction="#attemptConnect" text="Login" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <Button fx:id="btnLogin" mnemonicParsing="false" onAction="#attemptLogin" text="Login" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
          </content>
       </TitledPane>
-      <TitledPane fx:id="paneRegister" expanded="false" text="Register (New User)">
+      <TitledPane fx:id="paneRegister" animated="false" expanded="false" text="Register (New User)">
          <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
          </content>
       </TitledPane>
-      <TitledPane fx:id="paneConnection" text="Connection Settings">
+      <TitledPane fx:id="paneConnection" animated="false" text="Connection Settings">
          <content>
-            <VBox>
+            <AnchorPane>
                <children>
-                  <FlowPane hgap="10.0" vgap="10.0">
+                  <VBox AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <Label text="Hostname or IP Address:" />
-                        <TextField fx:id="txtHostname" text="localhost" />
+                        <FlowPane hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="Hostname or IP Address:" />
+                              <TextField fx:id="txtHostname" text="localhost" />
+                           </children>
+                        </FlowPane>
+                        <FlowPane hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="Port:" />
+                              <TextField fx:id="txtPort" text="5555" />
+                           </children>
+                        </FlowPane>
                      </children>
-                  </FlowPane>
-                  <FlowPane hgap="10.0" vgap="10.0">
-                     <children>
-                        <Label text="Port:" />
-                        <TextField fx:id="txtPort" text="5555" />
-                     </children>
-                  </FlowPane>
+                  </VBox>
+                  <Button fx:id="btnConnect" mnemonicParsing="false" onAction="#attemptConnect" text="Connect" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
-            </VBox>
+            </AnchorPane>
          </content>
       </TitledPane>
    </panes>

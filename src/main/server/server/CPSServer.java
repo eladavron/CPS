@@ -27,6 +27,7 @@ public class CPSServer extends AbstractServer
      * Instance Parameters
      */
     private static DBController dbController;
+    public static boolean IS_DEBUG;
 
     /**
      * Constructs an instance of the echo server.
@@ -47,7 +48,8 @@ public class CPSServer extends AbstractServer
     public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
     {
-        System.out.println(client.getInetAddress()+ ": " + msg);
+        if (IS_DEBUG)
+            System.out.println("RECIEVED (" + client.getInetAddress()+ "): " + msg);
         try {
             MessageHandler.handleMessage((String)msg, client);
         } catch (IOException e) {
@@ -103,6 +105,10 @@ public class CPSServer extends AbstractServer
         optPort.setRequired(false);
         options.addOption(optPort);
 
+        Option debug = new Option("d", "debug", false, "Debug flag");
+        optPort.setRequired(false);
+        options.addOption(debug);
+
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
@@ -122,6 +128,8 @@ public class CPSServer extends AbstractServer
             System.exit(1);
             return;
         }
+
+        IS_DEBUG = cmd.hasOption("debug");
 
         if (cmd.hasOption("database"))
         {

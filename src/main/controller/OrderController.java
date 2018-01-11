@@ -6,6 +6,7 @@ import entity.PreOrder;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random; //TODO: remove after setting proper order ID from DB
 
 public class OrderController {
 
@@ -44,10 +45,34 @@ public class OrderController {
         return newOrder;
     }
 
+
+    /**
+     * Places a new preorder by using data from param
+     * @param preOrder preorder object which includes needed params
+     * @return A new order
+     */
+    public Order makeNewPreOrder(PreOrder preOrder) {
+        return makeNewPreOrder(preOrder.getCostumerID(),
+                preOrder.getCarID(),
+                preOrder.getEstimatedExitTime(),
+                preOrder.getParkingLotNumber(),
+                preOrder.getEstimatedEntryTime());
+    }
+
+    /**
+     * Places a new preorder according to params
+     * @param customerID Customer's ID
+     * @param carID Car ID
+     * @param estimatedExitTime Estimated exit time from parking lot
+     * @param parkingLotNumber Number of Parking Lot to enter/exit
+     * @param estimatedEntryTime Estimated entry time to parking lot
+     * @return A new order
+     */
     //TODO : After entering with the car into the parking lot the entry time of Order (super) should be set!)
     public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
         Double charge = BillingController.getInstance().calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceList.PRE_ORDER_ONE_TIME_PARKING);
         Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, charge, estimatedEntryTime);
+        newPreOrder.setOrderID(new Random().nextInt());
         _ordersList.add(newPreOrder);
         return newPreOrder;
     }

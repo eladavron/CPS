@@ -24,7 +24,7 @@ public class Message {
         FINISHED,
         FAILED
     };
-    public enum DataType { STRING, ORDER, PREORDER, USER, PARKING_LOT };
+    public enum DataType { STRING, ORDER, PREORDER, USER, PARKING_LOT, SESSION };
 
     private long _sID;
     private ArrayList<Object> _data;
@@ -59,36 +59,56 @@ public class Message {
             _type = msg.getType();
             _dataType = msg.getDataType();
             _data = new ArrayList<Object>();
-            if (_type == MessageType.QUERY) {
-                User sender = mapper.convertValue(msg.getData().get(0), User.class);
-                _data.add(sender);
-            }
-            else {
-                for (Object dataObject : msg.getData()) {
-                    switch (_dataType) {
-                        case STRING:
-                            _data.add(dataObject);
-                            break;
-                        case PREORDER:
-                            PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
-                            _data.add(preOrder);
-                            break;
-                        case ORDER:
-                            Order order = mapper.convertValue(dataObject, Order.class);
-                            _data.add(order);
-                            break;
-                        case USER:
-                            User user = mapper.convertValue(dataObject, User.class);
-                            _data.add(user);
-                            break;
-                        case PARKING_LOT:
-                            ParkingLot parkingLot = mapper.convertValue(dataObject, ParkingLot.class);
-                            _data.add(parkingLot);
-                            break;
-                        default:
-                            throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
+            switch (_type)
+            {
+                case QUERY:
+                    User sender = mapper.convertValue(msg.getData().get(0), User.class);
+                    _data.add(sender);
+                    break;
+                case LOGIN:
+                    String username = (String)msg.getData().get(0);
+                    String password = (String)msg.getData().get(1);
+                    ParkingLot parkingLot = mapper.convertValue(msg.getData().get(2), ParkingLot.class);
+                    _data.add(0, username);
+                    _data.add(1, password);
+                    _data.add(2, parkingLot);
+                    break;
+                default:
+                    if (_dataType == DataType.SESSION)
+                    {
+                        int sessionID = (int) msg.getData().get(0);
+                        User sessionUser = mapper.convertValue(msg.getData().get(1), User.class);
+                        ParkingLot sessionParkingLot = mapper.convertValue(msg.getData().get(2), ParkingLot.class);
+                        Session session = new Session(0, sessionUser, sessionParkingLot);
+                        _data.add(session);
                     }
-                }
+                    else {
+                        for (Object dataObject : msg.getData()) {
+                            switch (_dataType) {
+                                case STRING:
+                                    _data.add(dataObject);
+                                    break;
+                                case PREORDER:
+                                    PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
+                                    _data.add(preOrder);
+                                    break;
+                                case ORDER:
+                                    Order order = mapper.convertValue(dataObject, Order.class);
+                                    _data.add(order);
+                                    break;
+                                case USER:
+                                    User user = mapper.convertValue(dataObject, User.class);
+                                    _data.add(user);
+                                    break;
+                                case PARKING_LOT:
+                                    ParkingLot parkingLotQuery = mapper.convertValue(dataObject, ParkingLot.class);
+                                    _data.add(parkingLotQuery);
+                                    break;
+                                default:
+                                    throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
+                            }
+                        }
+                    }
             }
         }
         catch (InvalidMessageException im)
@@ -97,7 +117,7 @@ public class Message {
         }
         catch (Exception ex)
         {
-            throw new InvalidMessageException("Failed to process message:\n" + json);
+            throw new InvalidMessageException(ex);
         }
     }
 

@@ -1,59 +1,92 @@
 package client.GUI.Helpers;
 
-import Exceptions.LoginException;
+import Exceptions.InvalidMessageException;
 import client.GUI.CPSClientGUI;
 import entity.Message;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 
+import java.net.SocketException;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * A custom <code>Task</code> class that sends a message to the server with easy-to-set error and success screens.
+ * Note that for the {@link #onFailedProperty()} to execute an exception must be thrown. If it's run manually without
+ * an exception, the task will still be considered a "success".
+ */
 public class MessageTasker extends Task<Message> {
 
-    private String _sendingMessage = "Sending...";
-    private String _queuedMessage = "Queued...";
-    private String _successMessage = "Success!";
-    private String _failedMessage = "Failed!";
+    private String _sendingMessage;
+    private String _queuedMessage ;
+    private String _successMessage;
+    private String _failedMessage;
     private Message _message;
-    private RunnableWithMessage _onSuccess;
-    private RunnableWithMessage _onFailure;
+    private MessageRunnable _onSuccess;
+    private MessageRunnable _onFailure;
 
     /**
      * Basic default Constructor.
-     * Sets up the tasker object with basic parameters.
-     * @param _message
-     * @param _onSuccess
-     * @param _onFailure
+     * Sets up the tasker object with basic default parameters.
+     * @param message The Message object sending to the server.
+     * @param onSuccess The action to perform when succeeding.
+     * @param onFailure The action to perform when failing.
      */
-    public MessageTasker(Message _message, RunnableWithMessage _onSuccess, RunnableWithMessage _onFailure) {
-        this._message = _message;
-        this._onSuccess = _onSuccess;
-        this._onFailure = _onFailure;
+    public MessageTasker(Message message, MessageRunnable onSuccess, MessageRunnable onFailure) {
+        this("Sending...",
+                "Queued...",
+                "Success!",
+                "Failed!",
+                message, onSuccess, onFailure);
     }
 
     /**
      * Extended constructor.
      * Sets messages other than default ones.
-     * @param _sendingMessage The message to display while sending request.
-     * @param _queuedMessage The message to display when request is queued.
-     * @param _successMessage The message to display when the request succeeds.
-     * @param _failedMessage The message to display if the request fails.
-     * @param _message The Message object sending to the server.
-     * @param _onSuccess The action to perform when succeeding.
-     * @param _onFailure The action to perform when failing.
+     * @param sendingMessage The message to display while sending request.
+     * @param queuedMessage The message to display when request is queued.
+     * @param successMessage The message to display when the request succeeds.
+     * @param failedMessage The message to display if the request fails.
+     * @param message The Message object sending to the server.
+     * @param onSuccess The action to perform when succeeding.
+     * @param onFailure The action to perform when failing.
      */
-    public MessageTasker(String _sendingMessage,
-                         String _queuedMessage,
-                         String _successMessage,
-                         String _failedMessage,
-                         Message _message,
-                         RunnableWithMessage _onSuccess,
-                         RunnableWithMessage _onFailure) {
-        this._sendingMessage = _sendingMessage;
-        this._queuedMessage = _queuedMessage;
-        this._successMessage = _successMessage;
-        this._failedMessage = _failedMessage;
-        this._message = _message;
-        this._onSuccess = _onSuccess;
-        this._onFailure = _onFailure;
+    public MessageTasker(String sendingMessage,
+                         String queuedMessage,
+                         String successMessage,
+                         String failedMessage,
+                         Message message,
+                         MessageRunnable onSuccess,
+                         MessageRunnable onFailure) {
+        this._sendingMessage = sendingMessage;
+        this._queuedMessage = queuedMessage;
+        this._successMessage = successMessage;
+        this._failedMessage = failedMessage;
+        this._message = message;
+        this._onSuccess = onSuccess;
+        this._onFailure = onFailure;
+        this.setOnFailed(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                event.getSource().getException().printStackTrace();
+                _onFailure.setException(event.getSource().getException());
+                if (getException() instanceof InterruptedException) {
+                    _onFailure.setException(new TimeoutException("The operation timed out."));
+                }
+                if (getException() instanceof SocketException)
+                {
+                    _onFailure.setException(new SocketException("The connection to the server was lost!"));
+                }
+                _onFailure.run();
+            }
+        });
+        this.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                _onSuccess.run();
+            }
+        });
     }
 
     @Override
@@ -63,7 +96,7 @@ public class MessageTasker extends Task<Message> {
         long sid = _message.getSID();
         while (CPSClientGUI.getMessageQueue(sid) == null) //Wait for incoming message
         {
-            if (Thread.currentThread().isInterrupted())
+            if (Thread.currentThread().isInterrupted()) //I'm not actually sure it works from here, but just in case let's leave it in.
             {
                 updateMessage("Timed out!");
                 _onFailure.setMessage(_message);
@@ -83,15 +116,13 @@ public class MessageTasker extends Task<Message> {
                     case FAILED:
                         updateMessage(_failedMessage);
                         _onFailure.setMessage(incoming);
-                        Platform.runLater(_onFailure);
-                        return null;
+                        throw new InvalidMessageException();
                     case FINISHED:
                         updateMessage(_successMessage);
                         _onSuccess.setMessage(incoming);
-                        Platform.runLater(_onSuccess);
                         return null;
                     default:
-                        throw new LoginException("Unexpected response type: " + incoming.getType().toString());
+                        throw new InvalidMessageException("Unexpected response type: " + incoming.getType().toString());
                 }
             }
             else
@@ -147,7 +178,7 @@ public class MessageTasker extends Task<Message> {
         return _onSuccess;
     }
 
-    public void setOnSuccess(RunnableWithMessage onSuccess) {
+    public void setOnSuccess(MessageRunnable onSuccess) {
         this._onSuccess = onSuccess;
     }
 
@@ -155,7 +186,7 @@ public class MessageTasker extends Task<Message> {
         return _onFailure;
     }
 
-    public void setOnFailure(RunnableWithMessage onFailure) {
+    public void setOnFailure(MessageRunnable onFailure) {
         this._onFailure = onFailure;
     }
 

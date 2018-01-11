@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Common {
 
+    //region GUI Helpers
     private static ArrayList<Node> _highlightedControllers = new ArrayList<>();
 
     /**
@@ -66,6 +67,7 @@ public class Common {
             if (entry != null && entryDate.before(new Date())) //Entry for preorder is in the past
             {
                 entry.showError("Only cars of type \"Delorean\" can enter in the past!");
+                validate = false;
             }
             else if (exitDate.before(entryDate)) //Exit date is before entry
             {
@@ -126,7 +128,9 @@ public class Common {
         }
         _highlightedControllers.clear();
     }
+    //endregion
 
+    //region Server Queries
     /**
      * Populates a combo box with open orders.
      * @param comboBox The combo box to populate.
@@ -154,33 +158,39 @@ public class Common {
      */
     public static void initParkingLots(ComboBox comboBox)
     {
-        comboBox.getItems().clear();
         ArrayList list = new ArrayList();
+        comboBox.getItems().clear();
         queryServer(Message.DataType.PARKING_LOT, comboBox);
+
     }
 
     private static void queryServer(Message.DataType type, ComboBox comboBox)
     {
         WaitScreen waitScreen = new WaitScreen();
-        RunnableWithMessage onSuccess = new RunnableWithMessage() {
+        MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                comboBox.getItems().addAll(getIncoming().getData());
+                comboBox.getItems().addAll(getMessage().getData());
                 waitScreen.hide();
             }
         };
 
-        RunnableWithMessage onFailure = new RunnableWithMessage() {
+        MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
-                waitScreen.showError("Error querying server!", "Could not get required information from the server." +
-                        "\n The server responded: " + (String)getIncoming().getData().get(0));
+                waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
             }
         };
-        User user = CPSClientGUI.getCurrentUser();
+        User user = CPSClientGUI.getSession().getUser();
         Message query = new Message(Message.MessageType.QUERY, type, user);
-        MessageTasker queryParkingLots = new MessageTasker(query, onSuccess, onFailure);
+        MessageTasker queryParkingLots = new MessageTasker("Connecting...",
+                "Getting information from server...",
+                "Success!",
+                "Failed!",
+                query, onSuccess, onFailure);
         waitScreen.run(queryParkingLots);
     }
+    //endregion
+
+
 }

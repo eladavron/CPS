@@ -9,27 +9,34 @@ public class InvalidMessageException extends RuntimeException {
     private long _sID;
 
     public InvalidMessageException(){
-        super("Failed to parse incoming message.");
+        this("Failed to parse incoming message.");
     }
 
+    /**
+     * The main exception handler.
+     * All others call this one.
+     * @param message The error message to display.
+     */
     public InvalidMessageException(String message)
     {
         super("Failed to parse incoming message.\n" + message);
+        this.printStackTrace();
     }
 
     public InvalidMessageException(Exception ex) {
-        super("Failed to parse incoming message.\n" + ex.getMessage());
+        this("Failed to parse incoming message.\n" + ex.getMessage());
+        this.setStackTrace(ex.getStackTrace());
     }
 
     public InvalidMessageException(Exception ex, long SID)
     {
-        super("Failed to parse incoming message with SID " + SID + ".\n" + ex.getMessage());
-        this._sID = SID;
+        this("Failed to parse incoming message with SID " + SID + ".\n" + ex.getMessage(), SID);
+        this.setStackTrace(ex.getStackTrace());
     }
 
     public InvalidMessageException(String message, long SID)
     {
-        super("Failed to parse incoming message with SID " + SID + ".\n" + message);
+        this("Failed to parse incoming message with SID " + SID + ".\n" + message);
         this._sID = SID;
     }
 
