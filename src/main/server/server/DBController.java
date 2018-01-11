@@ -1,5 +1,6 @@
 package server;
 
+import controller.OrderController;
 import entity.Employee;
 import entity.Order;
 
@@ -259,32 +260,18 @@ public class DBController {
      * get orders from DB (all orders)
      * @return all orders in list
      */
-    public ArrayList<Order> getOrders() {
-        return getOrders(-1);
+    public ArrayList<Order> getAllOrders() {
+        return getOrdersByID(-1);
     }
 
-    /**
-     * get orders from DB
-     * @param orderId specific order identifier, '-1' for all orders
-     * @return specific / all orders , null if error
-     */
-    public ArrayList<Order> getOrders(int orderId) {
+    public ArrayList<Order> parseOrdersFromDB(ResultSet rs) {
         ArrayList<Order> myOrders = new ArrayList<>();
-        ResultSet rs;
-
-        if (orderId == -1) { // get all rows
-            rs = QueryTable("ORDERS");
-
-        } else { // get specific order
-            rs = QueryTable("ORDERS", "idOrders", orderId);
-        }
-
         if (rs == null)
             return null;
         else {
             try {
                 while (rs.next()) {
-                    Order rowOrder = new Order(rs.getInt("idOrders"),
+                    Order rowOrder = OrderController.getInstance().makeOrderFromDb(rs.getInt("idOrders"),
                             rs.getInt("customerId"),
                             rs.getInt("carId"),
                             rs.getInt("parkingLotNumber"),
@@ -297,11 +284,50 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Orders", e.getMessage());
-                 return null;
+                return null;
             }
         }
-
         return myOrders;
+    }
+
+
+
+    /**
+     * get orders from DB
+     * @param orderId specific order identifier, '-1' for all orders
+     * @return specific / all orders , null if error
+     */
+    public ArrayList<Order> getOrdersByID(int orderId) {
+        ArrayList<Order> myOrders = new ArrayList<>();
+        ResultSet rs;
+
+        if (orderId == -1) { // get all rows
+            rs = QueryTable("ORDERS");
+
+        } else { // get specific order
+            rs = QueryTable("ORDERS", "idOrders", orderId);
+        }
+
+        return parseOrdersFromDB(rs);
+    }
+
+    /**
+     * get orders from DB for a user
+     * @param userID specific order identifier, '-1' for all orders
+     * @return specific / all orders , null if error
+     */
+    public ArrayList<Order> getOrdersByUserID(int userID) {
+        ArrayList<Order> myOrders = new ArrayList<>();
+        ResultSet rs;
+
+        if (userID == -1) { // get all rows
+            rs = QueryTable("ORDERS");
+
+        } else { // get specific order
+            rs = QueryTable("ORDERS", "customerID", userID);
+        }
+
+        return parseOrdersFromDB(rs);
     }
 
     /* Output Formatters */

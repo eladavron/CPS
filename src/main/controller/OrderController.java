@@ -1,13 +1,12 @@
 package controller;
 
+import Exceptions.NotImplementedException;
 import entity.Billing.priceList;
 import entity.Order;
 import entity.PreOrder;
 
-import java.util.Date;
-import java.util.Random; //TODO: remove after setting proper order ID from DB
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
 public class OrderController {
 
     //TODO: remove this or change thing to be taken from DB once its added to our system.
@@ -85,6 +84,24 @@ public class OrderController {
         newPreOrder.setOrderID(new Random().nextInt());
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
         return newPreOrder;
+    }
+
+    public Order makeOrderFromDb(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Date entryTime, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime){
+        Order orderFromDb = new Order(orderID, customerID,  carID,  parkingLotNumber,  entryTime,  estimatedExitTime,  actualExitTime,  price,  creationTime);
+        //_ordersList.add(orderFromDb);
+        return orderFromDb;
+    }
+
+    public boolean getOrdersFromDb(){
+        throw new NotImplementedException();
+        //return false;
+    }
+
+    public ArrayList<Order> getOrdersList() {
+        return (ArrayList<Order>) _ordersList.values();
+    }
+    public void setOrdersList(ArrayList<Order> list) {
+        list.forEach(order -> _ordersList.put(order.getOrderID(), order));
     }
 
     /**
