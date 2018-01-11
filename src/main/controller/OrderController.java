@@ -6,6 +6,11 @@ import entity.Order;
 import entity.PreOrder;
 
 import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static controller.Controllers.*;
 
 public class OrderController {
 
@@ -50,6 +55,8 @@ public class OrderController {
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
     public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
+        //UID is select within the dbController and then set in it as well.
+        dbController.InsertOrder(newOrder);
         _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
     }
@@ -69,7 +76,7 @@ public class OrderController {
     }
 
     /**
-     * Places a new preorder according to params
+     * Places a new pre order according to params
      * @param customerID Customer's ID
      * @param carID Car ID
      * @param estimatedExitTime Estimated exit time from parking lot
@@ -81,7 +88,8 @@ public class OrderController {
     public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
         Double charge = BillingController.getInstance().calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceList.PRE_ORDER_ONE_TIME_PARKING);
         Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, charge, estimatedEntryTime);
-        newPreOrder.setOrderID(new Random().nextInt());
+        //UID is select within the dbController and then set in it as well.
+        dbController.InsertOrder(newPreOrder);
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
         return newPreOrder;
     }
@@ -107,7 +115,7 @@ public class OrderController {
     /**
      * Given a new estimated entry time, this func will update the order's entry.
      * assuming here the only PreOrder class has estimated entry time.
-     * @param order
+     * @param order : to change its time
      * @param estimatedEntryTime : the new entry time.
      * @return order with the new entry time updated.
      */

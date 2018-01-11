@@ -1,20 +1,29 @@
 package unitTests;
 
+import controller.DBController;
 import controller.OrderController;
 import entity.Billing.priceList;
 import entity.Order;
 import entity.PreOrder;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
 import java.util.Date;
 
+import static controller.Controllers.dbController;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderTest extends ApplicationTest {
     private Integer parkingTemp = 1;
     private Order simpleOrder = new Order (0, 777, new Date(), parkingTemp);
     private Date estimated = new Date();
+
+    @BeforeAll
+    static void setTestInitDB(){
+        dbController = DBController.getInstance();
+        dbController.isTest = true;
+    }
 
     @Test
     void make_simple_order_test(){

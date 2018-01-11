@@ -1,4 +1,4 @@
-package server;
+package controller;
 
 import controller.OrderController;
 import entity.Employee;
@@ -12,17 +12,34 @@ import java.util.Collections;
  * A class that interfaces with the database.
  */
 public class DBController {
-        private static Connection db_conn; //The connection to the database.
-        private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
+    private static Connection db_conn; //The connection to the database.
+    private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
+    public boolean isTest = false;
+
+    private static DBController instance;
+
+    static {
+        instance = new DBController();
+    }
+    /** Static 'instance' method */
+    public static DBController getInstance() {
+        return instance;
+    }
+    /**
+     * A private Constructor prevents any other class from
+     * instantiating.
+     */
+    private DBController(){}
 
     /**
-     * Create a Database Controller instance
+     * Init the Database Controller instance
      * @param url URL of the MySQL server (formatted as mysql://hostname:port/db_name)
      * @param username Username for MySQL server
      * @param password Password for MySQL server
      * @throws SQLException
      */
-    public DBController(String url, String username, String password) throws SQLException {
+
+    public void init(String url, String username, String password) throws SQLException {
         try {
             db_conn = connect(url, username, password);
 
@@ -227,14 +244,17 @@ public class DBController {
      * @return True if successful, False otherwise.
      */
     public boolean InsertOrder(Order order){
+        if (this.isTest){
+            order.setOrderID(1);
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
             stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime, exitTimeEstimated, exitTimeActual, price) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
-                    order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(), order.getEntryTime(), order.getEstimatedExitTime(), order.getActualExitTime(), order.getPrice()), Statement.RETURN_GENERATED_KEYS);
-            //PreparedStatement insertOrder = con.preaparedStatement("INSERT INTO ORDERS (idCar, idCustomer, idParkingLot, entryTime, exitTimeEstimated, exitTimeActual, price) "+
-             //                                                                   " VALUES (?, ?, ?, ?, ?, ?, ?");
+                    order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(), order.getEntryTime(), order.getEstimatedExitTime(), order.getEstimatedExitTime(), order.getPrice()), Statement.RETURN_GENERATED_KEYS);
+
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next())
                 uid = rs.getInt(1); //Get the UID from the DB.
@@ -344,4 +364,5 @@ public class DBController {
         }
         return returnString;
     }
+
 }

@@ -1,8 +1,10 @@
 package server;
 
+import controller.Controllers;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
+import static controller.Controllers.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -26,7 +28,7 @@ public class CPSServer extends AbstractServer
     /**
      * Instance Parameters
      */
-    private static DBController dbController;
+//    private static DBController dbController;
     public static boolean IS_DEBUG;
 
     /**
@@ -158,7 +160,8 @@ public class CPSServer extends AbstractServer
 
         try
         {
-            dbController = new DBController(dbUrl, dbUsername, dbPwd);
+            Controllers.init();
+            dbController.init(dbUrl, dbUsername, dbPwd);
         }
         catch (SQLException e)
         {
