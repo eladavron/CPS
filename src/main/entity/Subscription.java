@@ -15,19 +15,26 @@ public class Subscription {
 	 * Private attributes of Subscription class.
 	 */
     private static int _subscriptionUIDCounter = 0;
+
+
+
+    private final SubscriptionType _subscriptionType;
     private Integer _subscriptionID;
 	private Integer _carID;
 	private Date _expiration;
+
+	public enum SubscriptionType{FULL, REGULAR}
 
 	/**
 	 * Class Constructor.
 	 * @param carID The subscription's car id.
 	 *
 	 */
-	public Subscription(Integer carID) {
+	public Subscription(Integer carID, SubscriptionType subscriptionType) {
 	    this._subscriptionID = _subscriptionUIDCounter++;
 		this._carID = carID;
 		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 30);
+		this._subscriptionType = subscriptionType;
 	}
 	
 	/**
@@ -38,7 +45,7 @@ public class Subscription {
 	}
 
 	/**
-	 * @param _subscriptionID the _subscriptionID to set
+	 * @param subscriptionID the _subscriptionID to set
 	 */
 	public void setSubscriptionID(Integer subscriptionID) {
 		this._subscriptionID = subscriptionID;
@@ -75,12 +82,17 @@ public class Subscription {
 	public void setExpiration(Date expiration) {
 		this._expiration = expiration;
 	}
-	
+
+    public SubscriptionType getSubscriptionType() {
+        return _subscriptionType;
+    }
+
 	@Override
 	public String toString() {
 		return "Subscription " +
 				"car ID=" + _carID +
-				", expiration=" + _expiration;
+				", expiration=" + _expiration +
+                ", subscription Type=" + _subscriptionType;
 	}
 
 	@Override

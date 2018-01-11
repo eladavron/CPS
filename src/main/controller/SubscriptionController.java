@@ -7,6 +7,8 @@ import utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static utils.TimeUtils.addTime;
 
@@ -16,7 +18,7 @@ import static utils.TimeUtils.addTime;
 public class SubscriptionController {
 
     //TODO: remove this or change thing to be taken from DB once its added to our system.
-    private ArrayList<Subscription> _subscriptionsList;
+    private Map<Integer, Subscription> _subscriptionsList;
 
     private static SubscriptionController instance;
 
@@ -25,7 +27,7 @@ public class SubscriptionController {
      * instantiating.
      */
     private SubscriptionController() {
-        this._subscriptionsList = new ArrayList<>();
+        this._subscriptionsList = new HashMap<>();
     }
 
     /**
@@ -43,6 +45,11 @@ public class SubscriptionController {
         return instance;
     }
 
+    public Subscription getSubscription(Integer subscriptionID)
+    {
+        return _subscriptionsList.get(subscriptionID);
+    }
+
     /**
      *  A new Regular Subscription
      * @param carID
@@ -55,7 +62,7 @@ public class SubscriptionController {
     public Subscription addRegularSubscription(Integer carID, Date expiration, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber)
     {
         RegularSubscription newSub = new RegularSubscription(carID, expiration, regularEntryTime, regularExitTime, parkingLotNumber);
-        this._subscriptionsList.add(newSub);
+        this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
         return newSub;
     }
 
@@ -68,7 +75,7 @@ public class SubscriptionController {
     public Subscription addFullSubscription(Integer carID, Date expiration)
     {
         FullSubscription newSub = new FullSubscription(carID, expiration);
-        this._subscriptionsList.add(newSub);
+        this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
         return newSub;
     }
 
@@ -82,4 +89,18 @@ public class SubscriptionController {
         subscriptionToRenew.setExpiration(addTime(new Date(), TimeUtils.Units.DAYS, 30));
     }
 
+    /**
+     *  Since there is only 1 subscription per 1 carID and we map using subscriptionID and not carID this function will search
+     *  for the an existing subscription with given carID
+     * @param subscriptionList
+     * @param carID
+     * @return -1 = not found, otherwise the given subscriptionID (in order to use with the Map class)
+     */
+    public Integer findSubscriptionByCarID(Map<Integer, Subscription> subscriptionList, Integer carID) {
+        for (Subscription subscription : subscriptionList.values()) {
+            if (subscription.getCarID() == carID)
+                return subscription.getSubscriptionID();
+        }
+        return -1;
+    }
 }

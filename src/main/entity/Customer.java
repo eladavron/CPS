@@ -1,6 +1,8 @@
 package entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -11,9 +13,9 @@ public class Customer extends User{
 	/**
 	 * Private attributes of the Customer class.
 	 */
-	private ArrayList<Integer> _carIDList = new ArrayList<>();
-	private ArrayList<Subscription> _subscriptionList;
-	private ArrayList<Order> _activeOrders;
+	private ArrayList<Integer> _carIDList;
+	private Map<Integer, Subscription> _subscriptionList;
+	private Map<Integer, Order> _activeOrders;
 	
 	/**
 	 * Customer Class Constructor.
@@ -23,17 +25,17 @@ public class Customer extends User{
 	 * @param carIDList Customer's cars' ids list.
 	 */
 	public Customer(Integer uID, String name, String email, ArrayList<Integer> carIDList) {
-		super(uID,name,email);
+		super(uID,name,email, UserType.CUSTOMER);
 		this._carIDList = carIDList;
-		this._subscriptionList = new ArrayList<>();
-		this._activeOrders = new ArrayList<>();
+		this._subscriptionList = new HashMap<>();
+		this._activeOrders = new HashMap<>();
 	}
 	
 	/**
 	 * Get the customer's car ids list.
 	 * @return Customer's car id list.
 	 */
-	public ArrayList<Integer> getCaridList() {
+	public ArrayList<Integer> getCarIDList() {
 		return _carIDList;
 	}
 	
@@ -41,7 +43,7 @@ public class Customer extends User{
 	 * Set the customer's car ids list.
 	 * @param carIDList Car ID list to set the customer's car ids list.
 	 */
-	public void setCaridList(ArrayList<Integer> carIDList) {
+	public void setCarIDList(ArrayList<Integer> carIDList) {
 		this._carIDList = carIDList;
 	}
 
@@ -49,7 +51,7 @@ public class Customer extends User{
 	 * Get the customer's subscriptions' list.
 	 * @return Customer's subscriptions' list.
 	 */
-	public ArrayList<Subscription> getSubscriptionList() {
+	public Map<Integer, Subscription> getSubscriptionList() {
 		return _subscriptionList;
 	}
 
@@ -57,7 +59,7 @@ public class Customer extends User{
 	 * Set the customer's subscriptions' list.
 	 * @param subscriptionList Subscription's list to set the customer's subscriptions' list.
 	 */
-	public void setSubscriptionList(ArrayList<Subscription> subscriptionList) {
+	public void setSubscriptionList(Map<Integer, Subscription> subscriptionList) {
 		this._subscriptionList = subscriptionList;
 	}
 
@@ -66,7 +68,7 @@ public class Customer extends User{
 	 * Get the customer's active orders' list.
 	 * @return Customer's active orders' list.
 	 */
-	public ArrayList<Order> getActiveorders() {
+	public Map<Integer, Order> getActiveOrders() {
 		return _activeOrders;
 	}
 	
@@ -74,15 +76,16 @@ public class Customer extends User{
 	 * Set the customer's active orders' list.
 	 * @param activeOrders Active orders list to set the customer's active orders' list.
 	 */
-	public void setActiveorders(ArrayList<Order> activeOrders) {
+	public void setActiveOrders(Map<Integer, Order> activeOrders) {
 		this._activeOrders = activeOrders;
 	}
 	
 	@Override
     public String toString() {
         return super.toString() +
-                ", " +
-                "user type = CUSTOMER ."; 
+                ", cars list: " + _carIDList
+				+ ", subscriptions list: " + _subscriptionList
+				+ ", active orders: " + _activeOrders;
     }
 	
 	@Override
@@ -97,6 +100,5 @@ public class Customer extends User{
         		_carIDList.equals(customer._carIDList) && 
         		_subscriptionList.equals(customer._subscriptionList) &&
         		_activeOrders.equals(customer._activeOrders);
-        		
     }
 }

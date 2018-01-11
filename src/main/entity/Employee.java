@@ -20,7 +20,7 @@ public class Employee extends User{
      * @param password Employee's Password
      */
     public Employee(Integer uID, String name, String email, String password) {
-        super(uID,name,email);
+        super(uID,name,email, UserType.EMPLOYEE);
         this._password = password;
         this._creationDate = new Date();
     }

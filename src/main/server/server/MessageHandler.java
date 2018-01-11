@@ -83,7 +83,7 @@ public class MessageHandler {
         ParkingLot parkingLot = (ParkingLot) msg.getData().get(2);
         if (username.equals("username") && pwd.equals("password")){ //TODO: Validate Actual User Login!!!
             Session session = new Session();
-            User user = new User(666, username, pwd); //TODO: Get Actual User from db!
+            User user = new User(666, username, pwd, User.UserType.USER); //TODO: Get Actual User from db!
             session.setUser(user);
             session.setParkingLot(parkingLot);
             session.setSid(new Random().nextInt()); //TODO: Or however you get session IDs
@@ -155,7 +155,7 @@ public class MessageHandler {
         switch(createMsg.getDataType())
         {
             case USER:
-                User user = new User(707070, "dum-dum-dummy", "weCallYou@DontCallUs.com"); //TODO: Get from server!
+                User user = new User(707070, "dum-dum-dummy", "weCallYou@DontCallUs.com", User.UserType.USER); //TODO: Get from server!
                 break;
             case ORDER:
                 //TODO: return order from DB

@@ -7,23 +7,30 @@ import java.util.Objects;
  *
  */
 public class User {
+
+	public enum UserType{USER, CUSTOMER, MANAGER, EMPLOYEE}
+
 	/**
      * Private attributes
      */
-	protected Integer _uID = -1;
+	protected Integer _uID;
 	protected String _name;
 	protected String _email;
+	protected UserType _userType;
 	
 	/**
 	 * Class Constructor
 	 * @param uID User's UID
 	 * @param name User's name
 	 * @param email User's email
+	 * @param userType
 	 */
-	public User(Integer uID, String name, String email){
+
+	public User(Integer uID, String name, String email, UserType userType){
 		this._uID = uID;
 		this._name = name;
 		this._email = email;
+		this._userType = userType;
 	}
 	/**
 	 * Empty constructor for Jackson
@@ -64,7 +71,7 @@ public class User {
 	}
 	
 	/**
-	 * Get the user's emaiil.
+	 * Get the user's email.
 	 * @return  User's email
 	 */
 	public String getEmail() {
@@ -81,7 +88,7 @@ public class User {
 
 	@Override
     public String toString() {
-        return String.format("User No. %d: %s (%s)", this._uID, this._name, this._email);
+        return ("User No: "+ _uID+ ", name: " + _name + ", email: " + _email +", Type: " + _userType);
     }
 
 	@Override
@@ -89,7 +96,7 @@ public class User {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		User user = (User) o;
-		return _uID == user._uID &&
+		return _uID.equals(user._uID) &&
 				Objects.equals(_name, user._name) &&
 				Objects.equals(_email, user._email);
 	}

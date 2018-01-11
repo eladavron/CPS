@@ -11,13 +11,13 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class OrderTest extends ApplicationTest {
+class OrderTest extends ApplicationTest {
     private Integer parkingTemp = 1;
     private Order simpleOrder = new Order (0, 777, new Date(), parkingTemp);
     private Date estimated = new Date();
 
     @Test
-    public void make_simple_order_test(){
+    void make_simple_order_test(){
         Order actual = OrderController.getInstance().makeNewSimpleOrder(0, 777, estimated, parkingTemp);
         Order expected = simpleOrder;
         expected.setEntryTime(actual.getEntryTime());
@@ -31,7 +31,7 @@ public class OrderTest extends ApplicationTest {
     }
 
     @Test
-    public void make_simple_pre_order_test(){
+    void make_simple_pre_order_test(){
         Date estimatedEntry = new Date();
         Date estimatedExit = new Date(estimatedEntry.getTime()+5000000);
         Order actual = OrderController.getInstance().makeNewPreOrder(1, 776, estimatedExit, parkingTemp, estimatedEntry);
@@ -45,7 +45,7 @@ public class OrderTest extends ApplicationTest {
     }
 
     @Test
-    public void finish_simple_order_test(){
+    void finish_simple_order_test(){
         //Setting entry time to be minus 500,000 in order for a charge to happen.
         Order expected;
         simpleOrder.setEntryTime(new Date(estimated.getTime() - 500000));

@@ -36,7 +36,6 @@ public class Order {
      * @param parkingLotNumber
      */
     public Order(int customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) {
-        //this._orderID = _orderUIDCounter++;
         this._customerID = customerID;
         this._carID = carID;
         this._estimatedExitTime = estimatedExitTime;

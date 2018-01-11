@@ -4,14 +4,14 @@ import entity.Billing.priceList;
 import entity.Order;
 import entity.PreOrder;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random; //TODO: remove after setting proper order ID from DB
-
+import java.util.HashMap;
+import java.util.Map;
 public class OrderController {
 
     //TODO: remove this or change thing to be taken from DB once its added to our system.
-    private ArrayList<Order> _ordersList;
+    private Map<Integer,Order> _ordersList;
 
     private static OrderController instance;
 
@@ -20,7 +20,7 @@ public class OrderController {
      * instantiating.
      */
     private OrderController() {
-        this._ordersList = new ArrayList<>();
+        this._ordersList = new HashMap<>();
     }
 
     /**
@@ -38,10 +38,20 @@ public class OrderController {
         return instance;
     }
 
+    /**
+     * will temporarly search in _ordersList TODO: move the search to the DB once implemented
+     * @param orderID
+     * @return
+     */
+    public Order getOrder(Integer orderID)
+    {
+        return _ordersList.get(orderID);
+    }
+
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
     public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
-        _ordersList.add(newOrder);
+        _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
     }
 
@@ -73,7 +83,7 @@ public class OrderController {
         Double charge = BillingController.getInstance().calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceList.PRE_ORDER_ONE_TIME_PARKING);
         Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, charge, estimatedEntryTime);
         newPreOrder.setOrderID(new Random().nextInt());
-        _ordersList.add(newPreOrder);
+        _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
         return newPreOrder;
     }
 

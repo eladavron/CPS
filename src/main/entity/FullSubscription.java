@@ -16,7 +16,7 @@ public class FullSubscription extends Subscription {
      * @param expiration The expiration of the subscription.
      */
     public FullSubscription(int carID, Date expiration) {
-        super(carID);
+        super(carID, SubscriptionType.FULL);
     }
 
     @Override

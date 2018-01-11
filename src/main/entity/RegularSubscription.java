@@ -8,8 +8,7 @@ import java.util.Date;
 public class RegularSubscription extends Subscription {
     private final Date _regularEntryTime;
     private final Date _regularExitTime;
-    private Integer _parkingLotNumber;
-
+    private final Integer _parkingLotNumber;
 
     /**
      * Class Constructor.
@@ -21,12 +20,23 @@ public class RegularSubscription extends Subscription {
      * @param regularExitTime   the car can only stay until it's regular exit time
      */
     public RegularSubscription(Integer carID, Date expiration, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber) {
-        super(carID);
+        super(carID, SubscriptionType.REGULAR);
         this._parkingLotNumber = parkingLotNumber;
         this._regularEntryTime = regularEntryTime;
         this._regularExitTime = regularExitTime;
     }
 
+    public Date getRegularEntryTime() {
+        return _regularEntryTime;
+    }
+
+    public Date getRegularExitTime() {
+        return _regularExitTime;
+    }
+
+    public Integer getParkingLotNumber() {
+        return _parkingLotNumber;
+    }
 
     @Override
     public String toString() {
