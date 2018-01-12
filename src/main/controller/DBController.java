@@ -16,6 +16,10 @@ public class DBController {
     private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
     public boolean isTest = false;
 
+    // Date formatter for DB insertions
+    private java.text.SimpleDateFormat _simpleDateFormatForDb =
+            new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     private static DBController instance;
 
     static {
@@ -252,8 +256,14 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
-            stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime, exitTimeEstimated, exitTimeActual, price) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
-                    order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(), order.getEntryTime(), order.getEstimatedExitTime(), order.getEstimatedExitTime(), order.getPrice()), Statement.RETURN_GENERATED_KEYS);
+            stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime," +
+                            " exitTimeEstimated, exitTimeActual, price)" +
+                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+                    order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(),
+                    _simpleDateFormatForDb.format(order.getEntryTime()),
+                    _simpleDateFormatForDb.format(order.getEstimatedExitTime()),
+                    _simpleDateFormatForDb.format(order.getActualExitTime()), order.getPrice()),
+                    Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next())
