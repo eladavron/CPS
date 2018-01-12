@@ -160,8 +160,8 @@ public class CPSServer extends AbstractServer
 
         try
         {
+            Controllers.initDb(dbUrl, dbUsername, dbPwd);
             Controllers.init();
-            dbController.init(dbUrl, dbUsername, dbPwd);
         }
         catch (SQLException e)
         {
