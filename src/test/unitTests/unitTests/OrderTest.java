@@ -60,7 +60,7 @@ class OrderTest extends ApplicationTest {
         simpleOrder.setEntryTime(new Date(estimated.getTime() - 500000));
         Order notExpected = new Order(simpleOrder);
         expected  = new Order(simpleOrder);
-        Order actual = OrderController.getInstance().finishOrder(simpleOrder.getOrderID(), priceList.ONE_TIME_PARKING);
+        Order actual = OrderController.getInstance().finishOrder(simpleOrder, priceList.ONE_TIME_PARKING);
         notExpected.setPrice(4);
         expected.setPrice(0.6666666666666666);
         expected.setActualExitTime(actual.getActualExitTime());

@@ -53,14 +53,15 @@ public class SubscriptionController {
     /**
      *  A new Regular Subscription
      * @param carID
+     * @param expiration
      * @param regularEntryTime
      * @param regularExitTime
      * @param parkingLotNumber
      * @return
      */
-    public Subscription addRegularSubscription(Integer carID, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber)
+    public Subscription addRegularSubscription(Integer carID, Date expiration, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber)
     {
-        RegularSubscription newSub = new RegularSubscription(carID, regularEntryTime, regularExitTime, parkingLotNumber);
+        RegularSubscription newSub = new RegularSubscription(carID, expiration, regularEntryTime, regularExitTime, parkingLotNumber);
         this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
         return newSub;
     }
@@ -68,13 +69,13 @@ public class SubscriptionController {
     /**
      *  A new Full Subscription
      * @param carID
+     * @param expiration
      * @return
      */
-    public Subscription addFullSubscription(Integer carID)
+    public Subscription addFullSubscription(Integer carID, Date expiration)
     {
-        FullSubscription newSub = new FullSubscription(carID);
+        FullSubscription newSub = new FullSubscription(carID, expiration);
         this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
-        //TODO: add into DB as well.
         return newSub;
     }
 
@@ -93,14 +94,13 @@ public class SubscriptionController {
      *  for the an existing subscription with given carID
      * @param subscriptionList
      * @param carID
-     * @return the given subscriptions IDs (in order to use with the Map class)
+     * @return -1 = not found, otherwise the given subscriptionID (in order to use with the Map class)
      */
-    public ArrayList<Integer> findSubscriptionsByCarID(Map<Integer, Subscription> subscriptionList, Integer carID) {
-        ArrayList<Integer> subscriptionsIDs = new ArrayList<>();
+    public Integer findSubscriptionByCarID(Map<Integer, Subscription> subscriptionList, Integer carID) {
         for (Subscription subscription : subscriptionList.values()) {
             if (subscription.getCarID() == carID)
-                subscriptionsIDs.add(subscription.getSubscriptionID());
+                return subscription.getSubscriptionID();
         }
-        return subscriptionsIDs;
+        return -1;
     }
 }

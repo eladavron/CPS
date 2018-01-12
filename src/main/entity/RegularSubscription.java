@@ -14,11 +14,12 @@ public class RegularSubscription extends Subscription {
      * Class Constructor.
      *
      * @param carID      The subscription's car id.
+     * @param expiration The expiration of the subscription.
      * @param parkingLotNumber the Subscription is only valid for that parking lot
      * @param regularEntryTime the car can only enter on it's regular time
      * @param regularExitTime   the car can only stay until it's regular exit time
      */
-    public RegularSubscription(Integer carID, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber) {
+    public RegularSubscription(Integer carID, Date expiration, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber) {
         super(carID, SubscriptionType.REGULAR);
         this._parkingLotNumber = parkingLotNumber;
         this._regularEntryTime = regularEntryTime;
