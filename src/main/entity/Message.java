@@ -16,15 +16,26 @@ import java.util.Random;
 public class Message {
     public enum MessageType {
         LOGIN,
+        LOGOUT,
         QUERY,
         CREATE,
         UPDATE,
         DELETE,
+        END_PARKING,
+        NEED_PAYMENT, //Indicates the customer needs to pay. Accompany with a double containing the amount.
+        PAYMENT, //The message of the customer paying through the GUI. Accompany with a double containing the amount.
         QUEUED,
         FINISHED,
         FAILED
     };
-    public enum DataType { STRING, ORDER, PREORDER, USER, PARKING_LOT, SESSION };
+    public enum DataType {
+        PRIMITIVE, //Any data type native to Java, such as String, Double, Integer, etc.
+        ORDER,
+        PREORDER,
+        USER,
+        PARKING_LOT,
+        SESSION
+    };
 
     private long _sID;
     private ArrayList<Object> _data;
@@ -51,11 +62,10 @@ public class Message {
     }
 
     public Message(String json) throws InvalidMessageException {
-        //TODO: Validate JSON string
         try {
             ObjectMapper mapper = new ObjectMapper();
             Message msg = mapper.readValue(json, Message.class);
-            _sID = msg.getSID();
+            _sID =  msg.getSID();
             _type = msg.getType();
             _dataType = msg.getDataType();
             _data = new ArrayList<Object>();
@@ -85,7 +95,7 @@ public class Message {
                     else {
                         for (Object dataObject : msg.getData()) {
                             switch (_dataType) {
-                                case STRING:
+                                case PRIMITIVE:
                                     _data.add(dataObject);
                                     break;
                                 case PREORDER:

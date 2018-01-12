@@ -1,6 +1,7 @@
 package client.GUI.Forms;
 
 import client.GUI.CPSClientGUI;
+import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.Common;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
@@ -21,13 +22,15 @@ import java.net.SocketException;
 
 public class LoginScreenController {
 
+    //TODO: Figure out why you get double lists when you navigate back here.
+
     private CPSClientGUI parentGUI;
 
     @FXML
     private TextField txtLoginUsr;
 
     @FXML
-    private ComboBox cmbParkingLots;
+    private ComboBox<ParkingLot> cmbParkingLots;
 
     @FXML
     private TitledPane paneLogin;
@@ -78,7 +81,7 @@ public class LoginScreenController {
                     attemptConnect(); //This is in a "runlater" so that it runs AFTER the gui is loaded.
                 }
             });
-        } else {
+        } else { //Connection was reset, need to reconnect.
             setConnectedGUI(false);
         }
     }
@@ -101,8 +104,7 @@ public class LoginScreenController {
         WaitScreen waitScreen = new WaitScreen();
         if (CPSClientGUI.getClient() != null && CPSClientGUI.getClient().isConnected()) //If already connected
         {
-            Common.initParkingLots(cmbParkingLots);
-            setConnectedGUI(true);
+            Common.initParkingLots(cmbParkingLots, true);
         }
 
         /*
@@ -153,10 +155,9 @@ public class LoginScreenController {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    Common.initParkingLots(cmbParkingLots);
+                    Common.initParkingLots(cmbParkingLots, true);
                 }
             });
-            cmbParkingLots.getItems().add(0, "Remote Login");
             setConnectedGUI(true);
         });
         waitScreen.run(_attemptConnect);
@@ -182,17 +183,12 @@ public class LoginScreenController {
 
         WaitScreen waitScreen = new WaitScreen();
         ParkingLot parkingLot;
-        if (cmbParkingLots.getSelectionModel().getSelectedIndex() <= 0)
+        parkingLot = (ParkingLot)cmbParkingLots.getSelectionModel().getSelectedItem();
+        if (parkingLot == null)
         {
-            parkingLot = new ParkingLot();
-            parkingLot.setUID(-1);
-            parkingLot.setLocation("Remote Access");
+            parkingLot = (ParkingLot)cmbParkingLots.getItems().get(0);
         }
-        else
-        {
-            parkingLot = (ParkingLot)cmbParkingLots.getSelectionModel().getSelectedItem();
-        }
-        Message loginMessage = new Message(Message.MessageType.LOGIN, Message.DataType.STRING, txtLoginUsr.getText(), txtLoginPwd.getText(), parkingLot);
+        Message loginMessage = new Message(Message.MessageType.LOGIN, Message.DataType.PRIMITIVE, txtLoginUsr.getText(), txtLoginPwd.getText(), parkingLot);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {

@@ -1,14 +1,19 @@
 package client.GUI.Helpers;
 
 import Exceptions.InvalidMessageException;
+import Exceptions.PaymentRequiredException;
 import client.GUI.CPSClientGUI;
+import client.GUI.Controls.WaitScreen;
 import entity.Message;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.net.SocketException;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -25,6 +30,7 @@ public class MessageTasker extends Task<Message> {
     private Message _message;
     private MessageRunnable _onSuccess;
     private MessageRunnable _onFailure;
+    private WaitScreen _waitScreen;
 
     /**
      * Basic default Constructor.
@@ -74,7 +80,7 @@ public class MessageTasker extends Task<Message> {
                 if (getException() instanceof InterruptedException) {
                     _onFailure.setException(new TimeoutException("The operation timed out."));
                 }
-                if (getException() instanceof SocketException)
+                else if (getException() instanceof SocketException)
                 {
                     _onFailure.setException(new SocketException("The connection to the server was lost!"));
                 }
@@ -96,12 +102,7 @@ public class MessageTasker extends Task<Message> {
         long sid = _message.getSID();
         while (CPSClientGUI.getMessageQueue(sid) == null) //Wait for incoming message
         {
-            if (Thread.currentThread().isInterrupted()) //I'm not actually sure it works from here, but just in case let's leave it in.
-            {
-                updateMessage("Timed out!");
-                _onFailure.setMessage(_message);
-                Platform.runLater(_onFailure);
-            }
+           Thread.sleep(100); //I hate busy-waits
         }
 
         while(true){
@@ -117,6 +118,19 @@ public class MessageTasker extends Task<Message> {
                         updateMessage(_failedMessage);
                         _onFailure.setMessage(incoming);
                         throw new InvalidMessageException();
+                    case NEED_PAYMENT:
+                        updateMessage("Payment is required before you can continue.");
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    handlePayment(incoming);
+                                } catch (Exception e) {
+                                    _waitScreen.showError("Payment required!", "You must pay before you leave!");
+                                }
+                            }
+                        });
+                        break;
                     case FINISHED:
                         updateMessage(_successMessage);
                         _onSuccess.setMessage(incoming);
@@ -127,8 +141,33 @@ public class MessageTasker extends Task<Message> {
             }
             else
             {
-                Thread.sleep(500); //Busywaits are terrible.
+                Thread.sleep(100); //Busywaits are terrible.
             }
+        }
+    }
+
+    private void handlePayment(Message message) throws Exception {
+        if (_waitScreen != null)
+            _waitScreen.cancelTimeout();
+        double amount = (double)message.getData().get(0);
+        Alert requestPayment = new Alert(Alert.AlertType.INFORMATION);
+        requestPayment.setTitle("Payment");
+        requestPayment.setHeaderText("Please insert exactly " + amount + " NIS into the machine!");
+        requestPayment.setContentText("No change, insert the exact amount!\nFake bills will be returned!");
+        requestPayment.getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
+        Optional<ButtonType> result = requestPayment.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK)
+        {
+            updateMessage("Sending payment...");
+            Message payment = new Message(Message.MessageType.PAYMENT, Message.DataType.PRIMITIVE, amount);
+            payment.setSID(message.getSID());
+            if (_waitScreen != null)
+                _waitScreen.resetTimeout(CPSClientGUI.DEFAULT_TIMEOUT);
+            CPSClientGUI.sendToServer(payment);
+        }
+        else
+        {
+            throw new PaymentRequiredException(amount);
         }
     }
 
@@ -188,6 +227,22 @@ public class MessageTasker extends Task<Message> {
 
     public void setOnFailure(MessageRunnable onFailure) {
         this._onFailure = onFailure;
+    }
+
+     public Message getTaskedMessage() {
+        return _message;
+    }
+
+    public void setTaskedMessage(Message message) {
+        this._message = message;
+    }
+
+    public WaitScreen getWaitScreen() {
+        return _waitScreen;
+    }
+
+    public void setWaitScreen(WaitScreen waitScreen) {
+        this._waitScreen = waitScreen;
     }
 
     //endregion

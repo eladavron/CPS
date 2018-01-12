@@ -1,9 +1,11 @@
 package client.GUI.Helpers;
 
 import client.GUI.CPSClientGUI;
-import client.GUI.Forms.WaitScreen;
+import client.GUI.Controls.DateTimeCombo;
+import client.GUI.Controls.WaitScreen;
 import entity.Message;
-import entity.Order;
+import entity.ParkingLot;
+import entity.PreOrder;
 import entity.User;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
@@ -135,17 +137,17 @@ public class Common {
      * Populates a combo box with open orders.
      * @param comboBox The combo box to populate.
      */
-    public static void initOrders(ComboBox comboBox)
+    public static void initOrders(ComboBox<PreOrder> comboBox)
     {
         comboBox.getItems().clear();
-        comboBox.setConverter(new StringConverter<Order>() {
+        comboBox.setConverter(new StringConverter<PreOrder>() {
             @Override
-            public String toString(Order object) {
+            public String toString(PreOrder object) {
                 return String.format("%d. %s - %s", object.getOrderID(), object.getEntryTime().toString(), object.getEstimatedExitTime().toString());
             }
 
             @Override
-            public Order fromString(String string) {
+            public PreOrder fromString(String string) {
                 return null;
             }
         });
@@ -156,12 +158,16 @@ public class Common {
      * Populates a combo box with available parking lots.
      * @param comboBox The combo box to populate
      */
-    public static void initParkingLots(ComboBox comboBox)
+    public static void initParkingLots(ComboBox<ParkingLot> comboBox, boolean addRemote)
     {
-        ArrayList list = new ArrayList();
         comboBox.getItems().clear();
+        if (addRemote) {
+            ParkingLot remote = new ParkingLot();
+            remote.setUID(-1);
+            remote.setLocation("Remote Login");
+            comboBox.getItems().add(remote);
+        }
         queryServer(Message.DataType.PARKING_LOT, comboBox);
-
     }
 
     private static void queryServer(Message.DataType type, ComboBox comboBox)
@@ -181,7 +187,11 @@ public class Common {
                 waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
             }
         };
-        User user = CPSClientGUI.getSession().getUser();
+        User user = null;
+        if (CPSClientGUI.getSession() != null) {
+            user = CPSClientGUI.getSession().getUser();
+        }
+
         Message query = new Message(Message.MessageType.QUERY, type, user);
         MessageTasker queryParkingLots = new MessageTasker("Connecting...",
                 "Getting information from server...",

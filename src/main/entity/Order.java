@@ -117,13 +117,9 @@ public class Order {
         this._entryTime = entryTime;
     }
 
-    public Date getEstimatedExitTime() {
-        return _estimatedExitTime;
-    }
+    public Date getEstimatedExitTime() { return _estimatedExitTime; }
 
-    public void setEstimatedExitTime(Date estimatedExitTime) {
-        this._estimatedExitTime = estimatedExitTime;
-    }
+    public void setEstimatedExitTime(Date estimatedExitTime) { this._estimatedExitTime = estimatedExitTime; }
 
     public Date getActualExitTime() {
         return _actualExitTime;

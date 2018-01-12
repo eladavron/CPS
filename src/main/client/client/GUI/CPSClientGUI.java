@@ -5,6 +5,7 @@ import client.GUI.Helpers.ErrorHandlers;
 import entity.Message;
 import entity.Session;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -17,12 +18,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
+import java.util.Stack;
 
 /**
  * The main GUI application
@@ -30,7 +33,6 @@ import java.util.Optional;
  * @author Elad Avron
  */
 public class CPSClientGUI extends Application{
-
     /**
      * FXML paths
      */
@@ -38,6 +40,7 @@ public class CPSClientGUI extends Application{
     public final static String ENTER_PARKING = "Forms/EnterParking.fxml";
     public final static String LOGIN_SCREEN = "Forms/LoginScreen.fxml";
     public final static String NEW_PREORDER = "Forms/NewPreorder.fxml";
+    public final static String VIEW_PREORDERS = "Forms/ViewPreorders.fxml";
 
     /**
      * Public Finals
@@ -49,6 +52,8 @@ public class CPSClientGUI extends Application{
 
     public enum ConnectionStatus { CONNECTED, DISCONNECTED, RESET };
     private static ConnectionStatus _connectionStatus = ConnectionStatus.DISCONNECTED;
+
+    private static Stack<Node> _history = new Stack<Node>();
 
     /**
      * FXML decelerations
@@ -65,6 +70,11 @@ public class CPSClientGUI extends Application{
     @FXML
     private Button btnExit;
 
+    @FXML
+    private Button btnLogout;
+
+
+
     /**
      * Static Accessors
      */
@@ -72,6 +82,7 @@ public class CPSClientGUI extends Application{
     private static AnchorPane _guiRoot;
     private static Label _lblStatus;
     private static Button _btnExit;
+    private static Button _btnLogout;
     private static Stage _primaryStage;
 
     /**
@@ -98,10 +109,33 @@ public class CPSClientGUI extends Application{
      * @param args Command line arguments. Supports "debug" for debugging.
      */
     public static void main(String[] args) {
-        if (args.length > 0 && args[0].equals("debug"))
-            IS_DEBUG = true;
-        else
-            IS_DEBUG = false;
+        Options options = new Options();
+
+        Option optDebug = new Option("d", "debug", false, "Run the program in Debug mode");
+        optDebug.setRequired(false);
+        options.addOption(optDebug);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+
+        /**
+         * Parse Command Line Arguments
+         */
+
+        try
+        {
+            cmd = parser.parse(options, args);
+        }
+        catch (ParseException e)
+        {
+            System.err.println(e.getMessage());
+            formatter.printHelp("CPSClient ", options);
+            System.exit(1);
+            return;
+        }
+
+        IS_DEBUG = cmd.hasOption("debug");
 
         launch(args);
     }
@@ -124,6 +158,7 @@ public class CPSClientGUI extends Application{
             _guiRoot = guiRoot;
             _btnExit = btnExit;
             _lblStatus = lblStatus;
+            _btnLogout = btnLogout;
 
             _primaryStage = primaryStage;
             changeGUI(LOGIN_SCREEN);
@@ -146,7 +181,6 @@ public class CPSClientGUI extends Application{
                     event.consume();
                 }
             });
-
             _primaryStage.show();
         } catch (IOException io)
         {
@@ -162,8 +196,11 @@ public class CPSClientGUI extends Application{
         try {
             URL guiURL = CPSClientGUI.class.getResource(filename);
             Node guiRoot = FXMLLoader.load(guiURL);
+            if (_pageRoot.getChildren().size() > 0)
+                _history.push(_pageRoot.getChildren().get(0));
             _pageRoot.getChildren().clear();
             _pageRoot.getChildren().add(guiRoot);
+            _btnLogout.setVisible(!filename.equals(LOGIN_SCREEN) && getSession() != null);
             AnchorPane.setTopAnchor(guiRoot, 0.0);
             AnchorPane.setBottomAnchor(guiRoot, 0.0);
             AnchorPane.setLeftAnchor(guiRoot, 0.0);
@@ -175,17 +212,30 @@ public class CPSClientGUI extends Application{
     }
 
     /**
-     * Navigate back to the main menu
+     * Go back in the gui history
+     * @param prompt whether or not to prompt the user if he's sure.
      */
-    public static void backToMain() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setHeaderText("Go back to main menu?");
-        alert.setContentText("Any data you entered will be lost.");
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            CPSClientGUI.changeGUI(CUSTOMER_SCREEN); //TODO: Check if customer or not?
+    public static void goBack(boolean prompt)
+    {
+        if (prompt) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setHeaderText("Go back?");
+            alert.setContentText("Any data you entered will be lost.");
+            Optional<ButtonType> result = alert.showAndWait();
+            if (!result.isPresent() || result.get() != ButtonType.OK) {
+                return;
+            }
         }
+        _pageRoot.getChildren().clear();
+        Node guiRoot = _history.pop(); //Pop history.
+        _pageRoot.getChildren().add(guiRoot);
+        guiRoot.setDisable(false);
+        AnchorPane.setTopAnchor(guiRoot, 0.0);
+        AnchorPane.setBottomAnchor(guiRoot, 0.0);
+        AnchorPane.setLeftAnchor(guiRoot, 0.0);
+        AnchorPane.setRightAnchor(guiRoot, 0.0);
     }
+
     //endregion
 
     //region Connection and Message Sending
@@ -251,6 +301,27 @@ public class CPSClientGUI extends Application{
     public static ConnectionStatus getConnectionStatus()
     {
         return _connectionStatus;
+    }
+
+
+    @FXML
+    void doLogout(ActionEvent event) throws IOException {
+        Alert areYouSure = new Alert(Alert.AlertType.CONFIRMATION);
+        areYouSure.setHeaderText("Are you sure you want to log out?");
+        areYouSure.setContentText("Any unsaved changes will be lost!");
+        areYouSure.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        Optional<ButtonType> result = areYouSure.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.YES)
+        {
+            Message logoutMessage = new Message();
+            logoutMessage.setType(Message.MessageType.LOGOUT);
+            logoutMessage.setDataType(Message.DataType.PRIMITIVE);
+            logoutMessage.addData("So long, and thanks for all the fish");
+            sendToServer(logoutMessage);
+            setStatus("Logged out.", Color.BLACK);
+            _session = null;
+            changeGUI(LOGIN_SCREEN);
+        }
     }
 
     //endregion

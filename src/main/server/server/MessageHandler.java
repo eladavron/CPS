@@ -8,8 +8,12 @@ import ocsf.server.ConnectionToClient;
 import utils.TimeUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
+
+import static controller.InitControllers.*;
 
 /**
  * Handles messages from client GUI:
@@ -20,43 +24,89 @@ import java.util.Random;
  *  @author Aviad Bar-David
  */
 public class MessageHandler {
-    //TODO:: add validation for message
     private static ObjectMapper mapper = new ObjectMapper();
+    private static HashMap<Long, Order> messagesThatNeedPayment = new HashMap<>();
 
-    public static void sendToClient(Message message, ConnectionToClient client) throws IOException {
+    public static HashMap<ConnectionToClient, Session> getSessionsMap() {
+        return _sessionsMap;
+    }
+
+    /**
+     * Sessions
+     */
+    private static HashMap<ConnectionToClient, Session> _sessionsMap = new HashMap<ConnectionToClient, Session>();
+
+    private static ArrayList<Object> getDummyOrders(ConnectionToClient clientConnection) {
+        //TODO: Query DB for all orders for this users.
+        //In the meantime, here's a dummy response:
+        Order dummyOrder1 = new Order(_sessionsMap.get(clientConnection).getUser().getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0);
+        Order dummyOrder2 = new Order(_sessionsMap.get(clientConnection).getUser().getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1);
+        //TODO: IMPORTANT return order ID from DB
+        dummyOrder1.setOrderID(11);
+        dummyOrder2.setOrderID(22);
+        ArrayList<Object> dummies = new ArrayList<Object>();
+        dummies.add(dummyOrder1);
+        dummies.add(dummyOrder2);
+        return dummies;
+    }
+
+    private static ArrayList<Object> getDummyPreOrders(ConnectionToClient clientConnection) {
+        //TODO: Query DB for all orders for this users.
+        //In the meantime, here's a dummy response:
+        PreOrder dummyOrder1 = new PreOrder(_sessionsMap.get(clientConnection).getUser().getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0, 0.0, new Date());
+        PreOrder dummyOrder2 = new PreOrder(_sessionsMap.get(clientConnection).getUser().getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1, 0.0, new Date());
+        //TODO: IMPORTANT return order ID from DB
+        dummyOrder1.setOrderID(11);
+        dummyOrder2.setOrderID(22);
+        ArrayList<Object> dummies = new ArrayList<Object>();
+        dummies.add(dummyOrder1);
+        dummies.add(dummyOrder2);
+        return dummies;
+    }
+
+    public static void sendToClient(Message message, ConnectionToClient clientConnection) throws IOException {
         String json = mapper.writeValueAsString(message);
         if (CPSServer.IS_DEBUG)
         {
-            System.out.println("SENT (" + client.getInetAddress() + "): " + json);
+            System.out.println("SENT (" + clientConnection.getInetAddress() + "): " + json);
         }
-        client.sendToClient(json);
+        clientConnection.sendToClient(json);
     }
 
-    public static boolean handleMessage(String json, ConnectionToClient client) throws IOException {
+    public static boolean handleMessage(String json, ConnectionToClient clientConnection) throws IOException {
         try {
             Message msg = new Message(json);
             Message.MessageType msgType = msg.getType();
 
-            if (true) {//TODO: IMPORTANT: Validate
-                Message replyOnReceiveMsg = new Message(Message.MessageType.QUEUED, Message.DataType.STRING, "tempString");
-                replyOnReceiveMsg.setSID(msg.getSID());
-                sendToClient(replyOnReceiveMsg, client);
-            }else{
-                throw new InvalidMessageException("Failed to process message " + msg.getSID(), msg.getSID());
+            if (msgType == Message.MessageType.LOGOUT)
+            {
+                handleLogout(msg,clientConnection);
+                return true;
             }
+
+            Message replyOnReceiveMsg = new Message(Message.MessageType.QUEUED, Message.DataType.PRIMITIVE, "tempString");
+            replyOnReceiveMsg.setSID(msg.getSID());
+            sendToClient(replyOnReceiveMsg, clientConnection);
+
             switch(msgType)
             {
                 case LOGIN:
-                    handleLogin(msg, client);
+                    handleLogin(msg, clientConnection);
                     break;
                 case QUERY:
-                    handleQueries(msg, client);
+                    handleQueries(msg, clientConnection);
                     break;
                 case CREATE:
-                    handleCreation(msg, client);
+                    handleCreation(msg, clientConnection);
                     break;
+                case PAYMENT:
+                    handlePayment(msg, clientConnection);
+                    break;
+                case END_PARKING:
+                    handleEndParking(msg, clientConnection);
+                    //TODO: Implement ASPS too
                 case DELETE:
-                    //TODO: implement ASAP :)
+                    handleDeletion(msg, clientConnection);
                     break;
                 case UPDATE:
                     break;
@@ -67,36 +117,80 @@ public class MessageHandler {
             e.printStackTrace();
             return false;
         } catch (InvalidMessageException e) {
-            Message replyInvalid = new Message(Message.MessageType.FAILED, Message.DataType.STRING, e.getMessage());
+            Message replyInvalid = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, e.getMessage());
             replyInvalid.setSID(e.getSID());
-            sendToClient(replyInvalid, client);
+            sendToClient(replyInvalid, clientConnection);
             e.printStackTrace();
             return false;
         }
         return true;
     }
 
-    private static void handleLogin(Message msg, ConnectionToClient client) throws IOException {
+    private static void handleEndParking(Message msg, ConnectionToClient client) throws IOException {
+        //TODO: IMPORTANT! THIS IS A DUMMY RESPONSE!!!
+        Message endParkingResponse = new Message();
+        Order order = (Order)msg.getData().get(0);
+        endParkingResponse.setSID(msg.getSID());
+        //TODO: Check if order ows money
+        if (order.getOrderID() == 11) //DUMMY - end ok
+        {
+            endParkingResponse.setType(Message.MessageType.FINISHED);
+        }
+        if (order.getOrderID() == 22) //DUMMY - payment needed
+        {
+            messagesThatNeedPayment.put(msg.getSID(), order);
+            endParkingResponse.setType(Message.MessageType.NEED_PAYMENT);
+            endParkingResponse.setDataType(Message.DataType.PRIMITIVE);
+            endParkingResponse.addData(33.45);
+        }
+        sendToClient(endParkingResponse, client);
+    }
+
+    private static void handlePayment(Message msg, ConnectionToClient client) throws IOException {
+        Message response = new Message();
+        response.setSID(msg.getSID());
+        if (messagesThatNeedPayment.containsKey(msg.getSID()))
+        {
+            Order orderToUpdate = messagesThatNeedPayment.get(msg.getSID());
+            //TODO: UPDATE THE DB THAT THIS ORDER PAID!!!
+        }
+        response.setType(Message.MessageType.FINISHED);
+        sendToClient(response, client);
+    }
+
+    private static void handleLogout(Message msg, ConnectionToClient clientConnection) throws IOException {
+        Message logoutResponse = new Message();
+        ArrayList<Object> data = new ArrayList<Object>();
+        logoutResponse.setType(Message.MessageType.LOGOUT);
+        logoutResponse.setSID(msg.getSID());
+        logoutResponse.setDataType(Message.DataType.PRIMITIVE);
+        logoutResponse.addData("So long, and thanks for all the fish");
+        _sessionsMap.remove(clientConnection);
+    }
+
+    private static void handleLogin(Message msg, ConnectionToClient clientConnection) throws IOException {
         Message loginResponse;
         String username =(String) msg.getData().get(0);
         String pwd =(String) msg.getData().get(1);
         ParkingLot parkingLot = (ParkingLot) msg.getData().get(2);
-        if (username.equals("username") && pwd.equals("password")){ //TODO: Validate Actual User Login!!!
+        if (username.equals("u") && pwd.equals("p")){ //TODO: Validate Actual User Login!!!
             Session session = new Session();
-            User user = new User(666, username, pwd, User.UserType.USER); //TODO: Get Actual User from db!
+            User user = new User(2, username, pwd, User.UserType.USER); //TODO: Get Actual User from db!
+            user.setName("Lucifer");
+            user.setEmail("something@hateful.edu");
             session.setUser(user);
             session.setParkingLot(parkingLot);
             session.setSid(new Random().nextInt()); //TODO: Or however you get session IDs
-            //TODO: Save session locally
+            _sessionsMap.put(clientConnection,session);
             loginResponse = new Message(Message.MessageType.FINISHED, Message.DataType.SESSION, session.getSid(), session.getUser(), session.getParkingLot());
         }else{
-            loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.STRING, "Wrong Username or Password");
+            loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, "Wrong Username or Password");
         }
         loginResponse.setSID(msg.getSID());
-        sendToClient(loginResponse, client);
+        sendToClient(loginResponse, clientConnection);
     }
 
-    private static boolean handleQueries(Message queryMsg, ConnectionToClient client) throws IOException {
+    private static boolean handleQueries(Message queryMsg, ConnectionToClient clientConnection) throws IOException {
 
         /**
          * Important!
@@ -110,14 +204,8 @@ public class MessageHandler {
         switch (queryMsg.getDataType())
         {
             case PREORDER:
-                //TODO: Query DB for all orders for this users.
-                //In the meantime, here's a dummy response:
-                PreOrder dummyOrder1 = new PreOrder(user.getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0, 0.0, new Date());
-                PreOrder dummyOrder2 = new PreOrder(user.getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1, 0.0, new Date());
-                //TODO: IMPORTANT return order ID from DB
-                dummyOrder1.setOrderID(11);
-                dummyOrder2.setOrderID(22);
-                response.addData(dummyOrder1, dummyOrder2);
+                response.setDataType(Message.DataType.PREORDER);
+                response.setData(getDummyPreOrders(clientConnection));
                 break;
 
             case PARKING_LOT:
@@ -126,19 +214,19 @@ public class MessageHandler {
                 ParkingLot dummyLot1 = new ParkingLot(1,1,1,"Haifa");
                 ParkingLot dummyLot2 = new ParkingLot(2,2,2,"Tel-Aviv");
                 ParkingLot dummbyLot3 = new ParkingLot(3,3,3,"Petah-Tikva");
+                dummyLot1.setUID(0);
+                dummyLot1.setUID(1);
+                dummbyLot3.setUID(2);
                 response.addData(dummyLot1, dummyLot2, dummbyLot3);
                 break;
-            case STRING:
+            case PRIMITIVE:
                 break;
             case ORDER:
-                Order dummy1 = new Order(user.getUID(),1234567,TimeUtils.addTime(new Date(), TimeUtils.Units.HOURS, 1) ,0);
-                Order dummy2 = new Order(user.getUID(),7654321,TimeUtils.addTime(new Date(), TimeUtils.Units.HOURS, 1) ,1);
-                //TODO: IMPORTANT return order ID from DB.
-                dummy1.setOrderID(11);
-                dummy2.setOrderID(22);
-                response.addData(dummy1, dummy2);
+                response.setData(getDummyOrders(clientConnection));
                 break;
             case USER:
+                break;
+            case SESSION:
                 break;
             default:
                 throw new NotImplementedException("Unknown data type: " + queryMsg.getDataType().toString());
@@ -146,12 +234,23 @@ public class MessageHandler {
         }
         response.setType(Message.MessageType.FINISHED);
         response.setSID(queryMsg.getSID());
-        sendToClient(response, client);
+        sendToClient(response, clientConnection);
         return true;
     }
 
-    private static boolean handleCreation(Message createMsg, ConnectionToClient client) throws IOException {
-        Message reply = new Message();
+    private static void handleDeletion(Message deleteMsg, ConnectionToClient clientConnection) {
+
+//        Message deleteMsgResponse = new Message();
+//        switch(deleteMsg.getDataType())
+//        {
+//            case
+//
+//        }
+
+    }
+
+    private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws IOException {
+        Message createMsgResponse = new Message();
         switch(createMsg.getDataType())
         {
             case USER:
@@ -162,14 +261,15 @@ public class MessageHandler {
                 //Meanwhile, here's a dummy
                 Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
                 order.setOrderID(new Random().nextInt()); //TODO: Get from server! This is a dummy response!
-                reply = new Message(Message.MessageType.FINISHED, Message.DataType.ORDER, order);
+                createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.ORDER, order);
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
-                Order newPreOrder = controller.OrderController.getInstance().makeNewPreOrder(preorder);
-                reply = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, newPreOrder);
+//                Order newPreOrder = orderController.makeNewPreOrder(preorder);
+                preorder.setOrderID(new Random().nextInt());
+                createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, preorder);
                 break;
-            case STRING:
+            case PRIMITIVE:
                 break;
             case PARKING_LOT:
                 ParkingLot dummy1 = new ParkingLot();
@@ -180,8 +280,8 @@ public class MessageHandler {
             default:
                 return false;
         }
-        reply.setSID(createMsg.getSID());
-        sendToClient(reply, client);
+        createMsgResponse.setSID(createMsg.getSID());
+        sendToClient(createMsgResponse, clientConnection);
         return true;
     }
 

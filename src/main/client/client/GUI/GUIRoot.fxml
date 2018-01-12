@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
@@ -42,10 +41,12 @@
                      </BorderPane.margin></Button>
                </right>
                <left>
-                  <Label fx:id="lblStatus" BorderPane.alignment="CENTER">
-                     <BorderPane.margin>
-                        <Insets left="10.0" />
-                     </BorderPane.margin></Label>
+                  <FlowPane alignment="CENTER_LEFT" hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Label fx:id="lblStatus" />
+                        <Button fx:id="btnLogout" mnemonicParsing="false" onAction="#doLogout" text="Logout" />
+                     </children>
+                  </FlowPane>
                </left>
             </BorderPane>
          </children>

@@ -2,8 +2,9 @@ package client.GUI.Forms;
 
 
 import client.GUI.CPSClientGUI;
+import client.GUI.Controls.DateTimeCombo;
+import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.Common;
-import client.GUI.Helpers.DateTimeCombo;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
@@ -67,7 +68,7 @@ public class NewPreorderController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                Common.initParkingLots(cmbParkingLot);
+                Common.initParkingLots(cmbParkingLot, false);
             }
         });
         _entryDateTime = new DateTimeCombo(entryDatePicker, cmbEntryHour, cmbEntryMinute);
@@ -123,7 +124,12 @@ public class NewPreorderController implements Initializable {
                         "Parking Lot ID: " + preorder.getParkingLotNumber() +"\n" +
                         "Parking Start: " + preorder.getEntryTime() + "\n" +
                         "Estimated Exit: " + preorder.getEstimatedExitTime());
-                waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
+                waitScreen.setOnClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        CPSClientGUI.goBack(false);
+                    }
+                });
             }
         };
         MessageRunnable onFailure = new MessageRunnable() {
@@ -144,7 +150,7 @@ public class NewPreorderController implements Initializable {
 
     @FXML
     void returnToMain(ActionEvent event) {
-        CPSClientGUI.backToMain();
+        CPSClientGUI.goBack(true);
     }
 
 

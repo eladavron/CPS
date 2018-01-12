@@ -1,5 +1,6 @@
 package client.GUI.Helpers;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
 import java.io.IOException;
@@ -22,7 +23,12 @@ public class ErrorHandlers {
         guiError.setHeaderText("An error occurred displaying the GUI!");
         guiError.setContentText("The following IO error occurred while trying to display the interface:\n"
                 + ex.getMessage());
-        guiError.showAndWait();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                guiError.showAndWait();
+            }
+        });
         ex.printStackTrace();
         if (exit)
         {

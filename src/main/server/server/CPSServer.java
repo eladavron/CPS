@@ -4,10 +4,11 @@ import controller.Controllers;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
-import static controller.Controllers.*;
+import static controller.InitControllers.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class CPSServer extends AbstractServer
 {
@@ -28,7 +29,6 @@ public class CPSServer extends AbstractServer
     /**
      * Instance Parameters
      */
-//    private static DBController dbController;
     public static boolean IS_DEBUG;
 
     /**
@@ -39,7 +39,19 @@ public class CPSServer extends AbstractServer
     public CPSServer(int port)
     {
         super(port);
+        Controllers.init();
+        initDummies();
     }
+
+    public static void initDummies() {
+
+        //Dummy customer
+        ArrayList<Integer> dummyCarList = new ArrayList<Integer>();
+        dummyCarList.add(1234567);
+        dummyCarList.add(7654321);
+        customerController.addNewCustomer(666, "Lucifer", "something@hateful.edu", dummyCarList);
+    }
+
 
     /**
      * This method handles any messages received from the client.
@@ -126,7 +138,7 @@ public class CPSServer extends AbstractServer
         catch (ParseException e)
         {
             System.err.println(e.getMessage());
-            formatter.printHelp("CPSClient ", options);
+            formatter.printHelp("CPSServer ", options);
             System.exit(1);
             return;
         }

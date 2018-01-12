@@ -3,9 +3,9 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox prefHeight="382.0" prefWidth="600.0" styleClass="root" stylesheets="@../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.CustomerScreenController">
+<VBox fx:id="customerRoot" prefHeight="382.0" prefWidth="600.0" styleClass="root" stylesheets="@../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.CustomerScreenController">
    <children>
-      <TitledPane animated="false" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Parking" VBox.vgrow="ALWAYS">
+      <TitledPane fx:id="paneParking" animated="false" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Parking" VBox.vgrow="ALWAYS">
          <content>
             <AnchorPane>
                <children>
@@ -60,7 +60,7 @@
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1">
                            <children>
-                              <Button fx:id="btnEditOrder" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="Edit Order" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="btnEditOrder" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleCustomerButton" text="View Orders" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

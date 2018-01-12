@@ -762,11 +762,11 @@
 .tool-bar .button, .tool-bar .toggle-button {
     -fx-background-color: -swatch-toolbar;
     -fx-text-fill: -fx-text-base-color;
-    -fx-pref-height: 42;
-    -fx-pref-width: 42;
+    /*-fx-pref-height: 42;*/
+    /*-fx-pref-width: 42;*/
     -fx-min-height: 42;
     -fx-min-width: 42;
-    -fx-padding: 0;
+    -fx-padding: 0 5 0 5;
     -fx-background-radius: 0;
 }
 

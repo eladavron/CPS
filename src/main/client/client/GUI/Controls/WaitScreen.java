@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Controls;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Helpers.ErrorHandlers;
@@ -50,6 +50,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
 
     private static int timeToClose;
 
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnCancel.setOnAction(new EventHandler<ActionEvent>() {
@@ -91,15 +92,10 @@ public class WaitScreen extends AnchorPane implements Initializable {
     {
         _task = task;
         this.bindMessageProperty(task.messageProperty());
+
         this.show();
         worker = new Thread(task);
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                worker.interrupt();
-            }
-        }, TimeUnit.SECONDS.toMillis(timeout));
+        resetTimeout(timeout);
         worker.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
@@ -132,6 +128,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
         lblMessage.textProperty().bind(sp);
     }
 
+
     /**
      * Abort any time-out counter so that it doesn't interfere with error or success messages.
      */
@@ -141,6 +138,19 @@ public class WaitScreen extends AnchorPane implements Initializable {
             timer.cancel();
             timer.purge();
         }
+    }
+
+    public void resetTimeout(int seconds)
+    {
+       timer = new Timer();
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (!CPSClientGUI.IS_DEBUG)
+                    worker.interrupt();
+            }
+        }, TimeUnit.SECONDS.toMillis(seconds));
     }
 
     //endregion

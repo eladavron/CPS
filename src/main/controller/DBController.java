@@ -256,13 +256,14 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
+            String _actualTime = (order.getActualExitTime() == null)? _simpleDateFormatForDb.format(new Date(0)) :  _simpleDateFormatForDb.format(order.getActualExitTime());
             stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime," +
                             " exitTimeEstimated, exitTimeActual, price)" +
                             " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
                     order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(),
                     _simpleDateFormatForDb.format(order.getEntryTime()),
                     _simpleDateFormatForDb.format(order.getEstimatedExitTime()),
-                    _simpleDateFormatForDb.format(order.getActualExitTime()), order.getPrice()),
+                    _actualTime, order.getPrice()),
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();

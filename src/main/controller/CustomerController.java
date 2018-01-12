@@ -46,51 +46,52 @@ public class CustomerController {
 
     /**
      *  Given the the right params needed for a new Order...controller will add this new order into the active orders list.
-     * @param customer
      * @param customerID
      * @param carID
      * @param estimatedExitTime
      * @param parkingLotNumber
      */
-    public void addNewOrder(Customer customer, Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
+    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
+        Customer customer = getCustomer(customerID);
         Order newOrder = OrderController.getInstance().makeNewSimpleOrder(customerID, carID, estimatedExitTime,  parkingLotNumber);
         Map<Integer, Order> activeOrders = customer.getActiveOrders();
         activeOrders.put(newOrder.getOrderID(), newOrder);
         customer.setActiveOrders(activeOrders);
+        return newOrder;
     }
 
     /**
      * OverLoading function for a given template of an Order.
-     * @param customer
      * @param newOrder
      */
-    public void addNewOrder(Customer customer , Order newOrder){
-        addNewOrder(customer, newOrder.getCostumerID(), newOrder.getCarID(), newOrder.getEstimatedExitTime(), newOrder.getParkingLotNumber());
+    public Order addNewOrder(Order newOrder){
+        return addNewOrder(newOrder.getCostumerID(), newOrder.getCarID(), newOrder.getEstimatedExitTime(), newOrder.getParkingLotNumber());
     }
 
     /**
      *  Overloaded function of the above just for PreOrder making.
-     * @param customer
      * @param customerID
      * @param carID
      * @param estimatedExitTime
      * @param parkingLotNumber
      * @param estimatedEntryTime
+     * @return order
      */
-    public void addNewOrder(Customer customer, Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
+    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
+        Customer customer = getCustomer(customerID);
         Order newOrder = OrderController.getInstance().makeNewPreOrder(customerID, carID, estimatedExitTime,  parkingLotNumber, estimatedEntryTime);
         Map<Integer, Order> activeOrders = customer.getActiveOrders();
         activeOrders.put(newOrder.getOrderID(),newOrder);
         customer.setActiveOrders(activeOrders);
+        return newOrder;
     }
 
     /**
      * OverLoading function for a given template of a PreOrder.
-     * @param customer
      * @param newPreOrder
      */
-    public void addNewOrder(Customer customer , PreOrder newPreOrder){
-        addNewOrder(customer, newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
+    public Order addNewOrder(PreOrder newPreOrder){
+        return addNewOrder(newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
     }
 
     /**

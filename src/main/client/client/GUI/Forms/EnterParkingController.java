@@ -1,13 +1,15 @@
 package client.GUI.Forms;
 
 import client.GUI.CPSClientGUI;
+import client.GUI.Controls.DateTimeCombo;
+import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.Common;
-import client.GUI.Helpers.DateTimeCombo;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
 import entity.Order;
 import entity.ParkingLot;
+import entity.PreOrder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -27,7 +29,7 @@ public class EnterParkingController implements Initializable {
     private Button btnBack;
 
     @FXML
-    private ComboBox<Order> cmbOrder;
+    private ComboBox<PreOrder> cmbOrder;
 
     @FXML
     private ComboBox<String> cmbExitMinute;
@@ -52,7 +54,7 @@ public class EnterParkingController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
-        Common.initParkingLots(cmbParkingLot);
+        Common.initParkingLots(cmbParkingLot, false);
         Common.initOrders(cmbOrder);
         cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
@@ -129,21 +131,16 @@ public class EnterParkingController implements Initializable {
      * Fills the order once selected in the drop down menu
      */
     private void fillOrder() {
-        Order selectedOrder = cmbOrder.getValue();
-        if (selectedOrder == null) //Clear
-        {
-            //TODO: Clear Form
-        } else
-        {
-            cmbParkingLot.getSelectionModel().select(selectedOrder.getParkingLotNumber()); //TODO: Should select actual object!
-            txtCarID.setText(selectedOrder.getCarID().toString());
-            _exitDateTime.setDateTime(selectedOrder.getEstimatedExitTime());
-            validateForm();
-        }
+        PreOrder selectedOrder = cmbOrder.getValue();
+        cmbParkingLot.getSelectionModel().select(selectedOrder.getParkingLotNumber()); //TODO: Should select actual object!
+        txtCarID.setText(selectedOrder.getCarID().toString());
+        _exitDateTime.setDateTime(selectedOrder.getEstimatedExitTime());
+        validateForm();
+
     }
 
     @FXML
     void returnToMain(ActionEvent event) throws IOException {
-        CPSClientGUI.backToMain();
+        CPSClientGUI.goBack(true);
     }
 }
