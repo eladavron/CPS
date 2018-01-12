@@ -110,7 +110,7 @@ public class NewPreorderController implements Initializable {
         WaitScreen waitScreen = new WaitScreen();
         Date entryTime = _entryDateTime.getDateTime();
         Date exitTime = _exitDateTime.getDateTime();
-        int parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getUID();
+        int parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getParkingLotID();
         PreOrder newOrder = new PreOrder(CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(txtCarID.getText()), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);

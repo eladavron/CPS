@@ -163,7 +163,7 @@ public class Common {
         comboBox.getItems().clear();
         if (addRemote) {
             ParkingLot remote = new ParkingLot();
-            remote.setUID(-1);
+            remote.setParkingLotID(-1);
             remote.setLocation("Remote Login");
             comboBox.getItems().add(remote);
         }

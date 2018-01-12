@@ -93,7 +93,7 @@ public class EnterParkingController implements Initializable {
 
         WaitScreen waitScreen = new WaitScreen();
         Date exitTime = _exitDateTime.getDateTime();
-        Integer parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getUID();
+        Integer parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getParkingLotID();
         Order newOrder = new Order(CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(txtCarID.getText()),exitTime,parkingLotNumber);
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);

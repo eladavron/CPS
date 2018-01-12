@@ -11,25 +11,33 @@ import java.util.Objects;
  */
 public class ParkingLot {
 	/**
-	 * _uid is the parking lot id.
-	 * _uIDDispatcher is the static global ID dispatcher. //TODO: Replace with DB-given ID
+	 * _parkingLotID is the parking lot id.
+     * _parkingLotManagerID Parking lot's manager ID.
+     * _location Parking lot name.
 	 * ParkingSpaceMatrix is a matrix which holds the parking spot's details.
 	 * _height is the parking lot's height.
 	 * _width is the parking lot's width.
 	 * _depth is the parking lot's depth.
+	 * _widthNumOccupied Current width occupied slots indicator.
+     * _heightNumOccupied Current height occupied slots indicator.
+     * _depthNumOccupied Current depth occupied slots indicator.
 	 */
-	private Integer _uID;
+    private Integer _parkingLotManagerID;
+    private Integer _parkingLotID;
 	private String _location;
 	private ParkingSpace _parkingSpaceMatrix[][][] ;
 	private Integer _height;
 	private Integer _width;
 	private Integer _depth;
 
+    private Integer _widthNumOccupied = 1 ;
+    private Integer _heightNumOccupied = 1 ;
+    private Integer _depthNumOccupied = 1;
+
 	/**
-	 * Class constructor which increases the parking lot ids by 1.
+	 * Default class constructor.
 	 */
 	public ParkingLot() {
-
 	}
 
 	/**
@@ -41,21 +49,33 @@ public class ParkingLot {
 	 */
 	public ParkingLot(Integer h, Integer w, Integer d, String location){
 		this._location = location;
+		// First height,width,depth is ignored and never accessed.
+        // height = rows , width = cols.
 		this._height = h;
 		this._width = w;
 		this._depth = d;
-		this._parkingSpaceMatrix = new ParkingSpace[h][w][d];
+		this._parkingSpaceMatrix = new ParkingSpace[_depth+1][_width+1][_height+1];
 	}
 
+
+    public ParkingLot(Integer parkingLotID, String location, Integer rows, Integer columns, Integer depth, Integer parkingLotManagerId) {
+        this._location = location;
+        this._parkingLotManagerID = parkingLotManagerId;
+        this._height = rows;
+        this._width = columns;
+        this._depth = depth;
+        this._parkingSpaceMatrix = new ParkingSpace[depth][columns][rows];
+        this._parkingLotID = parkingLotID;
+    }
 	/**
 	 * Setters and getters.
 	 */
-	public Integer getUID() {
-		return _uID;
+	public Integer getParkingLotID() {
+		return _parkingLotID;
 	}
 
-	public void setUID(Integer uID) {
-		this._uID = uID;
+	public void setParkingLotID(Integer uID) {
+		this._parkingLotID = uID;
 	}
 
 	public String getLocation() {
@@ -98,21 +118,50 @@ public class ParkingLot {
 		this._parkingSpaceMatrix = parkingSpaceMatrix;
 	}
 
-	@Override
-	public String toString() {
-		return String.format("%d. %s", this._uID, this._location);
-	}
+    public Integer getWidthNumOccupied() {
+        return _widthNumOccupied;
+    }
+
+    public void setWidthNumOccupied(Integer widthNumOccupied) {
+        this._widthNumOccupied = widthNumOccupied;
+    }
+
+    public Integer getHeightNumOccupied() {
+        return _heightNumOccupied;
+    }
+
+    public void setHeightNumOccupied(Integer heightNumOccupied) {
+        this._heightNumOccupied = heightNumOccupied;
+    }
+
+    public Integer getDepthNumOccupied() {
+        return _depthNumOccupied;
+    }
+
+    public void setDepthNumOccupied(Integer depthNumOccupied) {
+        this._depthNumOccupied = depthNumOccupied;
+    }
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		ParkingLot that = (ParkingLot) o;
-		return Objects.equals(_uID, that._uID) &&
-				Objects.equals(_location, that._location) &&
-				Objects.equals(_height, that._height) &&
-				Objects.equals(_width, that._width) &&
-				Objects.equals(_depth, that._depth) &&
-				Arrays.equals(_parkingSpaceMatrix, that._parkingSpaceMatrix);
+	public String toString() {
+		return String.format("%d. %s", this._parkingLotID, this._location);
 	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParkingLot that = (ParkingLot) o;
+        return Objects.equals(_parkingLotManagerID, that._parkingLotManagerID) &&
+                Objects.equals(_parkingLotID, that._parkingLotID) &&
+                Objects.equals(_location, that._location) &&
+                Arrays.equals(_parkingSpaceMatrix, that._parkingSpaceMatrix) &&
+                Objects.equals(_height, that._height) &&
+                Objects.equals(_width, that._width) &&
+                Objects.equals(_depth, that._depth) &&
+                Objects.equals(_widthNumOccupied, that._widthNumOccupied) &&
+                Objects.equals(_heightNumOccupied, that._heightNumOccupied) &&
+                Objects.equals(_depthNumOccupied, that._depthNumOccupied);
+    }
+
 }

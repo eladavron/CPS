@@ -57,7 +57,7 @@ public class CustomerScreenController implements Initializable {
         CPSClientGUI.setStatus("Logged in as " + CPSClientGUI.getSession().getUser().getName()
                     + " to " + CPSClientGUI.getSession().getParkingLot().getLocation(), Color.GREEN);
 
-        if (_session.getParkingLot().getUID() == -1) //Remote login
+        if (_session.getParkingLot().getParkingLotID() == -1) //Remote login
         {
             customerRoot.getChildren().remove(paneParking);
         }

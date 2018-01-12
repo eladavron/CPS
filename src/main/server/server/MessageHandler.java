@@ -214,9 +214,9 @@ public class MessageHandler {
                 ParkingLot dummyLot1 = new ParkingLot(1,1,1,"Haifa");
                 ParkingLot dummyLot2 = new ParkingLot(2,2,2,"Tel-Aviv");
                 ParkingLot dummbyLot3 = new ParkingLot(3,3,3,"Petah-Tikva");
-                dummyLot1.setUID(1);
-                dummyLot2.setUID(2);
-                dummbyLot3.setUID(3);
+                dummyLot1.setParkingLotID(1);
+                dummyLot2.setParkingLotID(2);
+                dummbyLot3.setParkingLotID(3);
                 response.addData(dummyLot1, dummyLot2, dummbyLot3);
                 break;
             case PRIMITIVE:
