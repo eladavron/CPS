@@ -53,29 +53,29 @@ public class SubscriptionController {
     /**
      *  A new Regular Subscription
      * @param carID
-     * @param expiration
      * @param regularEntryTime
      * @param regularExitTime
      * @param parkingLotNumber
      * @return
      */
-    public Subscription addRegularSubscription(Integer carID, Date expiration, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber)
+    public Subscription addRegularSubscription(Integer carID, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber)
     {
-        RegularSubscription newSub = new RegularSubscription(carID, expiration, regularEntryTime, regularExitTime, parkingLotNumber);
+        RegularSubscription newSub = new RegularSubscription(carID, regularEntryTime, regularExitTime, parkingLotNumber);
         this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
+        //TODO: add into DB as well.
         return newSub;
     }
 
     /**
      *  A new Full Subscription
      * @param carID
-     * @param expiration
      * @return
      */
-    public Subscription addFullSubscription(Integer carID, Date expiration)
+    public Subscription addFullSubscription(Integer carID)
     {
-        FullSubscription newSub = new FullSubscription(carID, expiration);
+        FullSubscription newSub = new FullSubscription(carID);
         this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
+        //TODO: add into DB as well.
         return newSub;
     }
 
@@ -88,19 +88,19 @@ public class SubscriptionController {
     {
         subscriptionToRenew.setExpiration(addTime(new Date(), TimeUtils.Units.DAYS, 30));
     }
-
     /**
      *  Since there is only 1 subscription per 1 carID and we map using subscriptionID and not carID this function will search
      *  for the an existing subscription with given carID
      * @param subscriptionList
      * @param carID
-     * @return -1 = not found, otherwise the given subscriptionID (in order to use with the Map class)
+     * @return the given subscriptions IDs (in order to use with the Map class)
      */
-    public Integer findSubscriptionByCarID(Map<Integer, Subscription> subscriptionList, Integer carID) {
+    public ArrayList<Integer> findSubscriptionsByCarID(Map<Integer, Subscription> subscriptionList, Integer carID) {
+        ArrayList<Integer> subscriptionsIDs = new ArrayList<>();
         for (Subscription subscription : subscriptionList.values()) {
             if (subscription.getCarID() == carID)
-                return subscription.getSubscriptionID();
+                subscriptionsIDs.add(subscription.getSubscriptionID());
         }
-        return -1;
+        return subscriptionsIDs;
     }
 }

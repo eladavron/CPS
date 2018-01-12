@@ -18,7 +18,6 @@ public class ParkingLot {
 	 * _width is the parking lot's width.
 	 * _depth is the parking lot's depth.
 	 */
-	private static Integer _uIDDispatcher = 1;
 	private Integer _uID;
 	private String _location;
 	private ParkingSpace _parkingSpaceMatrix[][][] ;
@@ -30,7 +29,7 @@ public class ParkingLot {
 	 * Class constructor which increases the parking lot ids by 1.
 	 */
 	public ParkingLot() {
-		this._uID = _uIDDispatcher++;
+
 	}
 
 	/**
@@ -41,7 +40,6 @@ public class ParkingLot {
 	 * @param location Parking lot location name.
 	 */
 	public ParkingLot(Integer h, Integer w, Integer d, String location){
-		this._uID = _uIDDispatcher++;
 		this._location = location;
 		this._height = h;
 		this._width = w;
@@ -90,14 +88,6 @@ public class ParkingLot {
 
 	public void setDepth(Integer depth) {
 		this._depth = depth;
-	}
-
-	public static Integer getUIDDispatcher() {
-		return _uIDDispatcher;
-	}
-
-	public static void setUIDDispatcher(Integer UIDDispatcher) {
-		ParkingLot._uIDDispatcher = UIDDispatcher;
 	}
 
 	public ParkingSpace[][][] getParkingSpaceMatrix() {

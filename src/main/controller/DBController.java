@@ -1,12 +1,13 @@
 package controller;
 
-import controller.OrderController;
 import entity.Employee;
 import entity.Order;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static controller.Controllers.orderController;
 
 /**
  * A class that interfaces with the database.
@@ -256,7 +257,9 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
-            String _actualTime = (order.getActualExitTime() == null)? _simpleDateFormatForDb.format(new Date(0)) :  _simpleDateFormatForDb.format(order.getActualExitTime());
+            String _actualTime = (order.getActualExitTime() == null)
+                    ? _simpleDateFormatForDb.format(new Date(0))
+                    :  _simpleDateFormatForDb.format(order.getActualExitTime());
             stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime," +
                             " exitTimeEstimated, exitTimeActual, price)" +
                             " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
@@ -272,7 +275,7 @@ public class DBController {
             else
                 throw new SQLException("Couldn't get auto-generated UID");
 
-            rs = stmt.executeQuery(String.format("SELECT * FROM ORDERS WHERE UID=%d", uid)); //Get the creation time from the DB.
+            rs = stmt.executeQuery(String.format("SELECT * FROM Orders WHERE idOrders=%d", uid)); //Get the creation time from the DB.
             if (rs.next())
                 creationDate = new Date(rs.getTimestamp("orderCreationTime").getTime());
             else
@@ -297,20 +300,22 @@ public class DBController {
 
     public ArrayList<Order> parseOrdersFromDB(ResultSet rs) {
         ArrayList<Order> myOrders = new ArrayList<>();
-        if (rs == null)
+        if (rs == null){
             return null;
+        }
         else {
             try {
                 while (rs.next()) {
-                    Order rowOrder = OrderController.getInstance().makeOrderFromDb(rs.getInt("idOrders"),
-                            rs.getInt("customerId"),
-                            rs.getInt("carId"),
-                            rs.getInt("parkingLotNumber"),
+                    Order rowOrder = new Order(
+                            rs.getInt("idOrders"),
+                             rs.getInt("idCar"),
+                            rs.getInt("idCustomer"),
+                            rs.getInt("idParkingLot"),
                             rs.getDate("entryTime"),
-                            rs.getDate("estimatedExitTime"),
-                            rs.getDate("actualExitTime"),
+                            rs.getDate("exitTimeEstimated"),
+                            rs.getDate("exitTimeActual"),
                             rs.getDouble("price"),
-                            rs.getDate("creationTime"));
+                            rs.getDate("orderCreationTime"));
                     myOrders.add(rowOrder);
                 }
             } catch (SQLException e) {
@@ -333,10 +338,10 @@ public class DBController {
         ResultSet rs;
 
         if (orderId == -1) { // get all rows
-            rs = QueryTable("ORDERS");
+            rs = QueryTable("Orders");
 
         } else { // get specific order
-            rs = QueryTable("ORDERS", "idOrders", orderId);
+            rs = QueryTable("Orders", "idOrders", orderId);
         }
 
         return parseOrdersFromDB(rs);
@@ -352,10 +357,10 @@ public class DBController {
         ResultSet rs;
 
         if (userID == -1) { // get all rows
-            rs = QueryTable("ORDERS");
+            rs = QueryTable("Orders");
 
         } else { // get specific order
-            rs = QueryTable("ORDERS", "customerID", userID);
+            rs = QueryTable("Orders", "customerID", userID);
         }
 
         return parseOrdersFromDB(rs);

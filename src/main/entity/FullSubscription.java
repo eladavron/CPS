@@ -13,9 +13,8 @@ public class FullSubscription extends Subscription {
      * Class Constructor.
      *
      * @param carID      The subscription's car id.
-     * @param expiration The expiration of the subscription.
      */
-    public FullSubscription(int carID, Date expiration) {
+    public FullSubscription(int carID) {
         super(carID, SubscriptionType.FULL);
     }
 

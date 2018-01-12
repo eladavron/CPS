@@ -22,9 +22,11 @@ public class OrderController {
     /**
      * A private Constructor prevents any other class from
      * instantiating.
+     * we assume here there is a live connection to the DB.
      */
     private OrderController() {
         this._ordersList = new HashMap<>();
+        getOrdersFromDb();
     }
 
     /**
@@ -56,6 +58,7 @@ public class OrderController {
     public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         //UID is select within the dbController and then set in it as well.
+        newOrder.setOrderStatus(Order.orderStatus.IN_PROGRESS);
         dbController.InsertOrder(newOrder);
         _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
@@ -96,15 +99,15 @@ public class OrderController {
 
     public Order makeOrderFromDb(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Date entryTime, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime){
         Order orderFromDb = new Order(orderID, customerID,  carID,  parkingLotNumber,  entryTime,  estimatedExitTime,  actualExitTime,  price,  creationTime);
-        //_ordersList.add(orderFromDb);
+        _ordersList.put(orderFromDb.getOrderID(), orderFromDb);
         return orderFromDb;
     }
 
-    public boolean getOrdersFromDb(){
-        throw new NotImplementedException();
-        //return false;
+    public void getOrdersFromDb() {
+        setOrdersList(dbController.getOrdersByID(-1));
     }
 
+    //TODO: is this needed along with getOrdersFromDb()?
     public ArrayList<Order> getOrdersList() {
         return (ArrayList<Order>) _ordersList.values();
     }
@@ -112,28 +115,45 @@ public class OrderController {
         list.forEach(order -> _ordersList.put(order.getOrderID(), order));
     }
 
-    /**
-     * Given a new estimated entry time, this func will update the order's entry.
-     * assuming here the only PreOrder class has estimated entry time.
-     * @param order : to change its time
-     * @param estimatedEntryTime : the new entry time.
-     * @return order with the new entry time updated.
-     */
-    public Order changeEstimatedEntryTimeOfOrder(PreOrder order, Date estimatedEntryTime){
-        order.setEstimatedEntryTime(estimatedEntryTime);
-        return order;
-    }
+//    TODO: decide later on if to keep or not since its unused...will stay here for now.
+//    /**
+//     * Given a new estimated entry time, this func will update the order's entry.
+//     * assuming here the only PreOrder class has estimated entry time.
+//     * @param order : to change its time
+//     * @param estimatedEntryTime : the new entry time.
+//     * @return order with the new entry time updated.
+//     */
+//    public Order changeEstimatedEntryTimeOfOrder(PreOrder order, Date estimatedEntryTime){
+//        order.setEstimatedEntryTime(estimatedEntryTime);
+//        return order;
+//    }
 
     //TODO : Add different options to reach the specific order maybe using the customer's profile or so.
     /**
      *  When a customer wants to finish his order (and move the car out) this function is called,
      *  with the current time as the exitTime of the customer and the order's price is calculated.
-     * @param order : the customer's order to be finished
+     * @param orderID : the customer's order to be finished
+     * @param priceType : The price this order will charge per hour for.
      * @return order : the finished order with the final price updated
      */
-    public Order finishOrder(Order order, priceList priceType){
+    public Order finishOrder(Integer orderID, priceList priceType){
+        Order order = _ordersList.get(orderID);
         order.setActualExitTime(new Date());
         order.setPrice(BillingController.getInstance().calculateParkingCharge(order.getEntryTime(), order.getActualExitTime(), priceType));
+        order.setOrderStatus(Order.orderStatus.FINISHED);
+        //TODO: dbcontroller.removeOrder(orderID). and then dbcontroller.insertOrder(order) with its final stats as we discussed.
+        _ordersList.remove(order.getOrderID());
         return order;
+    }
+
+    /**
+     * removes the Order from the list AFTER updating it as deleted in the DB.
+     * @param orderID
+     */
+    public void deleteOrder(Integer orderID)
+    {
+        _ordersList.get(orderID).setOrderStatus(Order.orderStatus.DELETED);
+        //TODO: dbcontroller.removeOrder(orderID). and then dbcontroller.insertOrder(order) with its final stats as we discussed.
+        _ordersList.remove(orderID);
     }
 }

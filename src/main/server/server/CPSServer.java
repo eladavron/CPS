@@ -4,7 +4,7 @@ import controller.Controllers;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
-import static controller.InitControllers.*;
+import static controller.Controllers.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -39,8 +39,6 @@ public class CPSServer extends AbstractServer
     public CPSServer(int port)
     {
         super(port);
-        Controllers.init();
-        initDummies();
     }
 
     public static void initDummies() {
@@ -172,8 +170,10 @@ public class CPSServer extends AbstractServer
 
         try
         {
+//            dbController.init(dbUrl, dbUsername, dbPwd);
+            Controllers.initDb(dbUrl, dbUsername, dbPwd);
             Controllers.init();
-            dbController.init(dbUrl, dbUsername, dbPwd);
+            initDummies();
         }
         catch (SQLException e)
         {

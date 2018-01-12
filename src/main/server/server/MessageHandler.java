@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
-import static controller.InitControllers.*;
+import static controller.Controllers.*;
 
 /**
  * Handles messages from client GUI:
@@ -214,9 +214,9 @@ public class MessageHandler {
                 ParkingLot dummyLot1 = new ParkingLot(1,1,1,"Haifa");
                 ParkingLot dummyLot2 = new ParkingLot(2,2,2,"Tel-Aviv");
                 ParkingLot dummbyLot3 = new ParkingLot(3,3,3,"Petah-Tikva");
-                dummyLot1.setUID(0);
                 dummyLot1.setUID(1);
-                dummbyLot3.setUID(2);
+                dummyLot2.setUID(2);
+                dummbyLot3.setUID(3);
                 response.addData(dummyLot1, dummyLot2, dummbyLot3);
                 break;
             case PRIMITIVE:
@@ -265,9 +265,8 @@ public class MessageHandler {
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
-//                Order newPreOrder = orderController.makeNewPreOrder(preorder);
-                preorder.setOrderID(new Random().nextInt());
-                createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, preorder);
+                Order newPreOrder = orderController.makeNewPreOrder(preorder);
+                createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, newPreOrder);
                 break;
             case PRIMITIVE:
                 break;

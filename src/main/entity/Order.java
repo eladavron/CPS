@@ -13,6 +13,9 @@ public class Order {
      */
     private static int _orderUIDCounter = -1;
 
+    public enum orderStatus{PRE_ORDER,IN_PROGRESS,FINISHED,DELETED}
+
+    private orderStatus _orderStatus;
     private Integer _orderID;
     private Integer _carID;
     private Date _entryTime;
@@ -41,6 +44,7 @@ public class Order {
         this._estimatedExitTime = estimatedExitTime;
         this._entryTime = new Date();
         this._parkingLotNumber = parkingLotNumber;
+        this._orderStatus = orderStatus.PRE_ORDER;
 
     }
 
@@ -67,6 +71,7 @@ public class Order {
         this._parkingLotNumber = parkingLotNumber;
         this._price = price;
         this._creationTime = creationTime;
+        this._orderStatus = orderStatus.PRE_ORDER;
 
     }
 
@@ -79,6 +84,7 @@ public class Order {
         this._estimatedExitTime = other._estimatedExitTime;
         this._price = other._price;
         this._orderID = other._orderID;
+        this._orderStatus = orderStatus.PRE_ORDER;
     }
 
     /**
@@ -162,6 +168,13 @@ public class Order {
         this._creationTime = creationTime;
     }
 
+    public orderStatus getOrderStatus() {
+        return _orderStatus;
+    }
+
+    public void setOrderStatus(orderStatus orderStatus) {
+        this._orderStatus = orderStatus;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -175,6 +188,7 @@ public class Order {
                 Objects.equals(_estimatedExitTime, order._estimatedExitTime) &&
                 Objects.equals(_actualExitTime, order._actualExitTime) &&
                 Objects.equals(_parkingLotNumber, order._parkingLotNumber) &&
+                Objects.equals(_orderStatus, order._orderStatus) &&
                 Objects.equals(_creationTime, order._creationTime);
     }
 
@@ -194,7 +208,8 @@ public class Order {
                 ", actual exit time=" + _actualExitTime +
                 ", parking lot number=" + _parkingLotNumber +
                 ", price=" + _price +
-                ", creation time=" + _creationTime
+                ", creation time=" + _creationTime +
+                ", current status="+ _orderStatus
                 ;
     }
 
