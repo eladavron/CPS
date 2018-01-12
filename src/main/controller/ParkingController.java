@@ -1,9 +1,10 @@
 package controller;
 
 import entity.*;
-import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import static controller.Controllers.orderController;
 
 
 /**
@@ -60,7 +61,7 @@ public class ParkingController {
      * @return true if successfully entered, false if the parking lot is full.
      */
     public boolean enterParkingLot(Integer orderID){
-        Order order = OrderController.getInstance().getOrder(orderID);
+        Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
         initCurrentParkingValues(parkingLotNumber);
         String status = checkAndUpdateBoundaries(parkingLotNumber);
@@ -70,7 +71,7 @@ public class ParkingController {
         }
         else{
             this._numberOfSlotsOccupied += 1;
-            this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(_heightNumOccupied + 1);
+            this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(++_heightNumOccupied);
             _heightNumOccupied = this._parkingLotList.get(parkingLotNumber).getHeightNumOccupied();
             this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setOccupyingOrderID(orderID);
             this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
@@ -84,7 +85,7 @@ public class ParkingController {
      * @param orderID The occupying ID of the parking space to be exited of.
      */
     public void exitParkingLot(Integer orderID){
-        Order order = OrderController.getInstance().getOrder(orderID);
+        Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
 
         initCurrentParkingValues(parkingLotNumber);

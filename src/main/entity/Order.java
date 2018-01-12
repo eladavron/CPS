@@ -61,7 +61,6 @@ public class Order {
      * @param creationTime
      */
     public Order(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Date entryTime, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime) {
-        //this._orderID = _orderUIDCounter++;
         this._orderID = orderID;
         this._customerID = customerID;
         this._carID = carID;

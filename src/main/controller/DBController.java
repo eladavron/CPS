@@ -2,12 +2,11 @@ package controller;
 
 import entity.Employee;
 import entity.Order;
+import entity.ParkingLot;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import static controller.Controllers.orderController;
 
 /**
  * A class that interfaces with the database.
@@ -172,16 +171,6 @@ public class DBController {
     private ResultSet QueryTable(String tableName)
     {
         return QueryTable(tableName, null, -1);
-        /*ResultSet result;
-        try {
-            Statement stmt = db_conn.createStatement();
-            result = stmt.executeQuery(String.format("SELECT * FROM %s",tableName));
-        } catch (SQLException e) {
-            System.err.printf("An error occured querying table %s:\n%s\n", tableName, e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-        return result;*/
     }
     /**
      * Queries the given table for all its content.
@@ -308,7 +297,7 @@ public class DBController {
                 while (rs.next()) {
                     Order rowOrder = new Order(
                             rs.getInt("idOrders"),
-                             rs.getInt("idCar"),
+                            rs.getInt("idCar"),
                             rs.getInt("idCustomer"),
                             rs.getInt("idParkingLot"),
                             rs.getDate("entryTime"),
@@ -360,7 +349,7 @@ public class DBController {
             rs = QueryTable("Orders");
 
         } else { // get specific order
-            rs = QueryTable("Orders", "customerID", userID);
+            rs = QueryTable("Orders", "idCustomer", userID);
         }
 
         return parseOrdersFromDB(rs);
@@ -381,4 +370,49 @@ public class DBController {
         return returnString;
     }
 
+    public ArrayList<Object> getParkingLots() {
+        return  getParkingLotsByID(-1);
+    }
+
+
+    public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) {
+        ArrayList<Order> myOrders = new ArrayList<>();
+        ResultSet rs;
+
+        if (parkingLotID == -1) { // get all rows
+            rs = QueryTable("ParkingLots");
+
+        } else { // get specific order
+            rs = QueryTable("ParkingLots", "idParkingLots", parkingLotID);
+        }
+
+        return parseParkingLotsFromDB(rs);
+
+    }
+
+    private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) {
+        ArrayList<Object> myLots = new ArrayList<>();
+        if (rs == null){
+            return null;
+        }
+        else {
+            try {
+                while (rs.next()) {
+                    ParkingLot rowLot = new ParkingLot(
+                            rs.getInt("idParkingLots"),
+                            rs.getString("location"),
+                            rs.getInt("rows"),
+                            rs.getInt("columns"),
+                            rs.getInt("depth"),
+                            rs.getInt("parkingLotManagerId")
+                    );
+                    myLots.add(rowLot);
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Parking lots", e.getMessage());
+                return null;
+            }
+        }
+        return myLots;
+    }
 }

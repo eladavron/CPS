@@ -8,6 +8,7 @@ public class Controllers {
     public static BillingController        billingController;
     public static CustomerController       customerController;
     public static SubscriptionController   subscriptionController;
+    public static ParkingController        parkingController;
 
     /**
      * Since all other Controllers need the dbcontroller to first set a connection
@@ -28,5 +29,6 @@ public class Controllers {
         billingController        = BillingController.getInstance();
         customerController       = CustomerController.getInstance();
         subscriptionController   = SubscriptionController.getInstance();
+        parkingController        = ParkingController.getInstance();
     }
 }

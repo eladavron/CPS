@@ -104,7 +104,7 @@ public class OrderController {
     }
 
     public void getOrdersFromDb() {
-        setOrdersList(dbController.getOrdersByID(-1));
+        setOrdersList(dbController.getAllOrders());
     }
 
     //TODO: is this needed along with getOrdersFromDb()?

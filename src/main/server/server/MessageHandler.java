@@ -211,13 +211,9 @@ public class MessageHandler {
             case PARKING_LOT:
                 //TODO: Query DB for available parking lots.
                 //In the meantime, here's a dummy response:
-                ParkingLot dummyLot1 = new ParkingLot(1,1,1,"Haifa");
-                ParkingLot dummyLot2 = new ParkingLot(2,2,2,"Tel-Aviv");
-                ParkingLot dummbyLot3 = new ParkingLot(3,3,3,"Petah-Tikva");
-                dummyLot1.setParkingLotID(1);
-                dummyLot2.setParkingLotID(2);
-                dummbyLot3.setParkingLotID(3);
-                response.addData(dummyLot1, dummyLot2, dummbyLot3);
+                ArrayList<Object> parkingLots = dbController.getParkingLots();
+                response.setDataType(Message.DataType.PARKING_LOT);
+                response.setData(parkingLots);
                 break;
             case PRIMITIVE:
                 break;
@@ -271,10 +267,9 @@ public class MessageHandler {
             case PRIMITIVE:
                 break;
             case PARKING_LOT:
-                ParkingLot dummy1 = new ParkingLot();
-                ParkingLot dummy2 = new ParkingLot();
-                ParkingLot dummy3 = new ParkingLot();
-                Message parkingLotReply = new Message(Message.MessageType.FINISHED, Message.DataType.PARKING_LOT, dummy1,dummy2,dummy3);
+//                TODO: Add create ParkingLot? when gui supports. do we even need this?
+//                ArrayList<Object> parkingLots = dbController.getParkingLots();
+//                Message parkingLotReply = new Message(Message.MessageType.FINISHED, Message.DataType.PARKING_LOT, parkingLots);
                 break;
             default:
                 return false;
