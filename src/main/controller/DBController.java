@@ -5,6 +5,8 @@ import entity.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A class that interfaces with the database.
@@ -429,7 +431,7 @@ public class DBController {
             rs = QueryUserTable(userType);
 
         } else { // get a specific user.
-            rs = QueryTable("Users", "idUser", userID);
+            rs = QueryTable("Users", "idUsers", userID);
         }
 
         switch (userType){
@@ -485,7 +487,7 @@ public class DBController {
                     ResultSet carList = stmt.executeQuery(carListQuery);
                     // Then make a list of the cars to use in customer c'tor.
                     while (carList.next())
-                        myCars.add(carList.getInt("idCar"));
+                        myCars.add(carList.getInt("idCars"));
 
                     Customer rowCustomer = new Customer(
                             rs.getInt("idUsers"),
@@ -495,7 +497,17 @@ public class DBController {
                             myCars
                     );
                     myCustomers.add(rowCustomer);
-                    //TODO : set sublist and add orderList.
+                    // Now we will pull the list of active orders by using the DBs get order by id of user.
+                    Map<Integer, Order> myOrders = new HashMap<>();
+                    String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND orderType != 'DELETED'"
+                            , rs.getInt("idUsers"));
+                    ResultSet orderList = stmt.executeQuery(orderListQuery);
+                    while (orderList.next()){
+                        Order order = getOrdersByID(orderList.getInt("idOrders")).get(0);
+                        myOrders.put(order.getOrderID(), order);
+                    }
+                    rowCustomer.setActiveOrders(myOrders);
+                    //TODO : set sublist.
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting Customers data from 'Users' table:\n%s", e.getMessage());

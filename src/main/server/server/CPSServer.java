@@ -170,7 +170,6 @@ public class CPSServer extends AbstractServer
 
         try
         {
-//            dbController.init(dbUrl, dbUsername, dbPwd);
             Controllers.initDb(dbUrl, dbUsername, dbPwd);
             Controllers.init();
             initDummies();
