@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class ViewPreordersController implements Initializable {
+public class ViewPreorders implements Initializable {
 
     @FXML
     private ListView<PreOrder> listViewOrder;
@@ -38,7 +38,7 @@ public class ViewPreordersController implements Initializable {
 
     private ObservableList<PreOrder> _listPreorders = FXCollections.observableArrayList();
 
-    private ViewPreordersController _this;
+    private ViewPreorders _this;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -53,13 +53,13 @@ public class ViewPreordersController implements Initializable {
 
     public void queryPreorders()
     {
-        _listPreorders.clear();
-        listViewOrder.getItems().clear();
         WaitScreen waitScreen = new WaitScreen();
         Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.PREORDER, CPSClientGUI.getSession().getUser().getUID(), CPSClientGUI.getSession().getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
+                _listPreorders.clear();
+                listViewOrder.setItems(null);
                 ArrayList preorders = getMessage().getData();
                 for (Object preOrder : preorders)
                 {

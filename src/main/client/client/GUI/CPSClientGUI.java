@@ -41,6 +41,7 @@ public class CPSClientGUI extends Application{
     public final static String LOGIN_SCREEN = "Forms/LoginScreen.fxml";
     public final static String NEW_PREORDER = "Forms/NewPreorder.fxml";
     public final static String VIEW_PREORDERS = "Forms/ViewPreorders.fxml";
+    public final static String CAR_MANAGEMENT = "Forms/CarsManagement.fxml";
 
     /**
      * Public Finals

@@ -3,7 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<Accordion fx:id="loginRoot" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.LoginScreenController">
+<Accordion fx:id="loginRoot" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.LoginScreen">
    <panes>
       <TitledPane fx:id="paneLogin" animated="false" text="Login (Existing User)">
          <content>
@@ -15,6 +15,7 @@
                            <children>
                               <Label text="Location:" />
                               <ComboBox fx:id="cmbParkingLots" promptText="Select Location..." />
+                              <CheckBox fx:id="chkRemote" mnemonicParsing="false" text="Login Remotely" />
                            </children>
                         </FlowPane>
                         <FlowPane hgap="10.0" vgap="10.0">

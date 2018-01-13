@@ -1,11 +1,10 @@
 package client.GUI.Controls;
 
-import client.GUI.Forms.ViewPreorders;
+import client.GUI.Forms.CarsManagement;
 import client.GUI.Helpers.ErrorHandlers;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
-import entity.PreOrder;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,8 +17,7 @@ import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 
-public class PreorderCell extends ListCell<PreOrder>{
-
+public class CarCell extends ListCell<Integer>{
 
     @FXML
     private BorderPane paneRow;
@@ -30,9 +28,9 @@ public class PreorderCell extends ListCell<PreOrder>{
     @FXML
     private Label lblText;
 
-    ViewPreorders _parent;
+    CarsManagement _parent;
 
-    public PreorderCell(ViewPreorders parent)
+    public CarCell(CarsManagement parent)
     {
         _parent = parent;
         try {
@@ -45,25 +43,22 @@ public class PreorderCell extends ListCell<PreOrder>{
     }
 
     @Override
-    protected void updateItem(PreOrder item, boolean empty) {
+    protected void updateItem(Integer item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null)
         {
-            lblText.setText("Order No. " + item.getOrderID() + "\n"
-                    + "From: " + item.getEstimatedEntryTime().toString() + "\n"
-                    + "To: " + item.getEstimatedExitTime().toString() +"\n"
-                    + "Car No. "+  item.getCarID());
+            lblText.setText("Car No. " + item.toString());
             btnDelete.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
-                    deletePreorder(item);
+                    deleteCar(item);
                 }
             });
             setGraphic(paneRow);
         }
     }
 
-    private void deletePreorder(PreOrder preOrder)
+    private void deleteCar(Integer car)
     {
         WaitScreen waitScreen = new WaitScreen();
         MessageRunnable onSuccess = new MessageRunnable() {
@@ -72,7 +67,7 @@ public class PreorderCell extends ListCell<PreOrder>{
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        _parent.queryPreorders();
+                        _parent.queryServerForCars();
                     }
                 });
             }
@@ -84,13 +79,13 @@ public class PreorderCell extends ListCell<PreOrder>{
             }
         };
         Message deleteMessage = new Message(Message.MessageType.DELETE,
-                Message.DataType.PREORDER,
-                preOrder);
+                Message.DataType.CARS,
+                car);
 
         MessageTasker taskDelete = new MessageTasker("Connecting...",
-                "Cancelling order...",
-                "Order cancelled!",
-                "Failed to cancel order!",
+                "Deleting Car...",
+                "Car Removed!",
+                "Failed to remove car!",
                 deleteMessage, onSuccess, onFailure);
         waitScreen.run(taskDelete);
     }

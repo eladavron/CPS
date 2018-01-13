@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<TitledPane animated="false"
+            collapsible="false"
+            stylesheets="@../CSS/material.css"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="client.GUI.Forms.CarsManagement">
+    <content>
+        <BorderPane>
+            <center>
+                <VBox>
+                    <children>
+                        <ListView fx:id="listViewCars" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
+                    </children>
+                </VBox>
+            </center>
+            <bottom>
+                <ToolBar nodeOrientation="RIGHT_TO_LEFT" styleClass="toolbar-colored" BorderPane.alignment="CENTER">
+                    <items>
+                        <Button fx:id="btnNew" mnemonicParsing="false" onAction="#newCar" text="Add..." />
+                        <Button fx:id="btnRefresh" mnemonicParsing="false" onAction="#refreshList" text="Refresh" />
+                    </items>
+                </ToolBar>
+            </bottom>
+        </BorderPane>
+
+
+    </content>
+    <graphic>
+        <HBox>
+            <children>
+                <FlowPane hgap="10.0" vgap="10.0">
+                    <children>
+                        <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#returnToMain" styleClass="icon-button" text="&lt;" />
+                        <Label styleClass="card-title" text="Template">
+                            <font>
+                                <Font name="Arial" size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </FlowPane>
+            </children>
+        </HBox>
+    </graphic>
+</TitledPane>

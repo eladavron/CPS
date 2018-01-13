@@ -383,12 +383,29 @@ public class WaitScreen extends AnchorPane implements Initializable {
      */
     public void redirectOnClose(String GUIScreen)
     {
-        _onClose = new Runnable() {
-            @Override
-            public void run() {
-                CPSClientGUI.changeGUI(GUIScreen);
-            }
-        };
+        if (GUIScreen != null) {
+            _onClose = new Runnable() {
+                @Override
+                public void run() {
+                    CPSClientGUI.changeGUI(GUIScreen);
+                }
+            };
+        } else
+            _onClose = null;
+    }
+
+    public void setGoBackOnClose(boolean set)
+    {
+        if (set) {
+            _onClose = new Runnable() {
+                @Override
+                public void run() {
+                    CPSClientGUI.goBack(false);
+                }
+            };
+        }
+        else
+            _onClose = null;
     }
     //endregion
 

@@ -6,6 +6,7 @@ import entity.Message;
 import entity.ParkingLot;
 import entity.PreOrder;
 import entity.User;
+import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.util.StringConverter;
 
@@ -22,7 +23,6 @@ public class Inits {
      */
     public static void initOrders(ComboBox<PreOrder> comboBox)
     {
-        comboBox.getItems().clear();
         comboBox.setConverter(new StringConverter<PreOrder>() {
             @Override
             public String toString(PreOrder object) {
@@ -62,13 +62,6 @@ public class Inits {
      */
     public static void initParkingLots(ComboBox<ParkingLot> comboBox, boolean addRemote)
     {
-        comboBox.getItems().clear();
-        if (addRemote) {
-            ParkingLot remote = new ParkingLot();
-            remote.setParkingLotID(-1);
-            remote.setLocation("Remote Login");
-            comboBox.getItems().add(remote);
-        }
         queryServer(Message.DataType.PARKING_LOT, comboBox);
     }
 
@@ -78,6 +71,9 @@ public class Inits {
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
+                comboBox.getItems().clear();
+                comboBox.setItems(null);
+                comboBox.setItems(FXCollections.observableArrayList());
                 comboBox.getItems().addAll(getMessage().getData());
                 waitScreen.hide();
             }

@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<TitledPane animated="false" collapsible="false" stylesheets="@../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.EnterParkingController">
+<TitledPane animated="false" collapsible="false" stylesheets="@../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.EnterParking">
     <content>
         <VBox prefHeight="224.0" prefWidth="303.0" spacing="5.0">
             <children>
@@ -13,7 +13,7 @@
 
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
-                        <Label text="Select from Order:" />
+                        <Label text="Select from open orders:" />
                         <ComboBox fx:id="cmbOrder" promptText="Select...">
                             <items>
                                 <FXCollections fx:factory="observableArrayList" />
@@ -25,16 +25,6 @@
                     </VBox.margin>
                 </FlowPane>
                 <Separator prefWidth="200.0" />
-                <FlowPane hgap="10.0" vgap="10.0">
-                    <children>
-                        <Label text="Parking Lot:" />
-                        <ComboBox fx:id="cmbParkingLot" promptText="Select...">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList" />
-                            </items>
-                        </ComboBox>
-                    </children>
-                </FlowPane>
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
                         <Label text="Car:" />

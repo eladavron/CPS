@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+<TitledPane animated="false"
+            collapsible="false"
+            stylesheets="@../CSS/material.css"
+            xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="client.GUI.Forms.Template">
+    <content>
+        <!-- the content of this page. Use whatever. -->
+    </content>
+    <graphic> <!-- The header -->
+        <HBox>
+            <children>
+                <FlowPane hgap="10.0" vgap="10.0">
+                    <children>
+                        <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#returnToMain" styleClass="icon-button" text="&lt;" />
+                        <Label styleClass="card-title" text="Template">
+                            <font>
+                                <Font name="Arial" size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </FlowPane>
+            </children>
+        </HBox>
+    </graphic>
+</TitledPane>

@@ -4,6 +4,7 @@ import client.GUI.Controls.DateTimeCombo;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
@@ -147,15 +148,22 @@ public class Validation {
         _errorControls.clear();
     }
 
-    public static boolean notEmpty(TextField...fields)
-    {
+    public static boolean notEmpty(Node...fields) {
         boolean validate = true;
-        for(TextField field : fields)
-        {
-            if (field.getText().matches("^\\s*$"))
+        for (Node node : fields) {
+            if (node instanceof TextField) {
+                if (((TextField)node).getText().matches("^\\s*$")) {
+                    showError(node, "This field can not be empty!");
+                    validate = false;
+                }
+            }
+            else if (node instanceof ComboBox)
             {
-                showError(field, "This field can not be empty!");
-                validate = false;
+                if (!node.isDisable() && ((ComboBox)node).getSelectionModel().getSelectedIndex() == -1)
+                {
+                    showError(node, "This field must be selected!");
+                    validate = false;
+                }
             }
         }
         return validate;

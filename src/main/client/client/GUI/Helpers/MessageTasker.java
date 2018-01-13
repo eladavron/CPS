@@ -75,7 +75,11 @@ public class MessageTasker extends Task<Message> {
         this.setOnFailed(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                event.getSource().getException().printStackTrace();
+                if (CPSClientGUI.IS_DEBUG)
+                {
+                    System.err.println("DEBUG - The following exception was caught and handled:");
+                    event.getSource().getException().printStackTrace();
+                }
                 _onFailure.setException(event.getSource().getException());
                 if (getException() instanceof InterruptedException) {
                     _onFailure.setException(new TimeoutException("The operation timed out."));

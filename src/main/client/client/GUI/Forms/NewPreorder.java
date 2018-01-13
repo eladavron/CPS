@@ -25,7 +25,7 @@ import java.util.ResourceBundle;
  * A controller for creating new Preorders.
  * @author Elad Avron
  */
-public class NewPreorderController implements Initializable {
+public class NewPreorder implements Initializable {
 
     @FXML
     private Button btnBack;
@@ -52,7 +52,7 @@ public class NewPreorderController implements Initializable {
     private ComboBox<ParkingLot> cmbParkingLot;
 
     @FXML
-    private TextField txtCarID;
+    private ComboBox<Integer> cmbCarID;
 
     @FXML
     private Button btnCreate;
@@ -70,6 +70,7 @@ public class NewPreorderController implements Initializable {
             @Override
             public void run() {
                 Inits.initParkingLots(cmbParkingLot, false);
+                Inits.initCars(cmbCarID);
             }
         });
         _entryDateTime = new DateTimeCombo(entryDatePicker, cmbEntryHour, cmbEntryMinute);
@@ -89,12 +90,11 @@ public class NewPreorderController implements Initializable {
             Validation.showError(cmbParkingLot, "Please select parking lot!");
             validate = false;
         }
-        if (!txtCarID.getText().matches("\\d{7,8}")) //Makes sure car ID is entered and valid
+        if (cmbCarID.getValue() == null)
         {
-            Validation.showError(txtCarID, "Please enter a valid car number!");
+            Validation.showError(cmbCarID, "Please select which car to park...");
             validate = false;
         }
-
         //Validate times:
         return Validation.validateTimes(_entryDateTime, _exitDateTime) && validate;
     }
@@ -112,7 +112,7 @@ public class NewPreorderController implements Initializable {
         Date entryTime = _entryDateTime.getDateTime();
         Date exitTime = _exitDateTime.getDateTime();
         int parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getParkingLotID();
-        PreOrder newOrder = new PreOrder(CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(txtCarID.getText()), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
+        PreOrder newOrder = new PreOrder(CPSClientGUI.getSession().getUser().getUID(), cmbCarID.getValue(), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);
         MessageRunnable onSuccess = new MessageRunnable() {

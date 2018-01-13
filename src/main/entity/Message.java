@@ -17,7 +17,7 @@ public class Message {
     public enum MessageType {
         LOGIN,
         LOGOUT,
-        QUERY,
+        QUERY, //Query messages will have the data type as the requested response, and following data: 0: UserID (int), 1: UserType (User.UserType)
         CREATE,
         UPDATE,
         DELETE,
@@ -33,6 +33,7 @@ public class Message {
         ORDER,
         PREORDER,
         USER,
+        CARS,
         CUSTOMER,
         PARKING_LOT,
         SESSION
@@ -85,7 +86,7 @@ public class Message {
                     _data.add(1, password);
                     _data.add(2, parkingLot);
                     break;
-                default:
+                default: //Not a special message type
                     if (_dataType == DataType.SESSION)
                     {
                         Session session = new Session();
@@ -112,6 +113,7 @@ public class Message {
                     else {
                         for (Object dataObject : msg.getData()) {
                             switch (_dataType) {
+                                case CARS: //Cars are Integers
                                 case PRIMITIVE:
                                     _data.add(dataObject);
                                     break;

@@ -210,7 +210,7 @@ public class MessageHandler {
         Message response = new Message();
         response.setDataType(queryMsg.getDataType());
 
-        User user;
+        User user = new User();
         if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) {
             int userID = (int) queryMsg.getData().get(0);
             User.UserType type = (User.UserType) queryMsg.getData().get(1);
@@ -244,6 +244,15 @@ public class MessageHandler {
                 response.setData(getDummyOrders(clientConnection));
                 break;
             case USER:
+                break;
+            case CARS:
+                if (user.getUserType() == User.UserType.CUSTOMER)
+                {
+                    for (Integer car : ((Customer)user).getCarIDList())
+                    {
+                        response.addData(car);
+                    }
+                }
                 break;
             case SESSION:
                 break;
@@ -305,6 +314,16 @@ public class MessageHandler {
                 ParkingLot dummy3 = new ParkingLot();
                 Message parkingLotReply = new Message(Message.MessageType.FINISHED, Message.DataType.PARKING_LOT, dummy1,dummy2,dummy3);
                 createMsgResponse = new Message();
+                break;
+            case CARS:
+                Integer uID = (Integer)createMsg.getData().get(0);
+                Integer carToAdd = (Integer)createMsg.getData().get(1);
+                Customer customerToAddTo = customerController.getCustomer(uID);
+                if (customerToAddTo != null)
+                {
+                    customerController.addCar(customerToAddTo, carToAdd);
+                }
+                createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.CARS, carToAdd);
                 break;
             default:
                 createMsgResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());

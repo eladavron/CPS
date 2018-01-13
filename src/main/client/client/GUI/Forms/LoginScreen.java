@@ -1,6 +1,7 @@
 package client.GUI.Forms;
 
 import client.GUI.CPSClientGUI;
+import client.GUI.Controls.CarLister;
 import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.Inits;
 import client.GUI.Helpers.MessageRunnable;
@@ -11,12 +12,9 @@ import entity.Message;
 import entity.ParkingLot;
 import entity.Session;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
@@ -25,7 +23,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
 
-public class LoginScreenController {
+public class LoginScreen {
 
     //TODO: Figure out why you get double lists when you navigate back here.
 
@@ -43,6 +41,9 @@ public class LoginScreenController {
 
     @FXML
     private TitledPane paneLogin;
+
+    @FXML
+    private CheckBox chkRemote;
     //endregion
 
     //region Registration FXML
@@ -86,6 +87,7 @@ public class LoginScreenController {
     private TextField txtHostname;
     //endregion
 
+    private CarLister _carLister;
 
     @FXML
     void initialize() {
@@ -103,57 +105,10 @@ public class LoginScreenController {
         } else { //Connection was reset, need to reconnect.
             setConnectedGUI(false);
         }
-        addCarField();
+        _carLister = new CarLister(listCarIDs);
+        chkRemote.selectedProperty().bindBidirectional(cmbParkingLots.disableProperty());
     }
 
-    /**
-     * Validates a car textfield.
-     * If valid, asks to add another to the form.
-     * If empty, deletes the field (unless it's the last one, in which case it just empties it).
-     * @param txtCar TextField to validate.
-     * @return True if everything is valid, false otherwise.
-     */
-    private boolean validateCarTextField(TextField txtCar)
-    {
-        if (txtCar.getText().matches("^\\s*$")) //If new value is blank
-        {
-            if (listCarIDs.getChildren().indexOf(txtCar) != listCarIDs.getChildren().size() - 1) //If not the last one.
-                listCarIDs.getChildren().remove(txtCar);
-        }
-        else if (!Validation.carNumber(txtCar.getText())) { //If it's not a valid car number
-            Validation.showError(txtCar, "Please enter a valid car registration number!");
-            return false;
-        }
-        else if (listCarIDs.getChildren().indexOf(txtCar) == listCarIDs.getChildren().size() - 1) //Valid, not last, not blank.
-        {
-            addCarField();
-        }
-        Validation.removeHighlight(txtCar);
-        return true;
-    }
-
-    /**
-     * Adds an "Enter Car" textfield to the form.
-     * Also called upon when a car number is entered to allow adding others.
-     */
-    private void addCarField()
-    {
-        TextField newCarID = new TextField();
-        if (listCarIDs.getChildren().size() > 0) //If this is not the first field.
-            newCarID.setPromptText("Add another...");
-        newCarID.focusedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (!newValue)
-                {
-                    if (!validateCarTextField(newCarID))
-                        newCarID.requestFocus();
-                }
-            }
-        });
-        newCarID.setOnAction(value -> listCarIDs.requestFocus());
-        listCarIDs.getChildren().add(newCarID);
-    }
 
     @FXML
     void attemptRegister(ActionEvent event) {
@@ -161,14 +116,7 @@ public class LoginScreenController {
             return;
 
         WaitScreen waitScreen = new WaitScreen();
-        ArrayList<Integer> carList = new ArrayList<>();
-        for (Node carText: listCarIDs.getChildren())
-        {
-            if (carText instanceof TextField && !((TextField) carText).getText().isEmpty() && Validation.carNumber(((TextField) carText).getText()))
-            {
-                carList.add(Integer.valueOf(((TextField) carText).getText()));
-            }
-        }
+        ArrayList<Integer> carList = _carLister.getAllNumbers();
         Customer newCustomer = new Customer(-1, txtRegisterName.getText(), txtRegisterPwd.getText(), txtRegisterEmail.getText(), carList);
 
         Message newUserMessage = new Message(Message.MessageType.CREATE,
@@ -232,13 +180,14 @@ public class LoginScreenController {
      */
     private void attemptConnect()
     {
-        if (!Validation.notEmpty(txtHostname, txtPort))
-            return;
-        WaitScreen waitScreen = new WaitScreen();
+
         if (CPSClientGUI.getClient() != null && CPSClientGUI.getClient().isConnected()) //If already connected
         {
             Inits.initParkingLots(cmbParkingLots, true);
         }
+
+        if (!Validation.notEmpty(txtHostname, txtPort))
+            return;
 
         /*
         Validate Form
@@ -252,6 +201,7 @@ public class LoginScreenController {
         String host = txtHostname.getText();
         Integer port = Integer.valueOf(txtPort.getText());
 
+        WaitScreen waitScreen = new WaitScreen();
         Task<Void> _attemptConnect = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -294,10 +244,15 @@ public class LoginScreenController {
     {
         WaitScreen waitScreen = new WaitScreen();
         ParkingLot parkingLot;
-        parkingLot = (ParkingLot)cmbParkingLots.getSelectionModel().getSelectedItem();
-        if (parkingLot == null)
+        if (chkRemote.isSelected())
         {
-            parkingLot = (ParkingLot)cmbParkingLots.getItems().get(0);
+            parkingLot = new ParkingLot();
+            parkingLot.setParkingLotID(-1);
+            parkingLot.setLocation("Remote Login");
+        }
+        else
+        {
+            parkingLot = (ParkingLot)cmbParkingLots.getSelectionModel().getSelectedItem();
         }
         Message loginMessage = new Message(Message.MessageType.LOGIN, Message.DataType.PRIMITIVE, email, password, parkingLot);
         MessageRunnable onSuccess = new MessageRunnable() {
@@ -336,7 +291,7 @@ public class LoginScreenController {
      */
     @FXML
     private void attemptLogin(ActionEvent event){
-        if (!Validation.notEmpty(txtLoginUsr,txtLoginPwd))
+        if (!Validation.notEmpty(txtLoginUsr,txtLoginPwd, cmbParkingLots))
             return;
 
         attemptLogin(txtLoginUsr.getText(), txtLoginPwd.getText());

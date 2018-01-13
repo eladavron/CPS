@@ -68,7 +68,8 @@ public class Session {
 
     public void setUser(User user) {
         this._user = user;
-        switch (user.getUserType())
+        this._userType = user.getUserType();
+        switch (_userType)
         {
             case CUSTOMER:
                 _customer = (Customer) user;

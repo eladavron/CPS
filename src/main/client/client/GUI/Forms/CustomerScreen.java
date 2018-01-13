@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 /**
  * A controller for the main customer screen.
  */
-public class CustomerScreenController implements Initializable {
+public class CustomerScreen implements Initializable {
 
     @FXML
     private Button btnCreateOrder;
@@ -45,6 +45,9 @@ public class CustomerScreenController implements Initializable {
 
     @FXML
     private VBox customerRoot;
+
+    @FXML
+    private Button btnManageCars;
 
     private Session _session;
 
@@ -77,6 +80,8 @@ public class CustomerScreenController implements Initializable {
         } else if (event.getSource() == btnExitParking) {
             ExitParking.exitParkingStart();
             return;
+        } else if (event.getSource() == btnManageCars){
+            filename = CPSClientGUI.CAR_MANAGEMENT;
         } else if (event.getSource() == btnEditOrder){
             filename = CPSClientGUI.VIEW_PREORDERS;
         }
