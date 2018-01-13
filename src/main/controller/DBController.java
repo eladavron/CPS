@@ -569,7 +569,7 @@ public class DBController {
      * @param carID carId inserted
      * @return True if successful, False otherwise.
      */
-    public boolean AddCarToCustomer(Integer customerID, Integer carID){
+    public boolean addCarToCustomer(Integer customerID, Integer carID){
 
         //TODO: Check if user-car is already inserted and show msg / if not active Set to active.
         try {
@@ -594,7 +594,7 @@ public class DBController {
      * @param carID carId inserted
      * @return True if successful, False otherwise.
      */
-    public boolean RemoveCarFromCustomer(Integer customerID, Integer carID){
+    public boolean removeCarFromCustomer(Integer customerID, Integer carID){
         try {
             Statement stmt = db_conn.createStatement();
             stmt.executeUpdate(String.format("UPDATE CarToUser SET isActive=0 WHERE  idCars=%s AND idUser=%s",

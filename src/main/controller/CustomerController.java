@@ -4,7 +4,6 @@ import Exceptions.LastCarRemovalException;
 import Exceptions.OrderNotFoundException;
 import entity.*;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -212,6 +211,7 @@ public class CustomerController {
     public void addCar(Customer customer, Integer carID)
     {
         customer.getCarIDList().add(carID);
+        dbController.addCarToCustomer(customer.getUID(), carID);
     }
 
     /**
@@ -223,6 +223,8 @@ public class CustomerController {
         ArrayList<Integer> carList = customer.getCarIDList();
         if (carList.contains(carID)) {
             if (carList.size() > 1) {
+                //TODO ADD THIS AFTER SUPPORT OF CAR REMOVAL.
+//                dbController.removeCarFromCustomer(customer.getUID(), carID);
                 customer.getCarIDList().remove(carID);
             }
             else { // Trying to remove the customer's last car!

@@ -139,7 +139,7 @@ public class OrderController {
     public Order finishOrder(Integer orderID, priceList priceType){
         Order order = _ordersList.get(orderID);
         order.setActualExitTime(new Date());
-        order.setPrice(BillingController.getInstance().calculateParkingCharge(order.getEntryTime(), order.getActualExitTime(), priceType));
+        order.setPrice(BillingController.getInstance().calculateParkingCharge(order.getEntryTime(), order.getActualExitTime(), priceType) - order.getPrice());
         order.setOrderStatus(Order.orderStatus.FINISHED);
         //TODO: dbcontroller.removeOrder(orderID). and then dbcontroller.insertOrder(order) with its final stats as we discussed.
         _ordersList.remove(order.getOrderID());

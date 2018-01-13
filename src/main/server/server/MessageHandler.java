@@ -138,7 +138,7 @@ public class MessageHandler {
         Message endParkingResponse = new Message();
         Order order = (Order)msg.getData().get(0);
         endParkingResponse.setSID(msg.getSID());
-        //TODO: Check if order ows money
+        //TODO: Check if order owns money
         if (order.getOrderID() == 11) //DUMMY - end ok
         {
             endParkingResponse.setType(Message.MessageType.FINISHED);
@@ -268,6 +268,7 @@ public class MessageHandler {
 
     private static void handleDeletion(Message deleteMsg, ConnectionToClient clientConnection) {
 
+        //TODO: SUPPORT CAR REMOVAL HERE!
 //        Message deleteMsgResponse = new Message();
 //        switch(deleteMsg.getDataType())
 //        {
