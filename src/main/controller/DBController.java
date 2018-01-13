@@ -175,7 +175,9 @@ public class DBController {
     /**
      * Queries the given table for all its content.
      * @param tableName  name of the table to query.
-     * @return The resultset.
+     * @param field name of column to check by
+     * @param value value to find with
+     * @return  The resultset.
      */
     private ResultSet QueryTable(String tableName, String field, int value) {
         String query = String.format("SELECT * FROM %s", tableName);
@@ -557,6 +559,52 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", customer, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Insert new car to DB
+     * @param customerID customer owns the car
+     * @param carID carId inserted
+     * @return True if successful, False otherwise.
+     */
+    public boolean AddCarToCustomer(Integer customerID, Integer carID){
+
+        //TODO: Check if user-car is already inserted and show msg / if not active Set to active.
+        try {
+            Statement stmt = db_conn.createStatement();
+            //int uid;
+            stmt.executeUpdate(String.format("INSERT INTO CarToUser (idCars, idUser)"
+                            + " VALUES ('%s', '%s')",
+                    carID, customerID),
+                    Statement.RETURN_GENERATED_KEYS);
+            return true;
+
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Insert new car to DB
+     * @param customerID customer owns the car
+     * @param carID carId inserted
+     * @return True if successful, False otherwise.
+     */
+    public boolean RemoveCarFromCustomer(Integer customerID, Integer carID){
+        try {
+            Statement stmt = db_conn.createStatement();
+            stmt.executeUpdate(String.format("UPDATE CarToUser SET isActive=0 WHERE  idCars=%s AND idUser=%s",
+                    carID, customerID),
+                    Statement.RETURN_GENERATED_KEYS);
+            return true;
+
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
             return false;
         }
     }
