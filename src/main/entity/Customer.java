@@ -30,7 +30,11 @@ public class Customer extends User{
 		this._subscriptionList = new HashMap<>();
 		this._activeOrders = new HashMap<>();
 	}
-	
+
+	/**
+	 * Default constructor
+	 */
+	public Customer(){}
 	/**
 	 * Get the customer's car ids list.
 	 * @return Customer's car id list.

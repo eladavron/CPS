@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static controller.Controllers.*;
 
@@ -118,7 +120,12 @@ public class MessageHandler {
             return false;
         } catch (InvalidMessageException e) {
             Message replyInvalid = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, e.getMessage());
-            replyInvalid.setSID(e.getSID());
+            Pattern pattern = Pattern.compile("\\\"sid\\\"\\:(\\-?\\d*)");
+            Matcher matcher = pattern.matcher(json);
+            if (matcher.find())
+            {
+                replyInvalid.setSID(Long.valueOf(matcher.group(1)));
+            }
             sendToClient(replyInvalid, clientConnection);
             e.printStackTrace();
             return false;
@@ -246,11 +253,17 @@ public class MessageHandler {
     }
 
     private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws IOException {
-        Message createMsgResponse = new Message();
+        Message createMsgResponse;
         switch(createMsg.getDataType())
         {
             case USER:
                 User user = new User(707070, "dum-dum-dummy", "weCallYou@DontCallUs.com", User.UserType.USER); //TODO: Get from server!
+                createMsgResponse = new Message();
+                break;
+            case CUSTOMER:
+                Customer customer = mapper.convertValue(createMsg.getData().get(0),Customer.class);
+                Customer newCustomer = customerController.addNewCustomer(customer);
+                createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.CUSTOMER, newCustomer);
                 break;
             case ORDER:
                 //TODO: return order from DB
@@ -265,13 +278,20 @@ public class MessageHandler {
                 createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, newPreOrder);
                 break;
             case PRIMITIVE:
+                createMsgResponse = new Message();
                 break;
             case PARKING_LOT:
 //                TODO: Add create ParkingLot? when gui supports. do we even need this?
 //                ArrayList<Object> parkingLots = dbController.getParkingLots();
 //                Message parkingLotReply = new Message(Message.MessageType.FINISHED, Message.DataType.PARKING_LOT, parkingLots);
+                ParkingLot dummy1 = new ParkingLot();
+                ParkingLot dummy2 = new ParkingLot();
+                ParkingLot dummy3 = new ParkingLot();
+                Message parkingLotReply = new Message(Message.MessageType.FINISHED, Message.DataType.PARKING_LOT, dummy1,dummy2,dummy3);
+                createMsgResponse = new Message();
                 break;
             default:
+                createMsgResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());
                 return false;
         }
         createMsgResponse.setSID(createMsg.getSID());

@@ -1,6 +1,6 @@
 package client.GUI.Controls;
 
-import client.GUI.Helpers.Common;
+import client.GUI.Helpers.Validation;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 
@@ -72,7 +72,7 @@ public class DateTimeCombo {
     public Date getDateTime()
     {
         if (_datePicker.getValue() == null) {
-            Common.showError(_datePicker, "Please select valid date!");
+            Validation.showError(_datePicker, "Please select valid date!");
             return null;
         }
         int hoursToAdd = _cmbHours.getSelectionModel().getSelectedIndex();
@@ -137,8 +137,8 @@ public class DateTimeCombo {
      */
     public void showError(String message)
     {
-        Common.highlightControl(_datePicker);
-        Common.highlightControl(_cmbHours);
-        Common.showError(_cmbMinutes, message);
+        Validation.highlightControl(_datePicker, null);
+        Validation.highlightControl(_cmbHours, null);
+        Validation.showError(_cmbMinutes, message);
     }
 }

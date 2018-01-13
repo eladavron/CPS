@@ -4,9 +4,10 @@ package client.GUI.Forms;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
 import client.GUI.Controls.WaitScreen;
-import client.GUI.Helpers.Common;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Queries;
+import client.GUI.Helpers.Validation;
 import entity.Message;
 import entity.ParkingLot;
 import entity.PreOrder;
@@ -68,7 +69,7 @@ public class NewPreorderController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                Common.initParkingLots(cmbParkingLot, false);
+                Queries.initParkingLots(cmbParkingLot, false);
             }
         });
         _entryDateTime = new DateTimeCombo(entryDatePicker, cmbEntryHour, cmbEntryMinute);
@@ -81,21 +82,21 @@ public class NewPreorderController implements Initializable {
      * @return true if valid, false if not.
      */
     private boolean validateForm() {
-        Common.clearAllHighlighted();
+        Validation.clearAllHighlighted();
         boolean validate = true;
         if (cmbParkingLot.getValue() == null) //Makes sure parking lot is selected
         {
-            Common.showError(cmbParkingLot, "Please select parking lot!");
+            Validation.showError(cmbParkingLot, "Please select parking lot!");
             validate = false;
         }
         if (!txtCarID.getText().matches("\\d{7,8}")) //Makes sure car ID is entered and valid
         {
-            Common.showError(txtCarID, "Please enter a valid car number!");
+            Validation.showError(txtCarID, "Please enter a valid car number!");
             validate = false;
         }
 
         //Validate times:
-        return Common.validateTimes(_entryDateTime, _exitDateTime) && validate;
+        return Validation.validateTimes(_entryDateTime, _exitDateTime) && validate;
     }
 
     /**

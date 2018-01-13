@@ -39,7 +39,12 @@ public class CustomerController {
         return _customersList.get(customerID);
     }
 
-
+    public Customer addNewCustomer(Customer customer) {
+        return addNewCustomer(customer.getUID(),
+                              customer.getName(),
+                              customer.getEmail(),
+                              customer.getCarIDList());
+    }
     public Customer addNewCustomer(Integer uID, String name, String email, ArrayList<Integer> carIDList){
         Customer newCustomer = new Customer(uID, name, email, carIDList);
         _customersList.put(newCustomer.getUID(),newCustomer);

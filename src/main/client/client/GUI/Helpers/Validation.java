@@ -1,32 +1,24 @@
 package client.GUI.Helpers;
 
-import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
-import client.GUI.Controls.WaitScreen;
-import entity.Message;
-import entity.ParkingLot;
-import entity.PreOrder;
-import entity.User;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
-import javafx.util.StringConverter;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A class for external helper methods for the GUI.
- * @author Elad Avron
+ * A class for common validators
  */
-public class Common {
-
+public class Validation {
     //region GUI Helpers
-    private static ArrayList<Node> _highlightedControllers = new ArrayList<>();
+    private static HashMap<Node, Tooltip> _errorControls = new HashMap<>();
 
     /**
      * Validates that the times aren't reversed or in the past or something.
@@ -91,6 +83,7 @@ public class Common {
 
         return validate;
     }
+
     /**
      * Displays a tooltip message next to the supplied control.
      * @param control Control to display tooltip message next to.
@@ -98,109 +91,68 @@ public class Common {
      */
     public static void showError(Node control, String message)
     {
+        if (_errorControls.containsKey(control))
+        {
+            removeHighlight(control);
+        }
         Tooltip tooltip = new Tooltip(message);
         tooltip.setAutoHide(true);
         Bounds boundInScene = control.localToScreen(control.getBoundsInLocal());
         tooltip.show(control.getScene().getWindow(), boundInScene.getMaxX() + 5, boundInScene.getMinY());
-        highlightControl(control);
+        highlightControl(control, tooltip);
     }
 
     /**
      * Highlights a control in red and sets it to revert to its previous form once clicked on.
      * @param control The control to highlight.
      */
-    public static void highlightControl(Node control)
+    public static void highlightControl(Node control, Tooltip tooltip)
     {
         control.setStyle("-fx-border-color: red; -fx-border-width: 2px; -fx-border-radius: 10px");
-        _highlightedControllers.add(control);
+        _errorControls.put(control, tooltip);
         control.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                _highlightedControllers.remove(control);
-                control.setStyle("");
+                if (tooltip != null)
+                    tooltip.hide();
+                removeHighlight(control);
             }
         });
+    }
+
+    public static void removeHighlight(Node control)
+    {
+        control.setStyle("");
+        if (_errorControls.containsKey(control))
+        {
+            if (_errorControls.get(control) != null)
+                _errorControls.get(control).hide();
+            _errorControls.remove(control);
+        }
+
     }
 
     public static void clearAllHighlighted()
     {
-        for (Node control : _highlightedControllers)
+        Set<Node> allErrors = _errorControls.keySet();
+        for (Node node : allErrors)
         {
-            control.setStyle("");
+            removeHighlight(node);
         }
-        _highlightedControllers.clear();
-    }
-    //endregion
-
-    //region Server Queries
-    /**
-     * Populates a combo box with open orders.
-     * @param comboBox The combo box to populate.
-     */
-    public static void initOrders(ComboBox<PreOrder> comboBox)
-    {
-        comboBox.getItems().clear();
-        comboBox.setConverter(new StringConverter<PreOrder>() {
-            @Override
-            public String toString(PreOrder object) {
-                return String.format("%d. %s - %s", object.getOrderID(), object.getEntryTime().toString(), object.getEstimatedExitTime().toString());
-            }
-
-            @Override
-            public PreOrder fromString(String string) {
-                return null;
-            }
-        });
-        queryServer(Message.DataType.PREORDER, comboBox);
+        _errorControls.clear();
     }
 
-    /**
-     * Populates a combo box with available parking lots.
-     * @param comboBox The combo box to populate
-     */
-    public static void initParkingLots(ComboBox<ParkingLot> comboBox, boolean addRemote)
+    public static boolean validateNotEmpty(TextField...fields)
     {
-        comboBox.getItems().clear();
-        if (addRemote) {
-            ParkingLot remote = new ParkingLot();
-            remote.setParkingLotID(-1);
-            remote.setLocation("Remote Login");
-            comboBox.getItems().add(remote);
+        boolean validate = true;
+        for(TextField field : fields)
+        {
+            if (field.getText().matches("^\\s*$"))
+            {
+                showError(field, "This field can not be empty!");
+                validate = false;
+            }
         }
-        queryServer(Message.DataType.PARKING_LOT, comboBox);
+        return validate;
     }
-
-    private static void queryServer(Message.DataType type, ComboBox comboBox)
-    {
-        WaitScreen waitScreen = new WaitScreen();
-        MessageRunnable onSuccess = new MessageRunnable() {
-            @Override
-            public void run() {
-                comboBox.getItems().addAll(getMessage().getData());
-                waitScreen.hide();
-            }
-        };
-
-        MessageRunnable onFailure = new MessageRunnable() {
-            @Override
-            public void run() {
-                waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
-            }
-        };
-        User user = null;
-        if (CPSClientGUI.getSession() != null) {
-            user = CPSClientGUI.getSession().getUser();
-        }
-
-        Message query = new Message(Message.MessageType.QUERY, type, user);
-        MessageTasker queryParkingLots = new MessageTasker("Connecting...",
-                "Getting information from server...",
-                "Success!",
-                "Failed!",
-                query, onSuccess, onFailure);
-        waitScreen.run(queryParkingLots);
-    }
-    //endregion
-
-
 }

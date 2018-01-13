@@ -3,9 +3,10 @@ package client.GUI.Forms;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
 import client.GUI.Controls.WaitScreen;
-import client.GUI.Helpers.Common;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Queries;
+import client.GUI.Helpers.Validation;
 import entity.Message;
 import entity.Order;
 import entity.ParkingLot;
@@ -54,8 +55,8 @@ public class EnterParkingController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
-        Common.initParkingLots(cmbParkingLot, false);
-        Common.initOrders(cmbOrder);
+        Queries.initParkingLots(cmbParkingLot, false);
+        Queries.initOrders(cmbOrder);
         cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
     }
@@ -65,19 +66,19 @@ public class EnterParkingController implements Initializable {
      * @return true if form is valid, false otherwise.
      */
     private boolean validateForm() {
-        Common.clearAllHighlighted();
+        Validation.clearAllHighlighted();
         boolean validate = true;
         if (cmbParkingLot.getValue() == null) //Makes sure parking lot is selected
         {
-            Common.showError(cmbParkingLot, "Please select parking lot!");
+            Validation.showError(cmbParkingLot, "Please select parking lot!");
             validate = false;
         }
         if (!txtCarID.getText().matches("\\d{7,8}")) //Makes sure car ID is entered and valid
         {
-            Common.showError(txtCarID, "Please enter a valid car number!");
+            Validation.showError(txtCarID, "Please enter a valid car number!");
             validate = false;
         }
-        return Common.validateTimes(null, _exitDateTime) && validate;
+        return Validation.validateTimes(null, _exitDateTime) && validate;
     }
 
 

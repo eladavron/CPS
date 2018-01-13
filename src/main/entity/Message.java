@@ -33,6 +33,7 @@ public class Message {
         ORDER,
         PREORDER,
         USER,
+        CUSTOMER,
         PARKING_LOT,
         SESSION
     };
@@ -105,6 +106,10 @@ public class Message {
                                 case ORDER:
                                     Order order = mapper.convertValue(dataObject, Order.class);
                                     _data.add(order);
+                                    break;
+                                case CUSTOMER:
+                                    Customer customer = mapper.convertValue(dataObject, Customer.class);
+                                    _data.add(customer);
                                     break;
                                 case USER:
                                     User user = mapper.convertValue(dataObject, User.class);

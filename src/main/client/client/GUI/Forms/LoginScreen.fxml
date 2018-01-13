@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <Accordion fx:id="loginRoot" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.LoginScreenController">
@@ -37,7 +38,36 @@
       </TitledPane>
       <TitledPane fx:id="paneRegister" animated="false" expanded="false" text="Register (New User)">
          <content>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <FlowPane hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="Name:" />
+                              <TextField fx:id="txtRegisterName" />
+                           </children>
+                        </FlowPane>
+                        <FlowPane hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="Email:" />
+                              <TextField fx:id="txtRegisterEmail" prefWidth="229.0" />
+                           </children>
+                        </FlowPane>
+                        <HBox spacing="10.0">
+                           <children>
+                              <Label text="Car Number:">
+                                 <padding>
+                                    <Insets top="5.0" />
+                                 </padding>
+                              </Label>
+                              <FlowPane fx:id="listCarIDs" hgap="10.0" orientation="VERTICAL" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  <Button fx:id="btnRegister" mnemonicParsing="false" onAction="#attemptRegister" text="Register" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+               </children></AnchorPane>
          </content>
       </TitledPane>
       <TitledPane fx:id="paneConnection" animated="false" text="Connection Settings">
