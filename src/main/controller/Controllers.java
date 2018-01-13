@@ -23,7 +23,7 @@ public class Controllers {
         dbController.init(dbUrl, dbUsername, dbPwd);
     }
 
-    public static void init(){
+    public static void init() throws SQLException{
         dbController             = DBController.getInstance();
         orderController          = OrderController.getInstance();
         billingController        = BillingController.getInstance();

@@ -496,7 +496,6 @@ public class DBController {
                             rs.getString("userEmail"),
                             myCars
                     );
-                    myCustomers.add(rowCustomer);
                     // Now we will pull the list of active orders by using the DBs get order by id of user.
                     Map<Integer, Order> myOrders = new HashMap<>();
                     String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND orderType != 'DELETED'"
@@ -508,6 +507,7 @@ public class DBController {
                     }
                     rowCustomer.setActiveOrders(myOrders);
                     //TODO : set sublist.
+                    myCustomers.add(rowCustomer);
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting Customers data from 'Users' table:\n%s", e.getMessage());
@@ -531,9 +531,9 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             int uid;
             stmt.executeUpdate(String.format("INSERT INTO Users (userName, userEmail, password, userType)"
-            + " VALUES ('%s', '%s', '%s', '%s')",
-             customer.getName(), customer.getEmail(),
-            customer.getPassword(), customer.getUserType()),
+                + " VALUES ('%s', '%s', '%s', '%s')",
+                customer.getName(), customer.getEmail(),
+                customer.getPassword(), customer.getUserType()),
             Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -543,7 +543,18 @@ public class DBController {
                 throw new SQLException("Couldn't get auto-generated UID");
 
             customer.setUID(uid);
+            // insert car list here into DB.
+            for (Integer carID : customer.getCarIDList())
+            { // For each car in Customer put into it's table.
+                stmt.executeUpdate(String.format("INSERT INTO CarToUser (idCars, idUser)"
+                                + " VALUES ('%s', '%s')",
+                    carID, customer.getUID(),
+                    Statement.RETURN_GENERATED_KEYS
+                ));
+            }
             return true;
+
+
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", customer, e.getMessage());
             return false;

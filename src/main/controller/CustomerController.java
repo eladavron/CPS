@@ -4,6 +4,7 @@ import Exceptions.LastCarRemovalException;
 import Exceptions.OrderNotFoundException;
 import entity.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,14 +17,18 @@ import static controller.Controllers.*;
  * Singleton Customer controller to be responsible over the methods of customer.
  */
 public class CustomerController {
-    private static CustomerController instance = new CustomerController();
+    private static CustomerController instance;
+
+    static {
+        instance = new CustomerController();
+    }
 
     public static CustomerController getInstance() {
         return instance;
     }
 
-    private CustomerController() {
-       getCustomersFromDb();
+    private CustomerController(){
+        getCustomersFromDb();
     }
 
     private Map<Integer, Customer> _customersList = new HashMap<>();
