@@ -23,9 +23,9 @@ public class CustomerController {
     }
 
     private CustomerController() {
+       getCustomersFromDb();
     }
-
-    //TODO: change to be taken from DB once its added to our system. (like in orderrController).
+    
     private Map<Integer, Customer> _customersList = new HashMap<>();
 
 
@@ -45,6 +45,20 @@ public class CustomerController {
         }
         return null;
     }
+
+    public void getCustomersFromDb() {
+        setCustomersList(dbController.getCustomers());
+    }
+
+    //TODO: is this needed along with getOrdersFromDb()?
+    public ArrayList<Customer> getCustomersList() {
+        return (ArrayList<Customer>) _customersList.values();
+    }
+    
+    public void setCustomersList(ArrayList<Customer> list) {
+        list.forEach(customer -> _customersList.put(customer.getUID(), customer));
+    }
+
 
     public Customer addNewCustomer(Customer customer) {
         return addNewCustomer(customer.getUID(),

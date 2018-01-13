@@ -1,8 +1,6 @@
 package controller;
 
-import entity.Employee;
-import entity.Order;
-import entity.ParkingLot;
+import entity.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -197,6 +195,8 @@ public class DBController {
         return result;
     }
 
+
+
     /* Insertion */
 
     /**
@@ -376,7 +376,6 @@ public class DBController {
 
 
     public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) {
-        ArrayList<Order> myOrders = new ArrayList<>();
         ResultSet rs;
 
         if (parkingLotID == -1) { // get all rows
@@ -418,49 +417,91 @@ public class DBController {
 
 
 
-//    public ArrayList<Object> getParkingLots() {
-//        return  getParkingLotsByID(-1);
-//    }
-//
-//
-//    public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) {
-//        ArrayList<Order> myOrders = new ArrayList<>();
-//        ResultSet rs;
-//
-//        if (parkingLotID == -1) { // get all rows
-//            rs = QueryTable("ParkingLots");
-//
-//        } else { // get specific order
-//            rs = QueryTable("ParkingLots", "idParkingLots", parkingLotID);
-//        }
-//
-//        return parseParkingLotsFromDB(rs);
-//
-//    }
-//
-//    private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) {
-//        ArrayList<Object> myLots = new ArrayList<>();
-//        if (rs == null){
-//            return null;
-//        }
-//        else {
-//            try {
-//                while (rs.next()) {
-//                    ParkingLot rowLot = new ParkingLot(
-//                            rs.getInt("idParkingLots"),
-//                            rs.getString("location"),
-//                            rs.getInt("rows"),
-//                            rs.getInt("columns"),
-//                            rs.getInt("depth"),
-//                            rs.getInt("parkingLotManagerId")
-//                    );
-//                    myLots.add(rowLot);
-//                }
-//            } catch (SQLException e) {
-//                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Parking lots", e.getMessage());
-//                return null;
-//            }
-//        }
-//        return myLots;
-//    }
+   public ArrayList<Customer> getCustomers() {
+        return  getUserByID(-1, User.UserType.CUSTOMER);
+    }
+
+
+    public ArrayList<Customer> getUserByID(Integer userID, User.UserType userType) {
+        ResultSet rs;
+
+        if (userID == -1) { // get all rows of a specific UserType, will call a special query.
+            rs = QueryUserTable(userType);
+
+        } else { // get a specific user.
+            rs = QueryTable("Users", "idUser", userID);
+        }
+
+        switch (userType){
+            case CUSTOMER :
+                return parseCustomerFromDB(rs);
+            case USER:
+                break;
+        }
+        //default
+        return parseCustomerFromDB(rs);
+    }
+
+    /**
+     * This Query gets the list of Users of userType.
+     * @param userType
+     * @return
+     */
+    private ResultSet QueryUserTable(User.UserType userType) {
+        String query = String.format("SELECT * FROM Users" );
+
+        if (userType != null) {
+            query += String.format(" WHERE userType = '%s'", userType);
+        }
+
+        ResultSet result;
+        try {
+            Statement stmt = db_conn.createStatement();
+            result = stmt.executeQuery(query);
+        } catch (SQLException e) {
+            System.err.printf(
+                    "An error occurred querying table Users and getting userType: %s\n%s\n",
+                    userType, e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+        return result;
+    }
+
+    private ArrayList<Customer> parseCustomerFromDB(ResultSet rs) {
+        ArrayList<Customer> myCustomers = new ArrayList<>();
+        if (rs == null){
+            return null;
+        }
+        else {
+            try {
+                while (rs.next())
+                {
+                    ArrayList<Integer> myCars = new ArrayList<>();
+                    Statement stmt = db_conn.createStatement();
+                    // First we pull the cars of the user.
+                    String carListQuery = String.format("SELECT * FROM CarToUser WHERE idUser = %s AND isActive = 1"
+                            , rs.getInt("idUsers"));
+                    ResultSet carList = stmt.executeQuery(carListQuery);
+                    // Then make a list of the cars to use in customer c'tor.
+                    while (carList.next())
+                        myCars.add(carList.getInt("idCar"));
+
+                    Customer rowCustomer = new Customer(
+                            rs.getInt("idUsers"),
+                            rs.getString("userName"),
+                            rs.getString("password"),
+                            rs.getString("userEmail"),
+                            myCars
+                    );
+                    myCustomers.add(rowCustomer);
+                    //TODO : set sublist and add orderList.
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting Customers data from 'Users' table:\n%s", e.getMessage());
+                return null;
+            }
+        }
+        return myCustomers;
+    }
 }
