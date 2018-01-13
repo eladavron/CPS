@@ -504,4 +504,37 @@ public class DBController {
         }
         return myCustomers;
     }
+
+    /**
+     * Insert new customer to DB
+     * @param customer object to insert
+     * @return True if successful, False otherwise.
+     */
+    public boolean InsertCustomer(Customer customer){
+        if (this.isTest){
+            customer.setUID(1);
+            return true;
+        }
+        try {
+            Statement stmt = db_conn.createStatement();
+            int uid;
+            stmt.executeUpdate(String.format("INSERT INTO Users (userName, userEmail, password, userType)"
+            + " VALUES ('%s', '%s', '%s', '%s')",
+             customer.getName(), customer.getEmail(),
+            customer.getPassword(), customer.getUserType()),
+            Statement.RETURN_GENERATED_KEYS);
+
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next())
+                uid = rs.getInt(1); //Get the UID from the DB.
+            else
+                throw new SQLException("Couldn't get auto-generated UID");
+
+            customer.setUID(uid);
+            return true;
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting %s:\n%s\n", customer, e.getMessage());
+            return false;
+        }
+    }
 }

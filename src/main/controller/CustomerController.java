@@ -25,7 +25,7 @@ public class CustomerController {
     private CustomerController() {
        getCustomersFromDb();
     }
-    
+
     private Map<Integer, Customer> _customersList = new HashMap<>();
 
 
@@ -69,6 +69,7 @@ public class CustomerController {
     }
     public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList){
         Customer newCustomer = new Customer(uID, name, password, email, carIDList);
+        dbController.InsertCustomer(newCustomer);
         _customersList.put(newCustomer.getUID(),newCustomer);
         return newCustomer;
     }
