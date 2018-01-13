@@ -6,6 +6,7 @@ import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
 import entity.Order;
+import entity.User;
 import javafx.scene.control.ChoiceDialog;
 
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class ExitParking {
     public static void exitParkingStart()
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.ORDER, CPSClientGUI.getSession().getUser());
+        User user = CPSClientGUI.getSession().getUser();
+        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.ORDER, user.getUID(), user.getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {

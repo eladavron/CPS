@@ -117,7 +117,7 @@ public class MessageTasker extends Task<Message> {
                     case FAILED:
                         updateMessage(_failedMessage);
                         _onFailure.setMessage(incoming);
-                        throw new InvalidMessageException();
+                        throw new Exception("The server responded with an error: " + incoming.getData().get(0));
                     case NEED_PAYMENT:
                         updateMessage("Payment is required before you can continue.");
                         Platform.runLater(new Runnable() {

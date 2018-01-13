@@ -19,7 +19,7 @@
                         </FlowPane>
                         <FlowPane hgap="10.0" vgap="10.0">
                            <children>
-                              <Label text="User ID:" />
+                              <Label text="Email:" />
                               <TextField fx:id="txtLoginUsr" onAction="#attemptLogin" />
                            </children>
                         </FlowPane>
@@ -52,6 +52,13 @@
                            <children>
                               <Label text="Email:" />
                               <TextField fx:id="txtRegisterEmail" prefWidth="229.0" />
+                              <Label text="(You log-in with this)" />
+                           </children>
+                        </FlowPane>
+                        <FlowPane hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="Password:" />
+                              <PasswordField fx:id="txtRegisterPwd" prefHeight="25.0" prefWidth="206.0" />
                            </children>
                         </FlowPane>
                         <HBox spacing="10.0">

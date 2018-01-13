@@ -3,9 +3,9 @@ package client.GUI.Forms;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.Inits;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.Queries;
 import client.GUI.Helpers.Validation;
 import entity.Message;
 import entity.Order;
@@ -14,7 +14,10 @@ import entity.PreOrder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Tooltip;
 
 import java.io.IOException;
 import java.net.URL;
@@ -42,21 +45,22 @@ public class EnterParkingController implements Initializable {
     private Button btnCreate;
 
     @FXML
-    private TextField txtCarID;
-
-    @FXML
     private ComboBox<String> cmbExitHour;
 
     @FXML
     private DatePicker exitDate;
+
+    @FXML
+    private ComboBox<Integer> cmbCar;
 
     private DateTimeCombo _exitDateTime;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
-        Queries.initParkingLots(cmbParkingLot, false);
-        Queries.initOrders(cmbOrder);
+        Inits.initParkingLots(cmbParkingLot, false);
+        Inits.initCars(cmbCar);
+        Inits.initOrders(cmbOrder);
         cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
     }
@@ -73,9 +77,9 @@ public class EnterParkingController implements Initializable {
             Validation.showError(cmbParkingLot, "Please select parking lot!");
             validate = false;
         }
-        if (!txtCarID.getText().matches("\\d{7,8}")) //Makes sure car ID is entered and valid
+        if (cmbCar.getSelectionModel().getSelectedIndex() < 0) //Makes sure car ID is selected
         {
-            Validation.showError(txtCarID, "Please enter a valid car number!");
+            Validation.showError(cmbCar, "Please select a valid car number!");
             validate = false;
         }
         return Validation.validateTimes(null, _exitDateTime) && validate;
@@ -94,8 +98,8 @@ public class EnterParkingController implements Initializable {
 
         WaitScreen waitScreen = new WaitScreen();
         Date exitTime = _exitDateTime.getDateTime();
-        Integer parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getParkingLotID();
-        Order newOrder = new Order(CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(txtCarID.getText()),exitTime,parkingLotNumber);
+        Integer parkingLotNumber = cmbParkingLot.getValue().getParkingLotID();
+        Order newOrder = new Order(CPSClientGUI.getSession().getUser().getUID(), cmbCar.getValue(),exitTime,parkingLotNumber);
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
 
@@ -133,8 +137,15 @@ public class EnterParkingController implements Initializable {
      */
     private void fillOrder() {
         PreOrder selectedOrder = cmbOrder.getValue();
-        cmbParkingLot.getSelectionModel().select(selectedOrder.getParkingLotNumber()); //TODO: Should select actual object!
-        txtCarID.setText(selectedOrder.getCarID().toString());
+        for (ParkingLot parkingLot : cmbParkingLot.getItems())
+        {
+            if (parkingLot.getParkingLotID().equals(selectedOrder.getParkingLotNumber()))
+            {
+                cmbParkingLot.getSelectionModel().select(parkingLot);
+                break;
+            }
+        }
+        cmbCar.getSelectionModel().select(selectedOrder.getCarID());
         _exitDateTime.setDateTime(selectedOrder.getEstimatedExitTime());
         validateForm();
 

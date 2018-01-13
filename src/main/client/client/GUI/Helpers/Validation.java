@@ -20,6 +20,11 @@ public class Validation {
     //region GUI Helpers
     private static HashMap<Node, Tooltip> _errorControls = new HashMap<>();
 
+    public static boolean carNumber(String number)
+    {
+        return number.matches("\\d{7,8}");
+    }
+
     /**
      * Validates that the times aren't reversed or in the past or something.
      * @param entry DateTimePicker for entry. Pass NULL if entry is now!
@@ -142,7 +147,7 @@ public class Validation {
         _errorControls.clear();
     }
 
-    public static boolean validateNotEmpty(TextField...fields)
+    public static boolean notEmpty(TextField...fields)
     {
         boolean validate = true;
         for(TextField field : fields)

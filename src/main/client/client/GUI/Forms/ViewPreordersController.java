@@ -56,7 +56,7 @@ public class ViewPreordersController implements Initializable {
         _listPreorders.clear();
         listViewOrder.getItems().clear();
         WaitScreen waitScreen = new WaitScreen();
-        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.PREORDER, CPSClientGUI.getSession().getUser());
+        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.PREORDER, CPSClientGUI.getSession().getUser().getUID(), CPSClientGUI.getSession().getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {

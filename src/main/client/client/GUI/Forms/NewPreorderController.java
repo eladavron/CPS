@@ -4,9 +4,9 @@ package client.GUI.Forms;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.Inits;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.Queries;
 import client.GUI.Helpers.Validation;
 import entity.Message;
 import entity.ParkingLot;
@@ -69,7 +69,7 @@ public class NewPreorderController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                Queries.initParkingLots(cmbParkingLot, false);
+                Inits.initParkingLots(cmbParkingLot, false);
             }
         });
         _entryDateTime = new DateTimeCombo(entryDatePicker, cmbEntryHour, cmbEntryMinute);

@@ -73,8 +73,9 @@ public class Message {
             switch (_type)
             {
                 case QUERY:
-                    User sender = mapper.convertValue(msg.getData().get(0), User.class);
-                    _data.add(sender);
+                    _data.add(msg.getData().get(0));
+                    User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
+                    _data.add(type);
                     break;
                 case LOGIN:
                     String username = (String)msg.getData().get(0);
@@ -87,10 +88,25 @@ public class Message {
                 default:
                     if (_dataType == DataType.SESSION)
                     {
-                        int sessionID = (int) msg.getData().get(0);
-                        User sessionUser = mapper.convertValue(msg.getData().get(1), User.class);
-                        ParkingLot sessionParkingLot = mapper.convertValue(msg.getData().get(2), ParkingLot.class);
-                        Session session = new Session(0, sessionUser, sessionParkingLot);
+                        Session session = new Session();
+                        int SID = (int)msg.getData().get(0);
+                        ParkingLot sessionParkingLot = mapper.convertValue(msg.getData().get(1), ParkingLot.class);
+                        User.UserType userType = mapper.convertValue(msg.getData().get(2), User.UserType.class);
+                        User user;
+                        switch (userType)
+                        {
+                            case CUSTOMER:
+                                user = mapper.convertValue(msg.getData().get(3), Customer.class);
+                                break;
+                            case EMPLOYEE:
+                                user = mapper.convertValue(msg.getData().get(3), Employee.class);
+                                break;
+                            default: //Shouldn't happen
+                                user = new User();
+                        }
+                        session.setSid(SID);
+                        session.setUser(user);
+                        session.setParkingLot(sessionParkingLot);
                         _data.add(session);
                     }
                     else {

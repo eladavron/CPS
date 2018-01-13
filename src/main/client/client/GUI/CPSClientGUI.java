@@ -102,7 +102,7 @@ public class CPSClientGUI extends Application{
     /**
      * The current session.
      */
-    private static Session _session = new Session();
+    private static Session _session;
 
     /**
      * The main method of the application.

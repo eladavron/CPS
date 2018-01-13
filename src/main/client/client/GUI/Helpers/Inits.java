@@ -9,10 +9,12 @@ import entity.User;
 import javafx.scene.control.ComboBox;
 import javafx.util.StringConverter;
 
+import java.util.ArrayList;
+
 /**
- * A class for common queries to the server helper methods for the GUI.
+ * A class for common inits along with those who require to the server.
   */
-public class Queries {
+public class Inits {
 
     /**
      * Populates a combo box with open orders.
@@ -33,6 +35,25 @@ public class Queries {
             }
         });
         queryServer(Message.DataType.PREORDER, comboBox);
+    }
+
+    public static void initCars(ComboBox<Integer> comboBox)
+    {
+        comboBox.getItems().clear();
+        if (CPSClientGUI.getSession().getUser().getUserType().equals(User.UserType.CUSTOMER))
+        {
+            ArrayList<Integer> carList = CPSClientGUI.getSession().getCustomer().getCarIDList();
+            for (Integer car : carList)
+            {
+                comboBox.getItems().add(car);
+            }
+
+            //Select default
+            if (comboBox.getItems().size() == 1)
+            {
+                comboBox.getSelectionModel().select(0);
+            }
+        }
     }
 
     /**
@@ -68,12 +89,12 @@ public class Queries {
                 waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
             }
         };
-        User user = null;
+        User user = new User();
         if (CPSClientGUI.getSession() != null) {
             user = CPSClientGUI.getSession().getUser();
         }
 
-        Message query = new Message(Message.MessageType.QUERY, type, user);
+        Message query = new Message(Message.MessageType.QUERY, type, user.getUID(), user.getUserType());
         MessageTasker queryParkingLots = new MessageTasker("Connecting...",
                 "Getting information from server...",
                 "Success!",

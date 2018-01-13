@@ -37,8 +37,8 @@
                 </FlowPane>
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
-                        <Label text="Car ID:" />
-                        <TextField fx:id="txtCarID" />
+                        <Label text="Car:" />
+                  <ComboBox fx:id="cmbCar" />
                     </children>
                     <VBox.margin>
                         <Insets />
