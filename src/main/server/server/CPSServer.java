@@ -47,7 +47,7 @@ public class CPSServer extends AbstractServer
         ArrayList<Integer> dummyCarList = new ArrayList<Integer>();
         dummyCarList.add(1234567);
         dummyCarList.add(7654321);
-        customerController.addNewCustomer(666, "Lucifer", "something@hateful.edu", dummyCarList);
+        customerController.addNewCustomer(666, "Lucifer","666", "something@hateful.edu", dummyCarList);
     }
 
 

@@ -19,14 +19,14 @@ class CustomerControllerTest extends ApplicationTest {
     private void beforeEach(){
         carList = new ArrayList<>();
         carList.add(6677788);
-        _testCustomer = new Customer(777, "Bob", "FakeMail@.com",carList);
+        _testCustomer = new Customer(777, "Bob","666" , "FakeMail@.com",carList);
     }
 
     @Test
     void addNewCustomerTest()
     {
         Customer newCustomer = CustomerController.getInstance()
-                .addNewCustomer(777, "Bob", "FakeMail@.com", carList);
+                .addNewCustomer(777, "Bob","666", "FakeMail@.com", carList);
 
         assertThat(newCustomer).isEqualToComparingFieldByField(_testCustomer);
     }

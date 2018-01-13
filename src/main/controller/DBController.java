@@ -415,4 +415,52 @@ public class DBController {
         }
         return myLots;
     }
+
+
+
+//    public ArrayList<Object> getParkingLots() {
+//        return  getParkingLotsByID(-1);
+//    }
+//
+//
+//    public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) {
+//        ArrayList<Order> myOrders = new ArrayList<>();
+//        ResultSet rs;
+//
+//        if (parkingLotID == -1) { // get all rows
+//            rs = QueryTable("ParkingLots");
+//
+//        } else { // get specific order
+//            rs = QueryTable("ParkingLots", "idParkingLots", parkingLotID);
+//        }
+//
+//        return parseParkingLotsFromDB(rs);
+//
+//    }
+//
+//    private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) {
+//        ArrayList<Object> myLots = new ArrayList<>();
+//        if (rs == null){
+//            return null;
+//        }
+//        else {
+//            try {
+//                while (rs.next()) {
+//                    ParkingLot rowLot = new ParkingLot(
+//                            rs.getInt("idParkingLots"),
+//                            rs.getString("location"),
+//                            rs.getInt("rows"),
+//                            rs.getInt("columns"),
+//                            rs.getInt("depth"),
+//                            rs.getInt("parkingLotManagerId")
+//                    );
+//                    myLots.add(rowLot);
+//                }
+//            } catch (SQLException e) {
+//                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Parking lots", e.getMessage());
+//                return null;
+//            }
+//        }
+//        return myLots;
+//    }
 }

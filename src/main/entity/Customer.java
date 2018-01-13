@@ -24,8 +24,8 @@ public class Customer extends User{
 	 * @param email Customer's email
 	 * @param carIDList Customer's cars' ids list.
 	 */
-	public Customer(Integer uID, String name, String email, ArrayList<Integer> carIDList) {
-		super(uID,name,email, UserType.CUSTOMER);
+	public Customer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList) {
+		super(uID, name, password, email, UserType.CUSTOMER);
 		this._carIDList = carIDList;
 		this._subscriptionList = new HashMap<>();
 		this._activeOrders = new HashMap<>();

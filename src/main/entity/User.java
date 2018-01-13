@@ -17,20 +17,23 @@ public class User {
 	protected String _name;
 	protected String _email;
 	protected UserType _userType;
+    protected String _password;
 	
 	/**
 	 * Class Constructor
 	 * @param uID User's UID
 	 * @param name User's name
 	 * @param email User's email
-	 * @param userType
+	 * @param userType the enum of above.
+     * @param password the user's Login password!
 	 */
 
-	public User(Integer uID, String name, String email, UserType userType){
+	public User(Integer uID, String name, String password, String email, UserType userType){
 		this._uID = uID;
 		this._name = name;
 		this._email = email;
 		this._userType = userType;
+		this._password = password;
 	}
 	/**
 	 * Empty constructor for Jackson
@@ -85,6 +88,24 @@ public class User {
 	public void setEmail(String email) {
 		this._email = email;
 	}
+
+
+    public UserType getUserType() {
+        return _userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this._userType = userType;
+    }
+
+    public String getPassword() {
+        return _password;
+    }
+
+    public void setPassword(String password) {
+        this._password = password;
+    }
+
 
 	@Override
     public String toString() {

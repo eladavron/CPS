@@ -39,14 +39,22 @@ public class CustomerController {
         return _customersList.get(customerID);
     }
 
+    public Customer getCustomerByEmail(String email) {
+        for (Customer customer : _customersList.values()) {
+            if (customer.getEmail().equals(email)) return customer;
+        }
+        return null;
+    }
+
     public Customer addNewCustomer(Customer customer) {
         return addNewCustomer(customer.getUID(),
                               customer.getName(),
+                              customer.getPassword(),
                               customer.getEmail(),
                               customer.getCarIDList());
     }
-    public Customer addNewCustomer(Integer uID, String name, String email, ArrayList<Integer> carIDList){
-        Customer newCustomer = new Customer(uID, name, email, carIDList);
+    public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList){
+        Customer newCustomer = new Customer(uID, name, password, email, carIDList);
         _customersList.put(newCustomer.getUID(),newCustomer);
         return newCustomer;
     }

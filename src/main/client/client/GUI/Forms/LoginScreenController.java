@@ -149,7 +149,7 @@ public class LoginScreenController {
                 carList.add(Integer.valueOf(((TextField) carText).getText()));
             }
         }
-        Customer newCustomer = new Customer(-1, txtRegisterName.getText(), txtRegisterEmail.getText(), carList);
+        Customer newCustomer = new Customer(-1, txtRegisterName.getText(), txtLoginPwd.getText(), txtRegisterEmail.getText(), carList);
 
         Message newUserMessage = new Message(Message.MessageType.CREATE,
                 Message.DataType.CUSTOMER,
