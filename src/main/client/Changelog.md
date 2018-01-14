@@ -1,3 +1,6 @@
+# 14.01.2018
+* **12:11** - Fixing some UI bugs with deleting cars.
+
 # 13.01.2018
 ## General
 * Handled error message on the client will only be printed if the --debug flag is active.

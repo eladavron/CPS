@@ -8,7 +8,7 @@
             stylesheets="@../CSS/material.css"
             xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="client.GUI.Forms.CarsManagement">
+            fx:controller="client.GUI.Forms.ManageCars">
     <content>
         <BorderPane>
             <center>

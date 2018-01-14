@@ -55,15 +55,19 @@ public class Customer extends User{
 	 * Get the customer's subscriptions' list.
 	 * @return Customer's subscriptions' list.
 	 */
-	public Map<Integer, Subscription> getSubscriptionList() {
+	public Map<Integer, Subscription> getSubscriptionMap() {
 		return _subscriptionList;
+	}
+
+	public ArrayList<Object> getSubscriptionList(){
+		return new ArrayList<Object>(_subscriptionList.values());
 	}
 
 	/**
 	 * Set the customer's subscriptions' list.
 	 * @param subscriptionList Subscription's list to set the customer's subscriptions' list.
 	 */
-	public void setSubscriptionList(Map<Integer, Subscription> subscriptionList) {
+	public void setSubscriptionMap(Map<Integer, Subscription> subscriptionList) {
 		this._subscriptionList = subscriptionList;
 	}
 

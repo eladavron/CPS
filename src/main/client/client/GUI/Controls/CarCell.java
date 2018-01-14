@@ -1,11 +1,11 @@
 package client.GUI.Controls;
 
-import client.GUI.Forms.CarsManagement;
+import client.GUI.Forms.ManageCars;
+import client.GUI.CPSClientGUI;
 import client.GUI.Helpers.ErrorHandlers;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -28,9 +28,9 @@ public class CarCell extends ListCell<Integer>{
     @FXML
     private Label lblText;
 
-    CarsManagement _parent;
+    ManageCars _parent;
 
-    public CarCell(CarsManagement parent)
+    public CarCell(ManageCars parent)
     {
         _parent = parent;
         try {
@@ -45,16 +45,21 @@ public class CarCell extends ListCell<Integer>{
     @Override
     protected void updateItem(Integer item, boolean empty) {
         super.updateItem(item, empty);
-        if (item != null)
+        if (empty)
         {
-            lblText.setText("Car No. " + item.toString());
-            btnDelete.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    deleteCar(item);
-                }
-            });
-            setGraphic(paneRow);
+            setGraphic(null);
+        }
+        else {
+            if (item != null) {
+                lblText.setText("Car No. " + item.toString());
+                btnDelete.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        deleteCar(item);
+                    }
+                });
+                setGraphic(paneRow);
+            }
         }
     }
 
@@ -64,12 +69,10 @@ public class CarCell extends ListCell<Integer>{
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        _parent.queryServerForCars();
-                    }
-                });
+                {
+                    waitScreen.setOnClose(()->_parent.queryServerForCars());
+                    waitScreen.hide();
+                }
             }
         };
         MessageRunnable onFailure = new MessageRunnable() {
@@ -80,6 +83,7 @@ public class CarCell extends ListCell<Integer>{
         };
         Message deleteMessage = new Message(Message.MessageType.DELETE,
                 Message.DataType.CARS,
+                CPSClientGUI.getSession().getUser().getUID(),
                 car);
 
         MessageTasker taskDelete = new MessageTasker("Connecting...",

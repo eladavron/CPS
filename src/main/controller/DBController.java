@@ -518,7 +518,7 @@ public class DBController {
 
                     Map<Integer, Subscription> SubscriptionList = parseSubscriptions(subsList); // for readability
 
-                    rowCustomer.setSubscriptionList(SubscriptionList);
+                    rowCustomer.setSubscriptionMap(SubscriptionList);
 
                     // after populating this customer object - add to list
                     myCustomers.add(rowCustomer);

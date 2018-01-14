@@ -1,6 +1,6 @@
 package client.GUI.Controls;
 
-import client.GUI.Forms.ViewPreorders;
+import client.GUI.Forms.ManagePreorders;
 import client.GUI.Helpers.ErrorHandlers;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
@@ -30,9 +30,9 @@ public class PreorderCell extends ListCell<PreOrder>{
     @FXML
     private Label lblText;
 
-    ViewPreorders _parent;
+    ManagePreorders _parent;
 
-    public PreorderCell(ViewPreorders parent)
+    public PreorderCell(ManagePreorders parent)
     {
         _parent = parent;
         try {
@@ -47,19 +47,26 @@ public class PreorderCell extends ListCell<PreOrder>{
     @Override
     protected void updateItem(PreOrder item, boolean empty) {
         super.updateItem(item, empty);
-        if (item != null)
+        if (empty)
         {
-            lblText.setText("Order No. " + item.getOrderID() + "\n"
-                    + "From: " + item.getEstimatedEntryTime().toString() + "\n"
-                    + "To: " + item.getEstimatedExitTime().toString() +"\n"
-                    + "Car No. "+  item.getCarID());
-            btnDelete.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    deletePreorder(item);
-                }
-            });
-            setGraphic(paneRow);
+            setGraphic(null);
+        }
+        else
+        {
+            if (item != null)
+            {
+                lblText.setText("Order No. " + item.getOrderID() + "\n"
+                        + "From: " + item.getEstimatedEntryTime() + "\n"
+                        + "To: " + item.getEstimatedExitTime() +"\n"
+                        + "Car No. "+  item.getCarID());
+                btnDelete.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        deletePreorder(item);
+                    }
+                });
+                setGraphic(paneRow);
+            }
         }
     }
 

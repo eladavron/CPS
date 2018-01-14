@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class CarsManagement implements Initializable{
+public class ManageCars implements Initializable{
     @FXML
     private Button btnBack;
 
@@ -39,17 +39,24 @@ public class CarsManagement implements Initializable{
 
     private ObservableList<Integer> _listCars = FXCollections.observableArrayList();
 
-    private CarsManagement _this;
+    private ManageCars _this;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        _this = this;
+        listViewCars.setCellFactory(new Callback<ListView<Integer>, ListCell<Integer>>() {
+            @Override
+            public ListCell<Integer> call(ListView<Integer> param) {
+                return new CarCell(_this);
+            }
+        });
+        listViewCars.setItems(_listCars);
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 queryServerForCars();
             }
         });
-        _this = this;
     }
 
     public void queryServerForCars()
@@ -60,23 +67,15 @@ public class CarsManagement implements Initializable{
             @Override
             public void run() {
                 _listCars.clear();
-                listViewCars.setItems(null);
                 for (Object car : getMessage().getData())
                 {
                     _listCars.add((Integer) car);
                 }
-                listViewCars.setItems(_listCars);
-                if (CPSClientGUI.getSession().getUserType() == User.UserType.CUSTOMER)
+                if (CPSClientGUI.getSession().getUserType() == User.UserType.CUSTOMER) //Update the session carlist
                 {
                     ArrayList<Integer> customerCarList = new ArrayList<>(_listCars);
                     ((Customer)CPSClientGUI.getSession().getUser()).setCarIDList(customerCarList);
                 }
-                listViewCars.setCellFactory(new Callback<ListView<Integer>, ListCell<Integer>>() {
-                    @Override
-                    public ListCell<Integer> call(ListView<Integer> param) {
-                        return new CarCell(_this);
-                    }
-                });
                 waitScreen.hide();
             }
         };
@@ -119,7 +118,7 @@ public class CarsManagement implements Initializable{
                 TextInputDialog source = (TextInputDialog)event.getSource();
                 TextField editor = source.getEditor();
                 String result = source.getResult();
-                if (result != null && !Validation.carNumber(result)) {
+                if (result != null && ( !Validation.carNumber(result) || _listCars.contains(Integer.valueOf(result)))  ) {
                         Validation.showError(source.getEditor(), "Not a valid car number!");
                         event.consume();
                     }
@@ -133,8 +132,7 @@ public class CarsManagement implements Initializable{
                 @Override
                 public void run() {
                     waitScreen.hide();
-                    listViewCars.setItems(null);
-                    queryServerForCars();
+                    Platform.runLater(()->queryServerForCars());
                 }
             };
             MessageRunnable onFailure = new MessageRunnable() {

@@ -78,6 +78,14 @@ public class CustomerController {
         return newCustomer;
     }
 
+    public ArrayList<Object> getCustomersPreOrders(int customerID){
+        return new ArrayList<Object>(dbController.getOrdersByUserID(customerID).values());
+    }
+
+    public ArrayList<Object> getCustomersActiveOrders(int customerID){
+        return new ArrayList<>(_customersList.get(customerID).getActiveOrders().values());
+    }
+
     /**
      *  Given the the right params needed for a new Order...controller will add this new order into the active orders list.
      * @param customerID
@@ -149,7 +157,7 @@ public class CustomerController {
             orderToFinish = activeOrders.get(orderID);
             // The order was found...need to check the client's cost for this order.
             Integer carID = orderToFinish.getCarID();
-            Billing.priceList checkedPrice = getHourlyParkingCost(customer.getSubscriptionList(), orderToFinish);
+            Billing.priceList checkedPrice = getHourlyParkingCost(customer.getSubscriptionMap(), orderToFinish);
             orderController.finishOrder(orderToFinish.getOrderID(), checkedPrice);
             return orderToFinish.getPrice();
         }
@@ -264,7 +272,7 @@ public class CustomerController {
      */
     public Integer addNewRegularSubscription(Customer customer, Integer carID, String regularExitTime, Integer parkingLotNumber)
     {
-        Map<Integer, Subscription> subscriptionList = customer.getSubscriptionList();
+        Map<Integer, Subscription> subscriptionList = customer.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
             if (subscription.getSubscriptionType() == Subscription.SubscriptionType.REGULAR && subscription.getCarID() == carID){
                 RegularSubscription regularSub = (RegularSubscription) subscription;
@@ -278,7 +286,7 @@ public class CustomerController {
         }
 
         Subscription regularSubscription = subscriptionController.addRegularSubscription(carID, regularExitTime, parkingLotNumber);
-        customer.getSubscriptionList().put(regularSubscription.getSubscriptionID(), regularSubscription);
+        customer.getSubscriptionMap().put(regularSubscription.getSubscriptionID(), regularSubscription);
         return 1;
     }
 
@@ -290,7 +298,7 @@ public class CustomerController {
      */
     public Integer addNewFullSubscription(Customer customer, Integer carID)
     {
-        Map<Integer, Subscription> subscriptionList = customer.getSubscriptionList();
+        Map<Integer, Subscription> subscriptionList = customer.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
             if (subscription.getSubscriptionType() == Subscription.SubscriptionType.FULL && subscription.getCarID() == carID){
                 subscriptionController.renewSubscription(subscription); //just renewing it's expiration date does the job.
@@ -298,7 +306,7 @@ public class CustomerController {
         }
         //Has no Full Subscription over this car
         Subscription fullSubscription = subscriptionController.addFullSubscription(carID); //making a new full subscription for the user.
-        customer.getSubscriptionList().put(fullSubscription.getSubscriptionID(), fullSubscription);
+        customer.getSubscriptionMap().put(fullSubscription.getSubscriptionID(), fullSubscription);
 
         return 0;
     }

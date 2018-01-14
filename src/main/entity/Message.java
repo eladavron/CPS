@@ -36,6 +36,7 @@ public class Message {
         CARS,
         CUSTOMER,
         PARKING_LOT,
+        SUBSCRIPTION,
         SESSION
     };
 
@@ -77,6 +78,10 @@ public class Message {
                     _data.add(msg.getData().get(0));
                     User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
                     _data.add(type);
+                    if (_dataType == DataType.SUBSCRIPTION) {
+                        Subscription subscription = mapper.convertValue(msg.getData().get(2), Subscription.class);
+                        _data.add(subscription);
+                    }
                     break;
                 case LOGIN:
                     String username = (String)msg.getData().get(0);

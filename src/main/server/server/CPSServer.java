@@ -173,7 +173,7 @@ public class CPSServer extends AbstractServer
             System.out.println("Please wait, setting up... ");
             Controllers.init();
             System.out.println("Done!");
-            initDummies();
+            //initDummies();
         }
         catch (SQLException e)
         {

@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class ViewPreorders implements Initializable {
+public class ManagePreorders implements Initializable {
 
     @FXML
     private ListView<PreOrder> listViewOrder;
@@ -38,17 +38,24 @@ public class ViewPreorders implements Initializable {
 
     private ObservableList<PreOrder> _listPreorders = FXCollections.observableArrayList();
 
-    private ViewPreorders _this;
+    private ManagePreorders _this;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        _this = this;
+        listViewOrder.setCellFactory(new Callback<ListView<PreOrder>, ListCell<PreOrder>>() {
+            @Override
+            public ListCell<PreOrder> call(ListView<PreOrder> param) {
+                return new PreorderCell(_this);
+            }
+        });
+        listViewOrder.setItems(_listPreorders);
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 queryPreorders();
             }
         });
-        _this = this;
     }
 
     public void queryPreorders()
@@ -59,19 +66,11 @@ public class ViewPreorders implements Initializable {
             @Override
             public void run() {
                 _listPreorders.clear();
-                listViewOrder.setItems(null);
                 ArrayList preorders = getMessage().getData();
                 for (Object preOrder : preorders)
                 {
                     _listPreorders.add((PreOrder)preOrder);
                 }
-                listViewOrder.setItems(_listPreorders);
-                listViewOrder.setCellFactory(new Callback<ListView<PreOrder>, ListCell<PreOrder>>() {
-                    @Override
-                    public ListCell<PreOrder> call(ListView<PreOrder> param) {
-                        return new PreorderCell(_this);
-                    }
-                });
                 waitScreen.hide();
             }
         };
