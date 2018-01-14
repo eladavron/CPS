@@ -284,6 +284,28 @@ public class DBController {
         }
     }
 
+    /**
+     * "Delete" order by setting its type to 'DELETED'
+     * @param orderId
+     * @return True upon success, false otherwise
+     */
+    public boolean deleteOrder (int orderId)
+    {
+
+        try {
+            Statement stmt = db_conn.createStatement();
+            stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED' WHERE  idOrders=%s",
+                    orderId),
+                    Statement.RETURN_GENERATED_KEYS);
+            return true;
+
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred deleting order with id: %s \n%s\n", orderId, e.getMessage());
+            return false;
+        }
+    }
+
     public Map<Integer, Order> parseOrdersFromDBToMap(ResultSet rs){
         Map<Integer, Order>  myOrders = new HashMap<>();
         if (rs == null){
