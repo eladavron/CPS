@@ -289,12 +289,13 @@ public class DBController {
      * @param orderId
      * @return True upon success, false otherwise
      */
-    public boolean deleteOrder (int orderId)
+    public boolean deleteOrder (int orderId, double charged)
     {
 
         try {
             Statement stmt = db_conn.createStatement();
-            stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED' WHERE  idOrders=%s",
+            stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED', price= '%s' WHERE  idOrders=%s",
+                    charged,
                     orderId),
                     Statement.RETURN_GENERATED_KEYS);
             return true;

@@ -137,10 +137,40 @@ public class OrderController {
      * removes the Order from the list AFTER updating it as deleted in the DB.
      * @param orderID
      */
-    public void deleteOrder(Integer orderID)
+    public Order deleteOrder(Integer orderID)
     {
-        _ordersList.get(orderID).setOrderStatus(Order.orderStatus.DELETED);
-        //TODO: dbcontroller.removeOrder(orderID). and then dbcontroller.insertOrder(order) with its final stats as we discussed.
+        final Integer THREE_HOURS = 10800000;
+        final Integer ONE_HOUR = 3600000;
+        PreOrder orderToDelete = (PreOrder) _ordersList.get(orderID);
+        final Integer REMAINING_TIME = orderToDelete.getEstimatedEntryTime().compareTo(new Date()) ;
+        double refund;
+        double actualPayment;
+        //First we will check how long until the order is set to be used.
+        if (REMAINING_TIME > THREE_HOURS)
+        {
+            // Pay 10% of the price meaning she will get back 90%
+            refund = (orderToDelete.getCharge() / 10) * 9;
+            actualPayment = orderToDelete.getCharge() / 10;
+        }
+        else
+        { //Under 3 hours!
+            if (REMAINING_TIME > ONE_HOUR)
+            {
+                // Pay 50% of the price meaning she will get back 50%
+                refund = orderToDelete.getCharge() / 2;
+                actualPayment = orderToDelete.getCharge() / 2;
+            }
+            else
+            {
+                //Pay 100% of the price meaning she will get nothing back!
+                refund = 0;
+                actualPayment = orderToDelete.getCharge();
+            }
+        }
+        orderToDelete.setCharge(refund);
+        orderToDelete.setOrderStatus(Order.orderStatus.DELETED);
+        dbController.deleteOrder(orderToDelete.getOrderID(), actualPayment);
         _ordersList.remove(orderID);
+        return orderToDelete;
     }
 }
