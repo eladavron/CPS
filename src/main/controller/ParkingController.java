@@ -4,7 +4,9 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
-import entity.*;
+import entity.Order;
+import entity.ParkingLot;
+import entity.ParkingSpace;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -70,6 +72,11 @@ public class ParkingController {
     public boolean enterParkingLot(Integer orderID){
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
+
+        if(this._parkingLotList.get(parkingLotNumber).getIsFullState()){
+            return false;
+        }
+
         initCurrentParkingValues(parkingLotNumber);
         String status = checkAndUpdateBoundaries(parkingLotNumber);
 
@@ -84,6 +91,8 @@ public class ParkingController {
             this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
             return true;
         }
+
+
     }
 
     /**
@@ -244,14 +253,17 @@ public class ParkingController {
         this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(status);
     }
 
-//    public void setParkingLotFull(Integer parkingLotNumber){
-//        for(int i=1; i<=this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
-//            for(int j=1; j<=this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
-//                for(int k=1; k<=this._parkingLotList.get(parkingLotNumber).getHeight()){
-//                }
-//            }
-//        }
-//    }
+    /**
+     * Setting the specific parking lot as full.
+     * TODO: direct the user to another parking lot (think about something nice).
+     * @param parkingLotNumber The number of the parking lot to export its status map.
+     */
+    public void toggleParkingLotStatus(Integer parkingLotNumber){
+        this._parkingLotList.get(parkingLotNumber)
+                .setIsFullState(!(this._parkingLotList
+                        .get(parkingLotNumber).getIsFullState())
+                );
+    }
 }
 
 

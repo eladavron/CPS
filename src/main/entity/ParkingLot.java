@@ -33,6 +33,8 @@ public class ParkingLot {
     private Integer _widthNumOccupied = 1 ;
     private Integer _heightNumOccupied = 1 ;
     private Integer _depthNumOccupied = 1;
+    private boolean _isFullState = false;
+
 
 	/**
 	 * Default class constructor.
@@ -71,12 +73,20 @@ public class ParkingLot {
 	 * Setters and getters.
 	 */
 	public Integer getParkingLotID() {
-		return _parkingLotID;
-	}
+        return _parkingLotID;
+    }
 
-	public void setParkingLotID(Integer uID) {
-		this._parkingLotID = uID;
-	}
+    public void setParkingLotID(Integer uID) {
+        this._parkingLotID = uID;
+    }
+
+    public boolean getIsFullState() {
+        return _isFullState;
+    }
+
+    public void setIsFullState(boolean isFull) {
+        this._isFullState = isFull;
+    }
 
 	public String getLocation() {
 		return _location;
