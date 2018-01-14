@@ -118,16 +118,17 @@ public class Message {
                             Subscription.SubscriptionType subType = mapper.convertValue(msg.getData().get(0), Subscription.SubscriptionType.class);
                             Subscription sub;
                             LinkedHashMap myData = (LinkedHashMap) msg.getData().get(1);
+                            Integer userID = (Integer) myData.get("userID");
                             Integer carID = (Integer) myData.get("carID");
                             switch (subType) {
                                 case REGULAR:
                                 case REGULAR_MULTIPLE:
                                     String regularExitTime = (String) myData.get("regularExitTime");
                                     Integer parkingLotNumber = (Integer) myData.get("parkingLotNumber");
-                                    sub = new RegularSubscription(carID, regularExitTime, parkingLotNumber);
+                                    sub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
                                     break;
                                 case FULL:
-                                    sub = new FullSubscription(carID);
+                                    sub = new FullSubscription(userID, carID);
                                     break;
                                 default:
                                     throw new NotImplementedException("Unimplemented subscription type: " + subType);

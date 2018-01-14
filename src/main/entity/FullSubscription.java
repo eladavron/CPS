@@ -9,14 +9,6 @@ import java.util.Date;
  */
 
 public class FullSubscription extends Subscription {
-    /**
-     * Class Constructor.
-     *
-     * @param carID      The subscription's car id.
-     */
-    public FullSubscription(int carID) {
-        super(carID, SubscriptionType.FULL);
-    }
 
     /**
      * ctor From DB entry
@@ -27,6 +19,15 @@ public class FullSubscription extends Subscription {
      */
     public FullSubscription (int subsId, int carId, int userId, Date endDate){
         super( subsId,  carId,  userId, endDate, SubscriptionType.FULL);
+    }
+
+    /**
+     * ctor to DB entry
+     * @param carId
+     * @param userId
+     */
+    public FullSubscription (int userId, int carId){
+        super(userId, carId, SubscriptionType.FULL);
     }
 
     @Override

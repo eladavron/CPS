@@ -6,26 +6,28 @@ import entity.*;
 
 import java.util.*;
 
+import entity.Billing;
+
 import static controller.Controllers.*;
 
 /**
  * Singleton Customer controller to be responsible over the methods of customer.
  */
 public class CustomerController {
-
-    public static enum SubscriptionOperationReturnCodes {
-        FAILED,
-        SUCCESS_ADDED,
-        RENEWED,
-    }
-
     private static CustomerController instance;
 
     static {
         instance = new CustomerController();
     }
+
     public static CustomerController getInstance() {
         return instance;
+    }
+
+    public enum SubscriptionOperationReturnCodes {
+        FAILED,
+        SUCCESS_ADDED,
+        RENEWED,
     }
 
     private CustomerController(){
@@ -63,7 +65,7 @@ public class CustomerController {
     public ArrayList<Customer> getCustomersList() {
         return (ArrayList<Customer>) _customersList.values();
     }
-    
+
     public void setCustomersList(ArrayList<Customer> list) {
         list.forEach(customer -> _customersList.put(customer.getUID(), customer));
     }
@@ -270,50 +272,54 @@ public class CustomerController {
     /**
      *   Given the the right params needed for a new Regular Subscription
      *   the controller will add subscribe it and put it into the the customer's subscriptionList.
-     * @param customer
-     * @param carID
-     * @param regularExitTime
-     * @param parkingLotNumber
-     * @return  1 = Added/Success, 2 = Had Regular renewed
+     * @param subs - Regular Subscription
+     * @return CustomerController.SubscriptionOperationReturnCodes Return Code
      */
-    public Integer addNewRegularSubscription(Customer customer, Integer carID, String regularExitTime, Integer parkingLotNumber)
+    public SubscriptionOperationReturnCodes addNewRegularSubscription(RegularSubscription subs)
     {
-        Map<Integer, Subscription> subscriptionList = customer.getSubscriptionMap();
+        Customer cust = customerController.getCustomer(subs.getUserID());
+        Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getSubscriptionType() == Subscription.SubscriptionType.REGULAR && subscription.getCarID() == carID){
+            if (subscription.getSubscriptionType() == Subscription.SubscriptionType.REGULAR && subscription.getCarID() == subs.getCarID()){
                 RegularSubscription regularSub = (RegularSubscription) subscription;
-                if (regularSub.getParkingLotNumber().equals(parkingLotNumber)) //then this is just a renewal of an existing subscription!
+                if (regularSub.getParkingLotNumber().equals(subs.getParkingLotNumber())) //then this is just a renewal of an existing subscription!
                 {
-                    regularSub.setRegularExitTime(regularExitTime); // in case times has changed
-                    subscriptionController.renewSubscription(regularSub); //just renewing it's expiration date does the job.
-                    return 2;
+                    regularSub.setRegularExitTime(subs.getRegularExitTime()); // in case times has changed
+                    if (subscriptionController.renewSubscription(regularSub)) //just renewing it's expiration date does the job.
+                        return SubscriptionOperationReturnCodes.RENEWED;
+                    else
+                        return SubscriptionOperationReturnCodes.FAILED;
                 }
             }
         }
 
-        Subscription regularSubscription = subscriptionController.addRegularSubscription(carID, regularExitTime, parkingLotNumber);
-        customer.getSubscriptionMap().put(regularSubscription.getSubscriptionID(), regularSubscription);
-        return 1;
+        if (subscriptionController.addRegularSubscription(subs) != -1) {
+            //cust.getSubscriptionMap().put(regularSubscription.getSubscriptionID(), regularSubscription);
+            return SubscriptionOperationReturnCodes.SUCCESS_ADDED;
+        }else
+            return SubscriptionOperationReturnCodes.FAILED;
     }
 
     /**
      *  Same as addNewRegularSubscription just on FullSubscription this time.
-     * @param customer
-     * @param carID
-     * @return
+     * @param fSubs - Full Subscription
+     * @return CustomerController.SubscriptionOperationReturnCodes Return Code
      */
-    public Integer addNewFullSubscription(Customer customer, Integer carID)
+    public SubscriptionOperationReturnCodes addNewFullSubscription(FullSubscription fSubs)
     {
-        Map<Integer, Subscription> subscriptionList = customer.getSubscriptionMap();
+        Customer cust = customerController.getCustomer(fSubs.getUserID());
+        Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getSubscriptionType() == Subscription.SubscriptionType.FULL && subscription.getCarID() == carID){
+            if (subscription.getSubscriptionType() == Subscription.SubscriptionType.FULL && subscription.getCarID() == fSubs.getCarID()){
                 subscriptionController.renewSubscription(subscription); //just renewing it's expiration date does the job.
-            }
+            }else
+                return SubscriptionOperationReturnCodes.FAILED;
         }
         //Has no Full Subscription over this car
-        Subscription fullSubscription = subscriptionController.addFullSubscription(carID); //making a new full subscription for the user.
-        customer.getSubscriptionMap().put(fullSubscription.getSubscriptionID(), fullSubscription);
-
-        return 0;
+        if (subscriptionController.addFullSubscription(fSubs) != -1) {
+            //cust.getSubscriptionMap().put(fullSubscription.getSubscriptionID(), fullSubscription);
+            return SubscriptionOperationReturnCodes.SUCCESS_ADDED;
+        }else
+            return SubscriptionOperationReturnCodes.FAILED;
     }
 }

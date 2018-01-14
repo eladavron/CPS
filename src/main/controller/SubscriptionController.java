@@ -54,31 +54,66 @@ public class SubscriptionController {
 
     /**
      *  A new Regular Subscription
+     * @param userID
      * @param carID
      * @param regularExitTime
      * @param parkingLotNumber
      * @return new Subscription obj
      */
-    public Subscription addRegularSubscription(Integer carID, String regularExitTime, Integer parkingLotNumber)
+    public Subscription addRegularSubscription(Integer userID, Integer carID, String regularExitTime, Integer parkingLotNumber)
     {
-        RegularSubscription newSub = new RegularSubscription(carID, regularExitTime, parkingLotNumber);
-        //TODO: add into DB as well.
+        RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
+        //TODO: add into DB as well
         this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
         return newSub;
     }
 
     /**
-     *  A new Full Subscription
+     *  A new Regular Subscription
+     * @param rSubs
+     * @return new Subscription id
+     */
+    public Integer addRegularSubscription(RegularSubscription rSubs)
+    {
+        //RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
+        //TODO: add into DB as well
+        if (dbController.insertSubscription(rSubs)) {
+            this._subscriptionsList.put(rSubs.getSubscriptionID() ,rSubs);
+            return rSubs.getSubscriptionID();
+        }
+        return -1;
+    }
+
+    /**
+     *  A new Full Subscriptiong
+     * @param userID
      * @param carID
      * @return new Subscription obj
      */
-    public Subscription addFullSubscription(Integer carID)
+    public Subscription addFullSubscription(Integer userID, Integer carID)
     {
-        FullSubscription newSub = new FullSubscription(carID);
+        FullSubscription newSub = new FullSubscription(userID, carID);
         //TODO: add into DB as well. // ID from db
         this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
         return newSub;
     }
+
+    /**
+     *  A new Full Subscriptiong
+     * @param fSubs
+     * @return new Subscription id
+     */
+    public Integer addFullSubscription(FullSubscription fSubs)
+    {
+        //FullSubscription newSub = new FullSubscription(userID, carID);
+        //TODO: add into DB as well. // ID from db
+        if (dbController.insertSubscription(fSubs)) {
+            this._subscriptionsList.put(fSubs.getSubscriptionID(), fSubs);
+            return fSubs.getSubscriptionID();
+        }
+        return -1;
+    }
+
 
     //TODO : Add renew overload using UID
     /**

@@ -31,8 +31,9 @@ public class Subscription {
 	 * @param carID The subscription's car id.
 	 *
 	 */
-	public Subscription(Integer carID, SubscriptionType subscriptionType) {
-	    this._carID = carID;
+	public Subscription(Integer userID, Integer carID, SubscriptionType subscriptionType) {
+	    this._userID =userID;
+		this._carID = carID;
 		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 28);
 		this._subscriptionType = subscriptionType;
 	}
@@ -101,6 +102,14 @@ public class Subscription {
     public SubscriptionType getSubscriptionType() {
         return _subscriptionType;
     }
+
+	public Integer getUserID() {
+		return _userID;
+	}
+
+	public void setUserID(Integer userID) {
+		this._userID = userID;
+	}
 
 	@Override
 	public String toString() {

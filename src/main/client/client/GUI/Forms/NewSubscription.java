@@ -142,22 +142,23 @@ public class NewSubscription implements Initializable{
         WaitScreen waitScreen = new WaitScreen();
         Message newSubMessage = new Message(Message.MessageType.CREATE, Message.DataType.SUBSCRIPTION);
         Subscription newSubscription;
+        Integer userID = CPSClientGUI.getSession().getUser().getUID();
         switch (cmbSubType.getSelectionModel().getSelectedIndex()) {
             case REGULAR:
                 newSubMessage.addData(SubscriptionType.REGULAR);
-                newSubscription = new RegularSubscription(cmbSingleCar.getValue(),
+                newSubscription = new RegularSubscription(userID, cmbSingleCar.getValue(),
                         cmbExitHour.getValue() + ":" + cmbExitMinute.getValue(),
                         cmbParkingLot.getValue().getParkingLotID());
                 break;
             case REGULAR_MULTICAR:
                 newSubMessage.addData(SubscriptionType.REGULAR_MULTIPLE);
-                newSubscription = new RegularSubscription(cmbSingleCar.getValue(),
+                newSubscription = new RegularSubscription(userID, cmbSingleCar.getValue(),
                         cmbExitHour.getValue() + ":" + cmbExitMinute.getValue(),
                         cmbParkingLot.getValue().getParkingLotID());
                 break;
             case FULL:
                 newSubMessage.addData(SubscriptionType.FULL);
-                newSubscription = new FullSubscription(cmbSingleCar.getValue());
+                newSubscription = new FullSubscription(userID, cmbSingleCar.getValue());
             default:
                 throw new NotImplementedException("Unexpected subscription type: " + cmbSubType.getValue());
         }

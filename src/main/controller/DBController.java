@@ -644,6 +644,48 @@ public class DBController {
         }
     }
 
+
+    public boolean insertSubscription(Subscription subs){
+        String params = "idUser, idCar, endDate";
+        String values = String.format("%s, %s, '%s'", subs.getUserID(), subs.getCarID(), _simpleDateFormatForDb.format(subs.getExpiration()));
+        switch (subs.getSubscriptionType()){
+            case FULL:
+                break;
+
+            case REGULAR_MULTIPLE:
+            case REGULAR:
+                RegularSubscription rSubs = (RegularSubscription) subs;
+                params.concat( ", idParkingLot, regularExitTime");
+                values.concat(String.format(", %s, '%s'" ,rSubs.getParkingLotNumber(), rSubs.getRegularExitTime()));
+                break;
+
+            default:
+                return false;
+        }
+        String query = String.format("INSET INTO SubscriptionToUser (%s) VALUES (%s)", params, values);
+        try {
+            Statement stmt = db_conn.createStatement();
+            int subsId;
+            //stmt.executeQuery(query);
+            stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next())
+                subsId = rs.getInt(1); //Get the UID from the DB.
+            else
+                throw new SQLException("Couldn't get auto-generated UID");
+
+            subs.setSubscriptionID(subsId);
+            return true;
+
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting %s:\n%s\n", subs, e.getMessage());
+            return false;
+        }
+    }
+
+
     /**
      * Get all Subscriptions from DB
      * @return hash map of subscriptionId and subscriptions

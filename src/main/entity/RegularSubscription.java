@@ -10,21 +10,21 @@ public class RegularSubscription extends Subscription {
     private final Integer _parkingLotNumber;
 
     /**
-     * Class Constructor.
+     * Class Constructor.(toDb)
      *
+     * @param userID    user id
      * @param carID      The subscription's car id.
      * @param parkingLotNumber the Subscription is only valid for that parking lot
      * @param regularExitTime   the car can only stay until it's regular exit time
      */
-    public RegularSubscription(Integer carID, String regularExitTime, Integer parkingLotNumber) {
-        super(carID, SubscriptionType.REGULAR);
+    public RegularSubscription(Integer userID, Integer carID, String regularExitTime, Integer parkingLotNumber) {
+        super(userID, carID, SubscriptionType.REGULAR);
         this._parkingLotNumber = parkingLotNumber;
         this._regularExitTime = regularExitTime;
     }
 
-
     /**
-     * Db c'tor
+     * Db c'tor (from Db)
      * @param subsId
      * @param carId
      * @param userId
