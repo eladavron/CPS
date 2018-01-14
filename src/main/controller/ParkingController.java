@@ -1,6 +1,13 @@
 package controller;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
 import entity.*;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,9 +52,9 @@ public class ParkingController {
      * @param parkingLotNumber The number of the parking lot to initiate.
      */
     public void initiateParkingLot(Integer parkingLotNumber){
-        for(int i = 1; i <= this._parkingLotList.get(parkingLotNumber).getHeight(); i++){
+        for(int i = 1; i <= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
             for(int j = 1; j <= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
-                for(int k=1; k <= _parkingLotList.get(parkingLotNumber).getDepth(); k++){
+                for(int k=1; k <= _parkingLotList.get(parkingLotNumber).getHeight(); k++){
                     _parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[i][j][j].setStatus(ParkingSpace.ParkingStatus.FREE);
                 }
             }
@@ -138,7 +145,7 @@ public class ParkingController {
 
     /**
      * Update the current occupied slots indicators after an exit operation.
-     * @param parkingLotNumber
+     * @param parkingLotNumber The number of the parking lot to export its status map.
      */
     public void updateAfterExit(Integer parkingLotNumber){
         initCurrentParkingValues(parkingLotNumber);
@@ -164,47 +171,88 @@ public class ParkingController {
         }
     }
 
-    //TODO: This function will be completed on next branch.
     /**
-     * This function exports the current status map of the parking lot as a pdf file.
+     * This function exports the current status map of the parking lot to a pdf file.
+     * The map will show such symbols
+     * F : Free space
+     * S : Ordered space
+     * O : Occupied space
+     * X : Unavailable space
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
-//    public void getCurrentStatusMap(Integer parkingLotNumber){
-//
-//        try {
-//            File file = new File("statusMap.pdf");
-//
-//            // creates the file
-//            file.createNewFile();
-//
-//            // creates a FileWriter Object
-//            FileWriter bw = new FileWriter(file);
-//
-//            // Writes the content to the file
-//            for(int i = 0; i< this._parkingLotList.getHeight(); i++){
-//                for(int j = 0; j < this._parkingLotList.getWidth(); j++){
-//                    switch (this._parkingLotList.getParkingSpaceMatrix()[parkingLotNumber][i][j].getStatus()){
-//                        case FREE:
-//                            bw.write(" O ");
-//                            break;
-//                        case ORDERED:
-//                            bw.write(" T ");
-//                            break;
-//                        case OCCUPIED:
-//                            bw.write(" D ");
-//                            break;
-//                        case UNAVAILABLE:
-//                            bw.write(" X ");
-//                            break;
-//                    }
+    public void createPDF(Integer parkingLotNumber) throws FileNotFoundException, DocumentException {
+        String str = "";
+        String newline = System.getProperty("line.separator");
+        Integer depthNum = this._parkingLotList.get(parkingLotNumber).getDepth();
+        String[] result = new String[depthNum];
+        // emptying the result string to start working on it.
+        for(int i = 0 ; i < result.length ; i++){
+            result[i] = "";
+        }
+
+        Document doc = new Document();
+        //The pdf file will be created and stored in the same projec folder.
+        PdfWriter.getInstance(doc, new FileOutputStream("Report.pdf"));
+        doc.open();
+
+        for(int i=1; i<= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
+            result[i] += "Depth " + Integer.toString((i));
+            doc.add(new Paragraph(result[i]));
+//            doc.setMargins(50, 50, 50, 50);
+            result[i]="";
+            for(int j = 1; j<= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
+                for(int k = 1; k <= this._parkingLotList.get(parkingLotNumber).getHeight(); k++){
+                    switch (this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[i][j][k].getStatus()){
+                        case FREE:
+                            result[i]  += "    F    ";
+                            break;
+                        case ORDERED:
+                            result[i]  += "    S    ";
+                            break;
+                        case OCCUPIED:
+                            result[i]  += "    O    ";
+                            break;
+                        case UNAVAILABLE:
+                            result[i]  += "    X    ";
+                            break;
+                    }
+                }
+                result[i] += newline;
+                doc.add(new Paragraph(result[i]));
+                result[i] = "";
+            }
+        }
+        str += newline + newline + newline + newline;
+        str += "____________________________________________\n";
+        str += "* F : Free space \n " +
+                "* S : Ordered space \n " +
+                "* O : Occupied space \n " +
+                "* X : Unavailable space \n";
+        doc.add(new Paragraph(str));
+        doc.close();
+    }
+
+    /**
+     * This function is responsible for setting a parking space status due to the employee's requirement.
+     * @param parkingLotNumber The number of the parking lot to export its status map.
+     * @param status The parking space status to set.
+     * @param x The parking space coordinate in width axes.
+     * @param y The parking space coordinate in height axes.
+     * @param z The parking space coordinate in depth axes.
+     */
+    public void setParkingSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer x, Integer y, Integer z){
+        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(status);
+    }
+
+//    public void setParkingLotFull(Integer parkingLotNumber){
+//        for(int i=1; i<=this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
+//            for(int j=1; j<=this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
+//                for(int k=1; k<=this._parkingLotList.get(parkingLotNumber).getHeight()){
 //                }
-//                System.out.println();
 //            }
-//            bw.close();
-//        }catch (Exception ex) {
-//            ex.printStackTrace();
 //        }
 //    }
 }
+
 
 
