@@ -37,6 +37,25 @@ public class Inits {
         queryServer(Message.DataType.PREORDER, comboBox);
     }
 
+
+    public static void initTimeSelection(ComboBox<String> hour, ComboBox<String> minutes)
+    {
+        hour.getItems().clear();
+        minutes.getItems().clear();
+
+        //Init hours
+        for (int i=0; i<24;i++)
+        {
+            hour.getItems().add((i<10 ? "0" : "") + i);
+        }
+
+        //Init minutes
+        for (int i = 0; i < 60 ; i++)
+        {
+            minutes.getItems().add((i<10 ? "0" : "") + i);
+        }
+    }
+
     public static void initCars(ComboBox<Integer> comboBox)
     {
         comboBox.getItems().clear();
@@ -60,7 +79,7 @@ public class Inits {
      * Populates a combo box with available parking lots.
      * @param comboBox The combo box to populate
      */
-    public static void initParkingLots(ComboBox<ParkingLot> comboBox, boolean addRemote)
+    public static void initParkingLots(ComboBox<ParkingLot> comboBox)
     {
         queryServer(Message.DataType.PARKING_LOT, comboBox);
     }

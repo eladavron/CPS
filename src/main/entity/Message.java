@@ -1,11 +1,14 @@
 package entity;
 
 import Exceptions.InvalidMessageException;
+import Exceptions.NotImplementedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import controller.CustomerController;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Random;
 
 /**
@@ -78,10 +81,6 @@ public class Message {
                     _data.add(msg.getData().get(0));
                     User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
                     _data.add(type);
-                    if (_dataType == DataType.SUBSCRIPTION) {
-                        Subscription subscription = mapper.convertValue(msg.getData().get(2), Subscription.class);
-                        _data.add(subscription);
-                    }
                     break;
                 case LOGIN:
                     String username = (String)msg.getData().get(0);
@@ -114,8 +113,34 @@ public class Message {
                         session.setUser(user);
                         session.setParkingLot(sessionParkingLot);
                         _data.add(session);
-                    }
-                    else {
+                    } else if (_dataType == DataType.SUBSCRIPTION){
+                        if (msg.getData().size() > 0) {
+                            Subscription.SubscriptionType subType = mapper.convertValue(msg.getData().get(0), Subscription.SubscriptionType.class);
+                            Subscription sub;
+                            LinkedHashMap myData = (LinkedHashMap) msg.getData().get(1);
+                            Integer carID = (Integer) myData.get("carID");
+                            switch (subType) {
+                                case REGULAR:
+                                case REGULAR_MULTIPLE:
+                                    String regularExitTime = (String) myData.get("regularExitTime");
+                                    Integer parkingLotNumber = (Integer) myData.get("parkingLotNumber");
+                                    sub = new RegularSubscription(carID, regularExitTime, parkingLotNumber);
+                                    break;
+                                case FULL:
+                                    sub = new FullSubscription(carID);
+                                    break;
+                                default:
+                                    throw new NotImplementedException("Unimplemented subscription type: " + subType);
+                            }
+                            _data.add(subType);
+                            _data.add(sub);
+                            if (_type == MessageType.FINISHED || _type == MessageType.FAILED) {
+                                CustomerController.SubscriptionOperationReturnCodes rc;
+                                rc = mapper.convertValue(msg.getData().get(3), CustomerController.SubscriptionOperationReturnCodes.class);
+                                _data.add(rc);
+                            }
+                        }
+                    }else{
                         for (Object dataObject : msg.getData()) {
                             switch (_dataType) {
                                 case CARS: //Cars are Integers

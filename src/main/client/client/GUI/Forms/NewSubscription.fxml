@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import java.lang.String?>
+<TitledPane animated="false" collapsible="false" stylesheets="@../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.NewSubscription">
+    <graphic> <!-- The header -->
+        <HBox>
+            <children>
+                <FlowPane hgap="10.0" vgap="10.0">
+                    <children>
+                        <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#returnToMain" styleClass="icon-button" text="&lt;" />
+                        <Label styleClass="card-title" text="New Subscription">
+                            <font>
+                                <Font name="Arial" size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </FlowPane>
+            </children>
+        </HBox>
+    </graphic>
+   <content>
+      <AnchorPane>
+         <children>
+            <VBox layoutX="6.0" prefHeight="177.0" prefWidth="436.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <children>
+                  <FlowPane hgap="10.0" vgap="10.0">
+                     <children>
+                        <Label text="Subscription Type:" />
+                        <ComboBox fx:id="cmbSubType" promptText="Select Type...">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Regular" />
+                                    <String fx:value="Regular (Multiple Cars)" />
+                                    <String fx:value="Full" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                     </children>
+                  </FlowPane>
+                  <Separator prefWidth="200.0" />
+                   <AnchorPane fx:id="paneParkingLot">
+                       <children>
+                           <FlowPane fx:id="flowParkingLot" hgap="10.0" vgap="10.0">
+                               <children>
+                                   <Label text="Select Parking Lot:" />
+                                   <ComboBox fx:id="cmbParkingLot" />
+                               </children>
+                           </FlowPane>
+                       </children>
+                   </AnchorPane>
+                  <VBox fx:id="contentArea">
+                     <children>
+                        <FlowPane fx:id="flowCarSingle" hgap="10.0" vgap="10.0">
+                           <children>
+                              <Label text="Select Car:" />
+                              <ComboBox fx:id="cmbSingleCar" />
+                           </children>
+                        </FlowPane>
+                        <FlowPane fx:id="flowCarMultiple" hgap="10.0" rowValignment="TOP" vgap="10.0">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label text="Cars to include:" />
+                                    <FlowPane fx:id="flowCarSelection" hgap="10.0" vgap="10.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </FlowPane>
+                     </children>
+                  </VBox>
+                  <FlowPane fx:id="flowEstimatedExit" hgap="10.0" vgap="10.0" visible="false">
+                      <children>
+                        <Label text="Estimated Exit Time:" />
+                            <HBox fx:id="timeExit" alignment="CENTER_LEFT">
+                                <children>
+                                    <ComboBox fx:id="cmbExitHour" promptText="00">
+                                        <items>
+                                            <FXCollections fx:factory="observableArrayList" />
+                                        </items>
+                                    </ComboBox>
+                                    <Label text=":">
+                                        <HBox.margin>
+                                            <Insets left="10.0" right="10.0" />
+                                        </HBox.margin>
+                                    </Label>
+                                    <ComboBox fx:id="cmbExitMinute" promptText="00">
+                                        <items>
+                                            <FXCollections fx:factory="observableArrayList" />
+                                        </items>
+                                    </ComboBox>
+                                </children>
+                            </HBox>
+                      </children>
+                  </FlowPane>
+               </children>
+            </VBox>
+            <Button fx:id="btnSend" mnemonicParsing="false" onAction="#attemptNew" text="Send" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+         </children>
+      </AnchorPane>
+   </content>
+</TitledPane>

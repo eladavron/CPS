@@ -98,7 +98,7 @@ public class ManageCars implements Initializable{
 
     @FXML
     void returnToMain(ActionEvent event) {
-        CPSClientGUI.goBack(true);
+        CPSClientGUI.goBack(false);
     }
 
     @FXML

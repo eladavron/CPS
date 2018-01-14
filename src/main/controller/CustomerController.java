@@ -6,27 +6,32 @@ import entity.*;
 
 import java.util.*;
 
-import entity.Billing;
-
 import static controller.Controllers.*;
 
 /**
  * Singleton Customer controller to be responsible over the methods of customer.
  */
 public class CustomerController {
+
+    public static enum SubscriptionOperationReturnCodes {
+        FAILED,
+        SUCCESS_ADDED,
+        RENEWED,
+    }
+
     private static CustomerController instance;
 
     static {
         instance = new CustomerController();
     }
-
     public static CustomerController getInstance() {
         return instance;
     }
 
     private CustomerController(){
+        System.out.print("\tLoading customers...");
         getCustomersFromDb();
-        System.out.println("Customers Loaded From DB");
+        System.out.println("Done!");
 
     }
 

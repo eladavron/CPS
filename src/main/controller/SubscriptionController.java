@@ -1,14 +1,11 @@
 package controller;
 
-import Exceptions.NotImplementedException;
 import entity.FullSubscription;
 import entity.RegularSubscription;
 import entity.Subscription;
 import utils.TimeUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import static controller.Controllers.dbController;
@@ -30,9 +27,9 @@ public class SubscriptionController {
      */
     private SubscriptionController() {
         // get all subscriptions from DB
+        System.out.print("\tLoading subscriptions...");
         this._subscriptionsList = DBController.getInstance().getAllSubscriptions();
-        System.out.println("Subscriptions Loaded From DB");
-
+        System.out.println("Done!");
     }
 
     /**

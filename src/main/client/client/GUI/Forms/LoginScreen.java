@@ -12,6 +12,8 @@ import entity.Message;
 import entity.ParkingLot;
 import entity.Session;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,7 +33,7 @@ public class LoginScreen {
 
     //region Login FXML
     @FXML
-    private TextField txtLoginUsr;
+    private TextField txtLoginEmail;
 
     @FXML
     private PasswordField txtLoginPwd;
@@ -107,12 +109,22 @@ public class LoginScreen {
         }
         _carLister = new CarLister(listCarIDs);
         chkRemote.selectedProperty().bindBidirectional(cmbParkingLots.disableProperty());
+        cmbParkingLots.disableProperty().addListener(observable -> Validation.removeHighlight(cmbParkingLots));
+        txtLoginEmail.focusedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (!newValue) //lost focus
+                {
+                    Validation.emailValidation(txtLoginEmail); //If not valid
+                }
+            }
+        });
     }
 
 
     @FXML
     void attemptRegister(ActionEvent event) {
-        if (!Validation.notEmpty(txtRegisterName, txtRegisterEmail))
+        if (!Validation.notEmpty(txtRegisterName, txtRegisterEmail) || !Validation.emailValidation(txtRegisterEmail))
             return;
 
         WaitScreen waitScreen = new WaitScreen();
@@ -183,7 +195,7 @@ public class LoginScreen {
 
         if (CPSClientGUI.getClient() != null && CPSClientGUI.getClient().isConnected()) //If already connected
         {
-            Inits.initParkingLots(cmbParkingLots, true);
+            Inits.initParkingLots(cmbParkingLots);
         }
 
         if (!Validation.notEmpty(txtHostname, txtPort))
@@ -232,7 +244,7 @@ public class LoginScreen {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    Inits.initParkingLots(cmbParkingLots, true);
+                    Inits.initParkingLots(cmbParkingLots);
                 }
             });
             setConnectedGUI(true);
@@ -291,10 +303,10 @@ public class LoginScreen {
      */
     @FXML
     private void attemptLogin(ActionEvent event){
-        if (!Validation.notEmpty(txtLoginUsr,txtLoginPwd, cmbParkingLots))
+        if (!Validation.notEmpty(txtLoginEmail,txtLoginPwd, cmbParkingLots) || !Validation.emailValidation(txtLoginEmail))
             return;
 
-        attemptLogin(txtLoginUsr.getText(), txtLoginPwd.getText());
+        attemptLogin(txtLoginEmail.getText(), txtLoginPwd.getText());
     }
 
     /**

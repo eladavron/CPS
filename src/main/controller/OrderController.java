@@ -1,16 +1,14 @@
 package controller;
 
-import Exceptions.NotImplementedException;
 import entity.Billing.priceList;
 import entity.Order;
 import entity.PreOrder;
 
-import java.util.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static controller.Controllers.*;
+import static controller.Controllers.dbController;
 
 public class OrderController {
 
@@ -26,8 +24,9 @@ public class OrderController {
      */
     private OrderController() {
         this._ordersList = new HashMap<>();
+        System.out.print("\tLoading orders...");
         getOrdersFromDb();
-        System.out.println("Orders Loaded From DB");
+        System.out.println("Done!");
     }
 
     /**

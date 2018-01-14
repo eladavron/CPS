@@ -11,7 +11,7 @@
             stylesheets="@../CSS/material.css"
             xmlns="http://javafx.com/javafx/8"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="client.GUI.Forms.ManageSubscription">
+            fx:controller="client.GUI.Forms.${NAME}">
     <content>
         <!-- the content of this page. Use whatever. -->
     </content>
@@ -20,11 +20,10 @@
             <children>
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
-                        <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#returnToMain"
-                                styleClass="icon-button" text="&lt;"/>
-                        <Label styleClass="card-title" text="Manage Subscription">
+                        <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#returnToMain" styleClass="icon-button" text="&lt;" />
+                        <Label styleClass="card-title" text="${NAME}">
                             <font>
-                                <Font name="Arial" size="12.0"/>
+                                <Font name="Arial" size="12.0" />
                             </font>
                         </Label>
                     </children>

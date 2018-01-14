@@ -69,7 +69,7 @@ public class NewPreorder implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                Inits.initParkingLots(cmbParkingLot, false);
+                Inits.initParkingLots(cmbParkingLot);
                 Inits.initCars(cmbCarID);
             }
         });

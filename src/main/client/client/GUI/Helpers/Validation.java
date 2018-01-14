@@ -1,17 +1,18 @@
 package client.GUI.Helpers;
 
 import client.GUI.Controls.DateTimeCombo;
-import javafx.event.EventHandler;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.*;
+import javafx.scene.layout.FlowPane;
+import org.apache.commons.validator.routines.EmailValidator;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -112,18 +113,58 @@ public class Validation {
      * Highlights a control in red and sets it to revert to its previous form once clicked on.
      * @param control The control to highlight.
      */
-    public static void highlightControl(Node control, Tooltip tooltip)
-    {
+    public static void highlightControl(Node control, Tooltip tooltip) {
         control.setStyle("-fx-border-color: red; -fx-border-width: 2px; -fx-border-radius: 10px");
         _errorControls.put(control, tooltip);
-        control.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (tooltip != null)
-                    tooltip.hide();
-                removeHighlight(control);
+        if (control instanceof TextField) {
+            ((TextField) control).textProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    if (tooltip != null)
+                        tooltip.hide();
+                    ((TextField) control).textProperty().removeListener(this);
+                    removeHighlight(control);
+                }
+            });
+        } else if (control instanceof ComboBox) {
+            ((ComboBox) control).valueProperty().addListener(new ChangeListener() {
+                @Override
+                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                    if (tooltip != null)
+                        tooltip.hide();
+                    ((ComboBox) control).valueProperty().removeListener(this);
+                    removeHighlight(control);
+                }
+            });
+        } else if (control instanceof DatePicker)
+        {
+            ((DatePicker)control).valueProperty().addListener(new ChangeListener<LocalDate>() {
+                @Override
+                public void changed(ObservableValue<? extends LocalDate> observable, LocalDate oldValue, LocalDate newValue) {
+                    if (tooltip != null)
+                        tooltip.hide();
+                    ((DatePicker) control).valueProperty().removeListener(this);
+                    removeHighlight(control);
+                }
+            });
+        }
+        else if (control instanceof FlowPane)
+        {
+            for (Node subControl : ((FlowPane) control).getChildren())
+            {
+                if (subControl instanceof CheckBox)
+                {
+                    ((CheckBox) subControl).selectedProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                            if (tooltip!= null)
+                                tooltip.hide();
+                            removeHighlight(control);
+                        }
+                    });
+                }
             }
-        });
+        }
     }
 
     public static void removeHighlight(Node control)
@@ -140,13 +181,29 @@ public class Validation {
 
     public static void clearAllHighlighted()
     {
-        Set<Node> allErrors = _errorControls.keySet();
+        ArrayList<Node> allErrors = new ArrayList<Node>(_errorControls.keySet());
         for (Node node : allErrors)
         {
-            removeHighlight(node);
+            removeHighlight((Node)node);
         }
         _errorControls.clear();
     }
+
+    public static boolean emailValidation(TextField email)
+    {
+        if (email.getText().equals("u")) //MASTER USER
+        {
+            return true;
+        }
+        EmailValidator validator = EmailValidator.getInstance();
+        if (!validator.isValid(email.getText())) //Not a valid email address
+        {
+            Validation.showError(email, "Not a valid email address!");
+            return false;
+        }
+        return true;
+    }
+
 
     public static boolean notEmpty(Node...fields) {
         boolean validate = true;

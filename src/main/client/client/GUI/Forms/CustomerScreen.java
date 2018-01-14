@@ -81,9 +81,11 @@ public class CustomerScreen implements Initializable {
             ExitParking.exitParkingStart();
             return;
         } else if (event.getSource() == btnManageCars){
-            filename = CPSClientGUI.CAR_MANAGEMENT;
+            filename = CPSClientGUI.MANAGE_CARS;
         } else if (event.getSource() == btnEditOrder){
-            filename = CPSClientGUI.VIEW_PREORDERS;
+            filename = CPSClientGUI.MANAGE_PREORDERS;
+        } else if (event.getSource() == btnManageSubs) {
+            filename = CPSClientGUI.MANAGE_SUBSCRIPTIONS;
         }
 
         else {

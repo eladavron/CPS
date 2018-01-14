@@ -1,5 +1,6 @@
 package client.GUI.Controls;
 
+import client.GUI.Helpers.Inits;
 import client.GUI.Helpers.Validation;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -34,21 +35,7 @@ public class DateTimeCombo {
         _cmbHours = cmbHours;
         _datePicker = datePicker;
         _cmbMinutes = cmbMinutes;
-
-        _cmbHours.getItems().clear();
-        _cmbMinutes.getItems().clear();
-
-        //Init hours
-        for (int i=0; i<24;i++)
-        {
-            _cmbHours.getItems().add((i<10 ? "0" : "") + i);
-        }
-
-        //Init minutes
-        for (int i = 0; i < 60 ; i++)
-        {
-            _cmbMinutes.getItems().add((i<10 ? "0" : "") + i);
-        }
+        Inits.initTimeSelection(_cmbHours,_cmbMinutes);
     }
 
     //region Getters and setters
