@@ -157,7 +157,7 @@ public class CustomerController {
             orderToFinish = activeOrders.get(orderID);
             // The order was found...need to check the client's cost for this order.
             Integer carID = orderToFinish.getCarID();
-            Billing.priceList checkedPrice = getHourlyParkingCost(customer.getSubscriptionMap(), orderToFinish);
+            Billing.priceList checkedPrice = getHourlyParkingCost(customer.getUID(), orderToFinish);
             orderController.finishOrder(orderToFinish.getOrderID(), checkedPrice);
             return orderToFinish.getPrice();
         }
@@ -166,12 +166,13 @@ public class CustomerController {
 
     /**
      *  Private method to be used in finishOrder method, will check if the user has any subscription THAT MATCHES this order.
-     * @param subscriptionsList
+     * @param customerID
      * @param orderToFinish
      * @return
      */
-    private Billing.priceList getHourlyParkingCost(Map<Integer, Subscription> subscriptionsList, Order orderToFinish){
+    public Billing.priceList getHourlyParkingCost(Integer customerID, Order orderToFinish){
         Billing.priceList price;
+        Map<Integer, Subscription> subscriptionsList = customerController.getCustomer(customerID).getSubscriptionMap();
         price = Billing.priceList.PRE_ORDER_ONE_TIME_PARKING;
         if (!(orderToFinish instanceof PreOrder))
         {

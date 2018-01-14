@@ -90,8 +90,12 @@ public class OrderController {
      */
     //TODO : After entering with the car into the parking lot the entry time of Order (super) should be set!)
     public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
-        Double charge = BillingController.getInstance().calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceList.PRE_ORDER_ONE_TIME_PARKING);
-        Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, charge, estimatedEntryTime);
+        Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, 0, estimatedEntryTime);
+        //First we check with the CustomerController if this customer has some special price for this parking.
+        priceList priceType = customerController.getHourlyParkingCost(customerID, newPreOrder);
+        // Then we calculate the amount to be payed using the billingController and add it to the order.
+        Double charge = billingController.calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceType);
+        newPreOrder.setPrice(charge);
         //UID is select within the dbController and then set in it as well.
         dbController.insertOrder(newPreOrder);
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
@@ -119,11 +123,13 @@ public class OrderController {
     public Order finishOrder(Integer orderID, priceList priceType){
         Order order = _ordersList.get(orderID);
         order.setActualExitTime(new Date());
-        order.setPrice(BillingController.getInstance().calculateParkingCharge(order.getEntryTime(), order.getActualExitTime(), priceType) - order.getPrice());
+        order.setPrice(billingController.calculateParkingCharge(
+                order.getEntryTime(), order.getActualExitTime(), priceType)
+                - order.getPrice()
+        );
         order.setOrderStatus(Order.orderStatus.FINISHED);
-        //TODO: dbcontroller.removeOrder(orderID). and then dbcontroller.insertOrder(order) with its final stats as we discussed.
         //TODO : update order params to match final order. ->DBController
-//        _ordersList.remove(order.getOrderID()); will stay on the list (for today) in order to make sure Regulars arent used twice.
+        //TODO: _ordersList.remove(order.getOrderID()); will stay on the list (for today) in order to make sure Regulars arent used twice.
         return order;
     }
 
