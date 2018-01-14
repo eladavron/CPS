@@ -97,10 +97,10 @@ public class DBController {
             if (!listTables.contains(tableName)) { //Check if the table exists in the database.
                 String returnString;
                 returnString = String.format("Unknown table \"%s\"!\n", tableName);
-                returnString += ListTables();
+                returnString += listTables();
                 return returnString;
             }
-            ResultSet rs = this.QueryTable(tableName); //Query the table
+            ResultSet rs = this.queryTable(tableName); //Query the table
             switch (tableName) {
                 case "employees":
                     //Format printout:
@@ -114,7 +114,7 @@ public class DBController {
                                 rs.getTimestamp("create_time"));
                         rowsEmployees.add(row);
                     }
-                    return TableFormatter(columnNamesEmployees, rowsEmployees);
+                    return tableFormatter(columnNamesEmployees, rowsEmployees);
 
                 case "parking_lots":
                     //Format printout:
@@ -129,11 +129,11 @@ public class DBController {
                         rowsParkingLots.add(row);
 
                     }
-                    return TableFormatter(columnNamesParkingLots, rowsParkingLots);
+                    return tableFormatter(columnNamesParkingLots, rowsParkingLots);
                 default: //Unknown table - fallback, technically shouldn't happen.
                     String returnString;
                     returnString = "Unknown table \"" + tableName + "\"!\n";
-                    returnString += ListTables();
+                    returnString += listTables();
                     return returnString;
             }
         } catch (SQLException e) {
@@ -148,7 +148,7 @@ public class DBController {
      * @param rows The rows.
      * @return A table in a string.
      */
-    private String TableFormatter(String columnsString, ArrayList<String> rows)
+    private String tableFormatter(String columnsString, ArrayList<String> rows)
     {
         String returnString =
                 String.join("", Collections.nCopies(columnsString.length(),"-"))
@@ -168,9 +168,9 @@ public class DBController {
      * @param tableName  name of the table to query.
      * @return The resultset.
      */
-    private ResultSet QueryTable(String tableName)
+    private ResultSet queryTable(String tableName)
     {
-        return QueryTable(tableName, null, -1);
+        return queryTable(tableName, null, -1);
     }
     /**
      * Queries the given table for all its content.
@@ -179,7 +179,7 @@ public class DBController {
      * @param value value to find with
      * @return  The resultset.
      */
-    private ResultSet QueryTable(String tableName, String field, int value) {
+    private ResultSet queryTable(String tableName, String field, int value) {
         String query = String.format("SELECT * FROM %s", tableName);
 
         if ((field != null) && (value != 0)) {
@@ -241,7 +241,7 @@ public class DBController {
      * @param order order object to insert
      * @return True if successful, False otherwise.
      */
-    public boolean InsertOrder(Order order){
+    public boolean insertOrder(Order order){
         if (this.isTest){
             order.setOrderID(1);
             return true;
@@ -263,8 +263,9 @@ public class DBController {
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next())
+            if (rs.next()) {
                 uid = rs.getInt(1); //Get the UID from the DB.
+            }
             else
                 throw new SQLException("Couldn't get auto-generated UID");
 
@@ -283,16 +284,8 @@ public class DBController {
         }
     }
 
-    /**
-     * get orders from DB (all orders)
-     * @return all orders in list
-     */
-    public ArrayList<Order> getAllOrders() {
-        return getOrdersByID(-1);
-    }
-
-    public ArrayList<Order> parseOrdersFromDB(ResultSet rs) {
-        ArrayList<Order> myOrders = new ArrayList<>();
+    public Map<Integer, Order> parseOrdersFromDBToMap(ResultSet rs){
+        Map<Integer, Order>  myOrders = new HashMap<>();
         if (rs == null){
             return null;
         }
@@ -304,12 +297,13 @@ public class DBController {
                             rs.getInt("idCar"),
                             rs.getInt("idCustomer"),
                             rs.getInt("idParkingLot"),
+//                            TODO: ADD ESTIMATED ENTRY TIME
                             rs.getDate("entryTime"),
                             rs.getDate("exitTimeEstimated"),
                             rs.getDate("exitTimeActual"),
                             rs.getDouble("price"),
                             rs.getDate("orderCreationTime"));
-                    myOrders.add(rowOrder);
+                    myOrders.put(rs.getInt("idOrders"), rowOrder);
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Orders", e.getMessage());
@@ -319,25 +313,31 @@ public class DBController {
         return myOrders;
     }
 
-
+    /**
+     * get orders from DB (all orders)
+     * @return all orders in list
+     */
+    public Map<Integer, Order> getAllOrders() {
+        return getOrdersByID(-1);
+    }
 
     /**
      * get orders from DB
      * @param orderId specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public ArrayList<Order> getOrdersByID(int orderId) {
+    public Map<Integer, Order> getOrdersByID(int orderId) {
         ArrayList<Order> myOrders = new ArrayList<>();
         ResultSet rs;
 
         if (orderId == -1) { // get all rows
-            rs = QueryTable("Orders");
+            rs = queryTable("Orders");
 
         } else { // get specific order
-            rs = QueryTable("Orders", "idOrders", orderId);
+            rs = queryTable("Orders", "idOrders", orderId);
         }
 
-        return parseOrdersFromDB(rs);
+        return parseOrdersFromDBToMap(rs);
     }
 
     /**
@@ -345,18 +345,18 @@ public class DBController {
      * @param userID specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public ArrayList<Order> getOrdersByUserID(int userID) {
+    public Map<Integer, Order> getOrdersByUserID(int userID) {
         ArrayList<Order> myOrders = new ArrayList<>();
         ResultSet rs;
 
         if (userID == -1) { // get all rows
-            rs = QueryTable("Orders");
+            rs = queryTable("Orders");
 
         } else { // get specific order
-            rs = QueryTable("Orders", "idCustomer", userID);
+            rs = queryTable("Orders", "idCustomer", userID);
         }
 
-        return parseOrdersFromDB(rs);
+        return parseOrdersFromDBToMap(rs);
     }
 
     /* Output Formatters */
@@ -365,7 +365,7 @@ public class DBController {
      * Returns a list of available tables in the DB.
      * @return just that.
      */
-    public String ListTables()
+    public String listTables()
     {
         String returnString = "Available tables:\n";
         for (String tableName : listTables) {
@@ -383,10 +383,10 @@ public class DBController {
         ResultSet rs;
 
         if (parkingLotID == -1) { // get all rows
-            rs = QueryTable("ParkingLots");
+            rs = queryTable("ParkingLots");
 
         } else { // get specific order
-            rs = QueryTable("ParkingLots", "idParkingLots", parkingLotID);
+            rs = queryTable("ParkingLots", "idParkingLots", parkingLotID);
         }
 
         return parseParkingLotsFromDB(rs);
@@ -430,10 +430,10 @@ public class DBController {
         ResultSet rs;
 
         if (userID == -1) { // get all rows of a specific UserType, will call a special query.
-            rs = QueryUserTable(userType);
+            rs = queryUserTable(userType);
 
         } else { // get a specific user.
-            rs = QueryTable("Users", "idUsers", userID);
+            rs = queryTable("Users", "idUsers", userID);
         }
 
         switch (userType){
@@ -451,7 +451,7 @@ public class DBController {
      * @param userType
      * @return
      */
-    private ResultSet QueryUserTable(User.UserType userType) {
+    private ResultSet queryUserTable(User.UserType userType) {
         String query = String.format("SELECT * FROM Users" );
 
         if (userType != null) {
@@ -481,11 +481,13 @@ public class DBController {
             try {
                 while (rs.next())
                 {
+                    Integer userID = rs.getInt("idUsers");
+                    String dateNow = _simpleDateFormatForDb.format(new java.util.Date());
                     ArrayList<Integer> myCars = new ArrayList<>();
                     Statement stmt = db_conn.createStatement();
                     // First we pull the cars of the user.
                     String carListQuery = String.format("SELECT * FROM CarToUser WHERE idUser = %s AND isActive = 1"
-                            , rs.getInt("idUsers"));
+                            , userID);
                     ResultSet carList = stmt.executeQuery(carListQuery);
                     // Then make a list of the cars to use in customer c'tor.
                     while (carList.next())
@@ -498,17 +500,27 @@ public class DBController {
                             rs.getString("userEmail"),
                             myCars
                     );
+
                     // Now we will pull the list of active orders by using the DBs get order by id of user.
                     Map<Integer, Order> myOrders = new HashMap<>();
-                    String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND orderType != 'DELETED'"
-                            , rs.getInt("idUsers"));
+                    String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND" +
+                                    " orderType != '%s' AND orderType != '$s' ", userID,
+                            Order.orderStatus.DELETED, Order.orderStatus.FINISHED);
                     ResultSet orderList = stmt.executeQuery(orderListQuery);
-                    while (orderList.next()){
-                        Order order = getOrdersByID(orderList.getInt("idOrders")).get(0);
-                        myOrders.put(order.getOrderID(), order);
-                    }
+                    myOrders = parseOrdersFromDBToMap(orderList);
                     rowCustomer.setActiveOrders(myOrders);
-                    //TODO : set sublist.
+
+                    // Pull active subscription from DB by user ID
+                    Map<Integer, Subscription> mySubscriptions = new HashMap<>();
+                    String subsListQuery = String.format("SELECT * FROM SubscriptionToUser WHERE idUser = %s AND endDate > '%s'",
+                            userID, dateNow);
+                    ResultSet subsList = stmt.executeQuery(subsListQuery);
+
+                    Map<Integer, Subscription> SubscriptionList = parseSubscriptions(subsList); // for readability
+
+                    rowCustomer.setSubscriptionList(SubscriptionList);
+
+                    // after populating this customer object - add to list
                     myCustomers.add(rowCustomer);
                 }
             } catch (SQLException e) {
@@ -524,7 +536,7 @@ public class DBController {
      * @param customer object to insert
      * @return True if successful, False otherwise.
      */
-    public boolean InsertCustomer(Customer customer){
+    public boolean insertCustomer(Customer customer){
         if (this.isTest){
             customer.setUID(1);
             return true;
@@ -589,9 +601,9 @@ public class DBController {
     }
 
     /**
-     * Insert new car to DB
+     * Remove car from user
      * @param customerID customer owns the car
-     * @param carID carId inserted
+     * @param carID carId removed
      * @return True if successful, False otherwise.
      */
     public boolean removeCarFromCustomer(Integer customerID, Integer carID){
@@ -605,6 +617,86 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all Subscriptions from DB
+     * @return hash map of subscriptionId and subscriptions
+     */
+    public Map<Integer, Subscription> getAllSubscriptions(){
+        ResultSet rs = queryTable("SubscriptionToUser");
+        Map<Integer, Subscription> mySubscriptions = parseSubscriptions(rs);
+        return mySubscriptions;
+    }
+
+    /**
+     * parses ResultSet of subscriptions into hash map
+     * @param rs Result set with Subscription DATA
+     * @return hash map of subscriptionId and subscriptions
+     */
+    public Map<Integer, Subscription> parseSubscriptions(ResultSet rs) {
+        Map<Integer, Subscription> mySubscriptions = new HashMap<>();
+        if (rs == null){
+            return null;
+        }
+        else {
+            try {
+                while (rs.next()) {
+                    Subscription rowSubscription;
+                    switch (rs.getString("subscriptionType")){
+                        case "REGULAR":
+                            rowSubscription = new RegularSubscription(rs.getInt("idSubscription"),
+                                    rs.getInt("idCar"),
+                                    rs.getInt("idUser"),
+                                    rs.getInt("idParkingLot"),
+                                    rs.getDate("endDate"),
+                                    rs.getString("regularExitTime"));
+                            break;
+
+                        case "FULL":
+                            rowSubscription = new FullSubscription(rs.getInt("idSubscription"),
+                                    rs.getInt("idCar"),
+                                    rs.getInt("idUser"),
+                                    rs.getDate("endDate"));
+                            break;
+                        default:
+                            return null;
+
+                    }
+                    mySubscriptions.put(rowSubscription.getSubscriptionID(), rowSubscription);
+                }
+                return  mySubscriptions;
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "SubscriptionToUser", e.getMessage());
+                return null;
+            }
+        }
+    }
+
+
+
+    /**
+     * extend subscription in 28 days. update regular exit time if applicable.
+     * @param renewedSubs
+     * @return True if successful, false otherwise.
+     */
+    public boolean renewSubscription(Subscription renewedSubs){
+        try {
+            Statement stmt = db_conn.createStatement();
+            String query;
+            if (renewedSubs.getSubscriptionType() == Subscription.SubscriptionType.REGULAR)
+                query = String.format("UPDATE SubscriptionToUser SET endDate=ADDDATE(endDate, 28), regularExitTime = '%s' WHERE  idSubscription = %s",
+                        ((RegularSubscription)renewedSubs).getRegularExitTime(), renewedSubs.getSubscriptionID());
+            else
+                query = String.format("UPDATE SubscriptionToUser SET endDate=ADDDATE(endDate, 28) WHERE  idSubscription = %s",
+                    renewedSubs.getSubscriptionID());
+            stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred renewing subscription: %s\n", renewedSubs.getSubscriptionID(), e.getMessage());
             return false;
         }
     }

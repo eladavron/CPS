@@ -36,7 +36,7 @@ public class Order {
      * @param customerID Order's Name
      * @param carID Order's car plate
      * @param estimatedExitTime Order's estimated exit time
-     * @param parkingLotNumber
+     * @param parkingLotNumber parking lot for order
      */
     public Order(int customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) {
         this._customerID = customerID;

@@ -1,5 +1,6 @@
 package controller;
 
+import Exceptions.NotImplementedException;
 import entity.FullSubscription;
 import entity.RegularSubscription;
 import entity.Subscription;
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static controller.Controllers.dbController;
 import static utils.TimeUtils.addTime;
 
 /**
@@ -27,7 +29,10 @@ public class SubscriptionController {
      * instantiating.
      */
     private SubscriptionController() {
-        this._subscriptionsList = new HashMap<>();
+        // get all subscriptions from DB
+        this._subscriptionsList = DBController.getInstance().getAllSubscriptions();
+        System.out.println("Subscriptions Loaded From DB");
+
     }
 
     /**
@@ -53,29 +58,28 @@ public class SubscriptionController {
     /**
      *  A new Regular Subscription
      * @param carID
-     * @param regularEntryTime
      * @param regularExitTime
      * @param parkingLotNumber
-     * @return
+     * @return new Subscription obj
      */
-    public Subscription addRegularSubscription(Integer carID, Date regularEntryTime, Date regularExitTime, Integer parkingLotNumber)
+    public Subscription addRegularSubscription(Integer carID, String regularExitTime, Integer parkingLotNumber)
     {
-        RegularSubscription newSub = new RegularSubscription(carID, regularEntryTime, regularExitTime, parkingLotNumber);
-        this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
+        RegularSubscription newSub = new RegularSubscription(carID, regularExitTime, parkingLotNumber);
         //TODO: add into DB as well.
+        this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
         return newSub;
     }
 
     /**
      *  A new Full Subscription
      * @param carID
-     * @return
+     * @return new Subscription obj
      */
     public Subscription addFullSubscription(Integer carID)
     {
         FullSubscription newSub = new FullSubscription(carID);
+        //TODO: add into DB as well. // ID from db
         this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
-        //TODO: add into DB as well.
         return newSub;
     }
 
@@ -83,10 +87,16 @@ public class SubscriptionController {
     /**
      *  Updates the expiration date of this subscription by 30 days from TODAY! (will overwrite remaining days)
      * @param subscriptionToRenew
+     * @return True on success
      */
-    public void renewSubscription(Subscription subscriptionToRenew)
+    public boolean renewSubscription(Subscription subscriptionToRenew)
     {
-        subscriptionToRenew.setExpiration(addTime(new Date(), TimeUtils.Units.DAYS, 30));
+        if (dbController.renewSubscription(subscriptionToRenew))
+        {
+            subscriptionToRenew.setExpiration(addTime(subscriptionToRenew.getExpiration(), TimeUtils.Units.DAYS, 28));
+            return true;
+        }
+        return false;
     }
     /**
      *  Since there is only 1 subscription per 1 carID and we map using subscriptionID and not carID this function will search

@@ -14,7 +14,7 @@ public class Subscription {
 	/**
 	 * Private attributes of Subscription class.
 	 */
-    private static int _subscriptionUIDCounter = 0;
+    private static int _subscriptionUIDCounter = -1;
 
 
 
@@ -22,8 +22,9 @@ public class Subscription {
     private Integer _subscriptionID;
 	private Integer _carID;
 	private Date _expiration;
+	private Integer _userID;
 
-	public enum SubscriptionType{FULL, REGULAR}
+	public enum SubscriptionType{FULL, REGULAR, REGULAR_MULTIPLE}
 
 	/**
 	 * Class Constructor.
@@ -31,12 +32,26 @@ public class Subscription {
 	 *
 	 */
 	public Subscription(Integer carID, SubscriptionType subscriptionType) {
-	    this._subscriptionID = _subscriptionUIDCounter++;
-		this._carID = carID;
-		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 30);
+	    this._carID = carID;
+		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 28);
 		this._subscriptionType = subscriptionType;
 	}
-	
+
+	/**
+	 * Ctor from DB for FULL
+	 * @param subscriptionId
+	 * @param carID
+	 * @param subscriptionType
+	 */
+	public Subscription(Integer subscriptionId, Integer carID,Integer userID, Date expiration, SubscriptionType subscriptionType)
+	{
+		this._subscriptionID = subscriptionId;
+		this._carID = carID;
+		this._userID = userID;
+		this._expiration = expiration;
+		this._subscriptionType = subscriptionType;
+	}
+
 	/**
 	 * @return the _subscriptionID
 	 */
@@ -101,7 +116,7 @@ public class Subscription {
         if (!(o instanceof Subscription)) return false;
         Subscription subscription = (Subscription) o;
         return (_subscriptionUIDCounter == subscription._subscriptionID) &&
-        		(_carID == subscription._carID) &&
+        		(_carID.equals(subscription._carID)) &&
         		(_expiration == subscription._expiration);
     }
 }

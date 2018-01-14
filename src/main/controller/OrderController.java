@@ -27,6 +27,7 @@ public class OrderController {
     private OrderController() {
         this._ordersList = new HashMap<>();
         getOrdersFromDb();
+        System.out.println("Orders Loaded From DB");
     }
 
     /**
@@ -59,7 +60,7 @@ public class OrderController {
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         //UID is select within the dbController and then set in it as well.
         newOrder.setOrderStatus(Order.orderStatus.IN_PROGRESS);
-        dbController.InsertOrder(newOrder);
+        dbController.insertOrder(newOrder);
         _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
     }
@@ -92,7 +93,7 @@ public class OrderController {
         Double charge = BillingController.getInstance().calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceList.PRE_ORDER_ONE_TIME_PARKING);
         Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, charge, estimatedEntryTime);
         //UID is select within the dbController and then set in it as well.
-        dbController.InsertOrder(newPreOrder);
+        dbController.insertOrder(newPreOrder);
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
         return newPreOrder;
     }
@@ -104,29 +105,8 @@ public class OrderController {
     }
 
     public void getOrdersFromDb() {
-        setOrdersList(dbController.getAllOrders());
+        this._ordersList.putAll(dbController.getAllOrders());
     }
-
-    //TODO: is this needed along with getOrdersFromDb()?
-    public ArrayList<Order> getOrdersList() {
-        return (ArrayList<Order>) _ordersList.values();
-    }
-    public void setOrdersList(ArrayList<Order> list) {
-        list.forEach(order -> _ordersList.put(order.getOrderID(), order));
-    }
-
-//    TODO: decide later on if to keep or not since its unused...will stay here for now.
-//    /**
-//     * Given a new estimated entry time, this func will update the order's entry.
-//     * assuming here the only PreOrder class has estimated entry time.
-//     * @param order : to change its time
-//     * @param estimatedEntryTime : the new entry time.
-//     * @return order with the new entry time updated.
-//     */
-//    public Order changeEstimatedEntryTimeOfOrder(PreOrder order, Date estimatedEntryTime){
-//        order.setEstimatedEntryTime(estimatedEntryTime);
-//        return order;
-//    }
 
     //TODO : Add different options to reach the specific order maybe using the customer's profile or so.
     /**
@@ -142,7 +122,8 @@ public class OrderController {
         order.setPrice(BillingController.getInstance().calculateParkingCharge(order.getEntryTime(), order.getActualExitTime(), priceType) - order.getPrice());
         order.setOrderStatus(Order.orderStatus.FINISHED);
         //TODO: dbcontroller.removeOrder(orderID). and then dbcontroller.insertOrder(order) with its final stats as we discussed.
-        _ordersList.remove(order.getOrderID());
+        //TODO : update order params to match final order. ->DBController
+//        _ordersList.remove(order.getOrderID()); will stay on the list (for today) in order to make sure Regulars arent used twice.
         return order;
     }
 

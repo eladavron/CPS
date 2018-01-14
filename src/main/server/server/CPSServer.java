@@ -170,7 +170,7 @@ public class CPSServer extends AbstractServer
         try
         {
             Controllers.initDb(dbUrl, dbUsername, dbPwd);
-            System.out.print("Please wait, setting up... ");
+            System.out.println("Please wait, setting up... ");
             Controllers.init();
             System.out.println("Done!");
             initDummies();
