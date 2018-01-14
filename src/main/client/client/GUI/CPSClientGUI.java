@@ -178,7 +178,7 @@ public class CPSClientGUI extends Application{
                 alert.setHeaderText("Are you sure you want to exit?");
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-                    System.exit(0);
+                    OrderlyShutdown();
                 } else {
                     event.consume();
                 }
@@ -236,6 +236,18 @@ public class CPSClientGUI extends Application{
         AnchorPane.setBottomAnchor(guiRoot, 0.0);
         AnchorPane.setLeftAnchor(guiRoot, 0.0);
         AnchorPane.setRightAnchor(guiRoot, 0.0);
+    }
+
+    /**
+     * Shuts down the app while notifying the server of a logout.
+     */
+    private void OrderlyShutdown()
+    {
+        if (isConnected() && getSession() != null)
+        {
+            sendLogout();
+        }
+        System.exit(0);
     }
 
     //endregion
@@ -307,7 +319,7 @@ public class CPSClientGUI extends Application{
 
 
     @FXML
-    void doLogout(ActionEvent event) throws IOException {
+    void doLogout(ActionEvent event) {
         Alert areYouSure = new Alert(Alert.AlertType.CONFIRMATION);
         areYouSure.setHeaderText("Are you sure you want to log out?");
         areYouSure.setContentText("Any unsaved changes will be lost!");
@@ -315,14 +327,26 @@ public class CPSClientGUI extends Application{
         Optional<ButtonType> result = areYouSure.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.YES)
         {
+            sendLogout();
+            changeGUI(LOGIN_SCREEN);
+        }
+    }
+
+    private void sendLogout()
+    {
+        try {
             Message logoutMessage = new Message();
             logoutMessage.setType(Message.MessageType.LOGOUT);
             logoutMessage.setDataType(Message.DataType.PRIMITIVE);
             logoutMessage.addData("So long, and thanks for all the fish");
             sendToServer(logoutMessage);
-            setStatus("Logged out.", Color.BLACK);
+        }
+        catch (IOException io)
+        {
+            System.err.println("Failed to log out properly.");
+        }
+        finally {
             _session = null;
-            changeGUI(LOGIN_SCREEN);
         }
     }
 

@@ -5,6 +5,7 @@
 * Fixed bug with cells not showing all information.
 * **18:05** - Finished the "Add Subscription" GUI and validation. Still WIP: The client/server flow.
 * **20:15** - Finished the entire "Subscription" GUI and client-side logic.
+* **21:00** - Closing the app will attempt to inform the server of a logout.
 
 # 13.01.2018
 ## General
