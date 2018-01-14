@@ -29,7 +29,7 @@ class OrderTest extends ApplicationTest {
     void make_simple_order_test(){
         Order actual = OrderController.getInstance().makeNewSimpleOrder(0, 777, estimated, parkingTemp);
         Order expected = simpleOrder;
-        expected.setEntryTime(actual.getEntryTime());
+        expected.setActualEntryTime(actual.getActualEntryTime());
 
         assertThat(actual).isEqualTo(expected);
 
@@ -57,7 +57,7 @@ class OrderTest extends ApplicationTest {
     void finish_simple_order_test(){
         //Setting entry time to be minus 500,000 in order for a charge to happen.
         Order expected;
-        simpleOrder.setEntryTime(new Date(estimated.getTime() - 500000));
+        simpleOrder.setActualEntryTime(new Date(estimated.getTime() - 500000));
         Order notExpected = new Order(simpleOrder);
         expected  = new Order(simpleOrder);
         Order actual = OrderController.getInstance().finishOrder(simpleOrder.getOrderID(), priceList.ONE_TIME_PARKING);

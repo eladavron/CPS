@@ -40,7 +40,7 @@ public class DBController {
      * @param url URL of the MySQL server (formatted as mysql://hostname:port/db_name)
      * @param username Username for MySQL server
      * @param password Password for MySQL server
-     * @throws SQLException
+     * @throws SQLException in case of sql error
      */
 
     public void init(String url, String username, String password) throws SQLException {
@@ -253,11 +253,13 @@ public class DBController {
             String _actualTime = (order.getActualExitTime() == null)
                     ? _simpleDateFormatForDb.format(new Date(0))
                     :  _simpleDateFormatForDb.format(order.getActualExitTime());
-            stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, entryTime," +
-                            " exitTimeEstimated, exitTimeActual, price)" +
-                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+            stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, orderType," +
+                            " entryTimeEstimated, entryTimeActual, exitTimeEstimated, exitTimeActual, price)" +
+                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
                     order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(),
-                    _simpleDateFormatForDb.format(order.getEntryTime()),
+                    order.getOrderStatus(),
+                    _simpleDateFormatForDb.format(order.getEstimatedEntryTime()),
+                    _simpleDateFormatForDb.format(order.getActualEntryTime()),
                     _simpleDateFormatForDb.format(order.getEstimatedExitTime()),
                     _actualTime, order.getPrice()),
                     Statement.RETURN_GENERATED_KEYS);
@@ -315,17 +317,24 @@ public class DBController {
         else {
             try {
                 while (rs.next()) {
+                    Order.OrderStatus _orderStatus = parseOrderStatus(rs.getString("OrderType"));
+                    if (null == _orderStatus){
+                        System.err.printf("Error occurred getting OrderStatus from table \"%s\"", "Orders");
+                        return null;
+                    }
                     Order rowOrder = new Order(
                             rs.getInt("idOrders"),
                             rs.getInt("idCar"),
                             rs.getInt("idCustomer"),
                             rs.getInt("idParkingLot"),
-//                            TODO: ADD ESTIMATED ENTRY TIME
-                            rs.getDate("entryTime"),
+                            _orderStatus,
+                            rs.getDate("entryTimeEstimated"),
+                            rs.getDate("entryTimeActual"),
                             rs.getDate("exitTimeEstimated"),
                             rs.getDate("exitTimeActual"),
                             rs.getDouble("price"),
-                            rs.getDate("orderCreationTime"));
+                            rs.getDate("orderCreationTime")
+                            );
                     myOrders.put(rs.getInt("idOrders"), rowOrder);
                 }
             } catch (SQLException e) {
@@ -528,7 +537,7 @@ public class DBController {
                     Map<Integer, Order> myOrders = new HashMap<>();
                     String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND" +
                                     " orderType != '%s' AND orderType != '$s' ", userID,
-                            Order.orderStatus.DELETED, Order.orderStatus.FINISHED);
+                            Order.OrderStatus.DELETED, Order.OrderStatus.FINISHED);
                     ResultSet orderList = stmt.executeQuery(orderListQuery);
                     myOrders = parseOrdersFromDBToMap(orderList);
                     rowCustomer.setActiveOrders(myOrders);
@@ -764,5 +773,27 @@ public class DBController {
             System.err.printf("An error occurred renewing subscription: %s\n", renewedSubs.getSubscriptionID(), e.getMessage());
             return false;
         }
+    }
+
+    private Order.OrderStatus parseOrderStatus(String str){
+        //ENUM('PRE_ORDER', 'IN_PROGRESS', 'FINISHED', 'DELETED')
+        Order.OrderStatus ret;
+        switch (str){
+            case "PRE_ORDER":
+                ret = Order.OrderStatus.PRE_ORDER;
+                break;
+            case "IN_PROGRESS":
+                ret = Order.OrderStatus.IN_PROGRESS;
+                break;
+            case "FINISHED":
+                ret = Order.OrderStatus.FINISHED;
+                break;
+            case "DELETED":
+                ret = Order.OrderStatus.DELETED;
+                break;
+            default:
+                return null;
+        }
+        return ret;
     }
 }

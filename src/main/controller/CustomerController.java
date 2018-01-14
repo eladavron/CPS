@@ -6,8 +6,6 @@ import entity.*;
 
 import java.util.*;
 
-import entity.Billing;
-
 import static controller.Controllers.*;
 
 /**
@@ -148,7 +146,7 @@ public class CustomerController {
      */
     public void removeOrder(Customer customer, Integer orderID){
         Order orderToRemove = customer.getActiveOrders().get(orderID);
-        orderToRemove.setOrderStatus(Order.orderStatus.DELETED);
+        orderToRemove.setOrderStatus(Order.OrderStatus.DELETED);
         customer.getActiveOrders().remove(orderID);
     }
 
@@ -221,14 +219,14 @@ public class CustomerController {
         Customer customer = _customersList.get(currentOrder.getCostumerID());
         for (Order order : customer.getActiveOrders().values()){
             if (order.getCarID().equals(currentOrder.getCarID())
-                    && order.getOrderStatus().equals(Order.orderStatus.FINISHED))
+                    && order.getOrderStatus().equals(Order.OrderStatus.FINISHED))
             { //Then this car has entered the parking Lot today!
                 return false;
             }
         }
         //Then we check if this order is within working days.
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentOrder.getEntryTime());
+        calendar.setTime(currentOrder.getActualEntryTime());
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek <= 5;
     }

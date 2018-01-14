@@ -123,7 +123,7 @@ public class NewPreorder implements Initializable {
                         "Customer ID: " + preorder.getCostumerID() + "\n" +
                         "Order ID: " + preorder.getOrderID() +"\n" +
                         "Parking Lot ID: " + preorder.getParkingLotNumber() +"\n" +
-                        "Parking Start: " + preorder.getEntryTime() + "\n" +
+                        "Parking Start: " + preorder.getEstimatedEntryTime() + "\n" +
                         "Estimated Exit: " + preorder.getEstimatedExitTime());
                 waitScreen.setOnClose(new Runnable() {
                     @Override

@@ -26,7 +26,7 @@ public class Inits {
         comboBox.setConverter(new StringConverter<PreOrder>() {
             @Override
             public String toString(PreOrder object) {
-                return String.format("%d. %s - %s", object.getOrderID(), object.getEntryTime().toString(), object.getEstimatedExitTime().toString());
+                return String.format("%d. %s - %s", object.getOrderID(), object.getEstimatedEntryTime().toString(), object.getEstimatedExitTime().toString());
             }
 
             @Override

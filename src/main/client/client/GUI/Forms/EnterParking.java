@@ -107,7 +107,7 @@ public class EnterParking implements Initializable {
                         "Customer ID: " + order.getCostumerID() + "\n" +
                         "Order ID: " + order.getOrderID() +"\n" +
                         "Parking Lot ID: " + order.getParkingLotNumber() +"\n" +
-                        "Parking Start: " + order.getEntryTime() + "\n" +
+                        "Parking Start: " + order.getActualEntryTime() + "\n" +
                         "Estimated Exit: " + order.getEstimatedExitTime());
                 waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
             }

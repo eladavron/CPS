@@ -58,7 +58,7 @@ public class OrderController {
     public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         //UID is select within the dbController and then set in it as well.
-        newOrder.setOrderStatus(Order.orderStatus.IN_PROGRESS);
+        newOrder.setOrderStatus(Order.OrderStatus.IN_PROGRESS);
         dbController.insertOrder(newOrder);
         _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
@@ -101,8 +101,9 @@ public class OrderController {
         return newPreOrder;
     }
 
-    public Order makeOrderFromDb(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Date entryTime, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime){
-        Order orderFromDb = new Order(orderID, customerID,  carID,  parkingLotNumber,  entryTime,  estimatedExitTime,  actualExitTime,  price,  creationTime);
+    // TODO: someone uses this?
+    public Order makeOrderFromDb(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Order.OrderStatus orderStatus, Date entryTimeEstimated, Date entryTimeActual, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime){
+        Order orderFromDb = new Order(orderID, customerID,  carID,  parkingLotNumber, orderStatus, entryTimeEstimated,  entryTimeActual,  estimatedExitTime,  actualExitTime,  price,  creationTime);
         _ordersList.put(orderFromDb.getOrderID(), orderFromDb);
         return orderFromDb;
     }
@@ -123,10 +124,10 @@ public class OrderController {
         Order order = _ordersList.get(orderID);
         order.setActualExitTime(new Date());
         order.setPrice(billingController.calculateParkingCharge(
-                order.getEntryTime(), order.getActualExitTime(), priceType)
+                order.getActualEntryTime(), order.getActualExitTime(), priceType)
                 - order.getPrice()
         );
-        order.setOrderStatus(Order.orderStatus.FINISHED);
+        order.setOrderStatus(Order.OrderStatus.FINISHED);
         //TODO : update order params to match final order. ->DBController
         //TODO: _ordersList.remove(order.getOrderID()); will stay on the list (for today) in order to make sure Regulars arent used twice.
         return order;
@@ -167,7 +168,7 @@ public class OrderController {
             }
         }
         orderToDelete.setCharge(refund);
-        orderToDelete.setOrderStatus(Order.orderStatus.DELETED);
+        orderToDelete.setOrderStatus(Order.OrderStatus.DELETED);
         dbController.deleteOrder(orderToDelete.getOrderID(), actualPayment);
         _ordersList.remove(orderID);
         return orderToDelete;

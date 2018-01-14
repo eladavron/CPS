@@ -13,12 +13,14 @@ public class Order {
      */
     private static int _orderUIDCounter = -1;
 
-    public enum orderStatus{PRE_ORDER,IN_PROGRESS,FINISHED,DELETED}
 
-    private orderStatus _orderStatus;
+    public enum OrderStatus {PRE_ORDER,IN_PROGRESS,FINISHED,DELETED}
+
+    private OrderStatus _orderStatus;
     private Integer _orderID;
     private Integer _carID;
-    private Date _entryTime;
+    private Date _actualEntryTime;
+    private Date    _estimatedEntryTime;
     private Date _estimatedExitTime;
     private Date _actualExitTime;
     private Integer _parkingLotNumber;
@@ -42,9 +44,9 @@ public class Order {
         this._customerID = customerID;
         this._carID = carID;
         this._estimatedExitTime = estimatedExitTime;
-        this._entryTime = new Date();
+        this._actualEntryTime = new Date();
         this._parkingLotNumber = parkingLotNumber;
-        this._orderStatus = orderStatus.PRE_ORDER;
+        this._orderStatus = OrderStatus.PRE_ORDER;
 
     }
 
@@ -54,36 +56,46 @@ public class Order {
      * @param customerID
      * @param carID
      * @param parkingLotNumber
-     * @param entryTime
+     * @param _orderStatus
+     * @param entryTimeEstimated
+     * @param entryTimeActual
      * @param estimatedExitTime
      * @param actualExitTime
      * @param price
      * @param creationTime
      */
-    public Order(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Date entryTime, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime) {
+    public Order(int orderID, int customerID, Integer carID, Integer parkingLotNumber, OrderStatus _orderStatus,
+                 Date entryTimeEstimated, Date entryTimeActual, Date estimatedExitTime, Date actualExitTime,
+                 double price, Date creationTime) {
         this._orderID = orderID;
         this._customerID = customerID;
         this._carID = carID;
-        this._entryTime = entryTime;
+        this._orderStatus = _orderStatus;
+        this._estimatedEntryTime = entryTimeEstimated;
+        this._actualEntryTime = entryTimeActual;
         this._estimatedExitTime = estimatedExitTime;
         this._actualExitTime = actualExitTime;
         this._parkingLotNumber = parkingLotNumber;
         this._price = price;
         this._creationTime = creationTime;
-        this._orderStatus = orderStatus.PRE_ORDER;
+        // why is that?
+        //this._orderStatus = OrderStatus.PRE_ORDER;
 
     }
 
     public Order(Order other) {
         this._customerID = other._customerID;
         this._parkingLotNumber = other._parkingLotNumber;
-        this._entryTime = other._entryTime;
+        this._orderStatus = other._orderStatus;
+        this._estimatedEntryTime = other._estimatedEntryTime;
+        this._actualEntryTime = other._actualEntryTime;
         this._actualExitTime = other._actualExitTime;
         this._carID = other._carID;
         this._estimatedExitTime = other._estimatedExitTime;
         this._price = other._price;
         this._orderID = other._orderID;
-        this._orderStatus = orderStatus.PRE_ORDER;
+        // why is that?
+        //this._orderStatus = OrderStatus.PRE_ORDER;
     }
 
     /**
@@ -114,12 +126,20 @@ public class Order {
         this._carID = carID;
     }
 
-    public Date getEntryTime() {
-        return _entryTime;
+    public Date getActualEntryTime() {
+        return _actualEntryTime;
     }
 
-    public void setEntryTime(Date entryTime) {
-        this._entryTime = entryTime;
+    public void setActualEntryTime(Date entryTime) {
+        this._actualEntryTime = entryTime;
+    }
+
+    public Date getEstimatedEntryTime() {
+        return _estimatedEntryTime;
+    }
+
+    public void setEstimatedEntryTime(Date estimatedEntryTime) {
+        this._estimatedEntryTime = estimatedEntryTime;
     }
 
     public Date getEstimatedExitTime() { return _estimatedExitTime; }
@@ -167,11 +187,11 @@ public class Order {
         this._creationTime = creationTime;
     }
 
-    public orderStatus getOrderStatus() {
+    public OrderStatus getOrderStatus() {
         return _orderStatus;
     }
 
-    public void setOrderStatus(orderStatus orderStatus) {
+    public void setOrderStatus(OrderStatus orderStatus) {
         this._orderStatus = orderStatus;
     }
 
@@ -183,7 +203,8 @@ public class Order {
         return _customerID == order._customerID &&
                 Double.compare(order._price, _price) == 0 &&
                 Objects.equals(_carID, order._carID) &&
-                Objects.equals(_entryTime, order._entryTime) &&
+                Objects.equals(_actualEntryTime, order._actualEntryTime) &&
+                Objects.equals(_estimatedEntryTime, order._estimatedEntryTime) &&
                 Objects.equals(_estimatedExitTime, order._estimatedExitTime) &&
                 Objects.equals(_actualExitTime, order._actualExitTime) &&
                 Objects.equals(_parkingLotNumber, order._parkingLotNumber) &&
@@ -194,7 +215,7 @@ public class Order {
     @Override
     public int hashCode() {
 
-        return Objects.hash(_carID, _entryTime, _estimatedExitTime, _actualExitTime, _parkingLotNumber, _customerID, _price);
+        return Objects.hash(_carID, _actualEntryTime, _estimatedEntryTime, _estimatedExitTime, _actualExitTime, _parkingLotNumber, _customerID, _price);
     }
 
     @Override
@@ -202,7 +223,8 @@ public class Order {
         return "Order's details are:\n" +
                 "user's Id=" + _customerID +
                 ", car's ID=" + _carID +
-                ", entry time=" + _entryTime +
+                ", Actual entry time=" + _actualEntryTime +
+                ", Estimated entry time=" + _estimatedEntryTime +
                 ", estimated exit time=" + _estimatedExitTime +
                 ", actual exit time=" + _actualExitTime +
                 ", parking lot number=" + _parkingLotNumber +
