@@ -453,29 +453,68 @@ public class DBController {
 
 
 
-   public ArrayList<Customer> getCustomers() {
-        return  getUserByID(-1, User.UserType.CUSTOMER);
+   public ArrayList<User> getCustomers()
+   {
+       return getUserByID(-1, User.UserType.CUSTOMER);
+   }
+
+    public ArrayList<User> getEmployees()
+    {
+        return getUserByID(-1, User.UserType.EMPLOYEE);
     }
 
 
-    public ArrayList<Customer> getUserByID(Integer userID, User.UserType userType) {
+    public ArrayList<User> getUserByID(Integer userID, User.UserType userType) {
         ResultSet rs;
 
-        if (userID == -1) { // get all rows of a specific UserType, will call a special query.
-            rs = queryUserTable(userType);
-
-        } else { // get a specific user.
-            rs = queryTable("Users", "idUsers", userID);
-        }
-
         switch (userType){
+            case MANAGER:
+            case EMPLOYEE:
+                if (userID == -1) {
+                    // get all rows of a specific UserType, will call a special query.
+                    rs = queryTable("employees");
+                }
+                else {
+                    rs = queryTable("employees", "UID", userID);
+                }
+                return parseEmployeeFromDB(rs);
+
             case CUSTOMER :
+                if (userID == -1) { // get all rows of a specific UserType, will call a special query.
+                    rs = queryUserTable(userType);
+
+                } else { // get a specific user.
+                    rs = queryTable("Users", "idUsers", userID);
+                }
                 return parseCustomerFromDB(rs);
-            case USER:
-                break;
         }
-        //default
-        return parseCustomerFromDB(rs);
+        //default is failure.
+        return null;
+    }
+
+    private  ArrayList<User> parseEmployeeFromDB(ResultSet rs) {
+        ArrayList<User> myEmployees = new ArrayList<>();
+        if (rs == null){
+            return null;
+        }
+        else {
+            try {
+                while (rs.next())
+                {
+                    Employee rowEmployee = new Employee(
+                            rs.getInt("UID"),
+                            rs.getString("name"),
+                            rs.getString("email"),
+                            rs.getString("password")
+                    );
+                    myEmployees.add(rowEmployee);
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting Employees data from 'Users' table:\n%s", e.getMessage());
+                return null;
+            }
+        }
+        return myEmployees;
     }
 
     /**
@@ -504,8 +543,8 @@ public class DBController {
         return result;
     }
 
-    private ArrayList<Customer> parseCustomerFromDB(ResultSet rs) {
-        ArrayList<Customer> myCustomers = new ArrayList<>();
+    private ArrayList<User> parseCustomerFromDB(ResultSet rs) {
+        ArrayList<User> myCustomers = new ArrayList<>();
         if (rs == null){
             return null;
         }

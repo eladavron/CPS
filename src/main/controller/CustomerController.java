@@ -29,9 +29,11 @@ public class CustomerController {
     }
 
     private CustomerController(){
-        System.out.print("\tLoading customers...");
+        System.out.println("\tFinding the list of customers...");
+        System.out.println("\t\tMorag: Or!\n\t\tOr:    What?... \n\t\tMorag: Where did you put the list of our customers?"
+            + "\n\t\tElad:  It's right there by the suit case with all the money we got from this");
         getCustomersFromDb();
-        System.out.println("Done!");
+        System.out.println("\t\tAviad: Oh found it! \n\t\tRami:  Ok I will quickly put it into the system!");
 
     }
 
@@ -39,13 +41,13 @@ public class CustomerController {
 
 
     /**
-     * will temporarly search in _customersList TODO: move the search to the DB once implemented
+     * Searches for a specific Customer from the current Customer list.
      * @param customerID
-     * @return
+     * @return the Customer if found, null otherwise.
      */
     public Customer getCustomer(Integer customerID)
     {
-        return _customersList.get(customerID);
+        return _customersList.getOrDefault(customerID, null);
     }
 
     public Customer getCustomerByEmail(String email) {
@@ -55,20 +57,39 @@ public class CustomerController {
         return null;
     }
 
-    public void getCustomersFromDb() {
+    /**
+     * Private function that retrieves the Customers list form the DB, on startup.
+     */
+    private void getCustomersFromDb() {
         setCustomersList(dbController.getCustomers());
     }
 
-    //TODO: is this needed along with getOrdersFromDb()?
-    public ArrayList<Customer> getCustomersList() {
-        return (ArrayList<Customer>) _customersList.values();
+    /**
+     * Contains the current list of Customers on our system.
+     * @return the list.
+     */
+    public Collection<Customer> getCustomersList() {
+        return _customersList.values();
     }
 
-    public void setCustomersList(ArrayList<Customer> list) {
-        list.forEach(customer -> _customersList.put(customer.getUID(), customer));
+    /**
+     * Private function used in order to convert the general user array into customer
+     * and then map it into our customer list.
+     * @param list - the customer list taken from the DB.
+     */
+    private void setCustomersList(ArrayList<User> list) {
+        list.forEach(user -> {
+            Customer customer = (Customer) user;
+            _customersList.put(customer.getUID(), customer);
+        });
     }
 
 
+    /**
+     * function used by Server side in order to make a new Customer on Boundary's Action
+     * @param customer to add to the System.
+     * @return the Customer.
+     */
     public Customer addNewCustomer(Customer customer) {
         return addNewCustomer(customer.getUID(),
                               customer.getName(),
@@ -78,13 +99,14 @@ public class CustomerController {
     }
     public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList){
         Customer newCustomer = new Customer(uID, name, password, email, carIDList);
-        dbController.insertCustomer(newCustomer);
+        if (!dbController.insertCustomer(newCustomer))
+            return null;
         _customersList.put(newCustomer.getUID(),newCustomer);
         return newCustomer;
     }
 
     public ArrayList<Object> getCustomersPreOrders(int customerID){
-        return new ArrayList<Object>(dbController.getOrdersByUserID(customerID).values());
+        return new ArrayList<>(dbController.getOrdersByUserID(customerID).values());
     }
 
     public ArrayList<Object> getCustomersActiveOrders(int customerID){

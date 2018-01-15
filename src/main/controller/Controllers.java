@@ -3,12 +3,14 @@ package controller;
 import java.sql.SQLException;
 
 public class Controllers {
-    public static DBController             dbController;
-    public static OrderController          orderController;
-    public static BillingController        billingController;
-    public static CustomerController       customerController;
-    public static SubscriptionController   subscriptionController;
-    public static ParkingController        parkingController;
+    public static DBController              dbController;
+    public static OrderController           orderController;
+    public static BillingController         billingController;
+    public static CustomerController        customerController;
+    public static SubscriptionController    subscriptionController;
+    public static ParkingController         parkingController;
+    public static EmployeeController        employeeController;
+    public static CustomerServiceController customerServiceController;
 
     /**
      * Since all other Controllers need the dbcontroller to first set a connection
@@ -23,12 +25,14 @@ public class Controllers {
         dbController.init(dbUrl, dbUsername, dbPwd);
     }
 
-    public static void init() throws SQLException{
-        dbController             = DBController.getInstance();
-        orderController          = OrderController.getInstance();
-        billingController        = BillingController.getInstance();
-        customerController       = CustomerController.getInstance();
-        subscriptionController   = SubscriptionController.getInstance();
-        parkingController        = ParkingController.getInstance();
+    public static void init() {
+        dbController              = DBController.getInstance();
+        billingController         = BillingController.getInstance();
+        employeeController        = EmployeeController.getInstance();
+        customerServiceController = CustomerServiceController.getInstance();
+        parkingController         = ParkingController.getInstance();
+        orderController           = OrderController.getInstance();
+        subscriptionController    = SubscriptionController.getInstance();
+        customerController        = CustomerController.getInstance();
     }
 }

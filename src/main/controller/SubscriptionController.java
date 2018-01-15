@@ -27,9 +27,9 @@ public class SubscriptionController {
      */
     private SubscriptionController() {
         // get all subscriptions from DB
-        System.out.print("\tLoading subscriptions...");
+        System.out.print("\tNow where did we put the subscriptions...");
         this._subscriptionsList = DBController.getInstance().getAllSubscriptions();
-        System.out.println("Done!");
+        System.out.println("Here they are!");
     }
 
     /**

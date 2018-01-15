@@ -24,9 +24,9 @@ public class OrderController {
      */
     private OrderController() {
         this._ordersList = new HashMap<>();
-        System.out.print("\tLoading orders...");
+        System.out.print("\tLooking for all the Orders...");
         getOrdersFromDb();
-        System.out.println("Done!");
+        System.out.println("Found them!");
     }
 
     /**
