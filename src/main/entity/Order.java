@@ -35,7 +35,7 @@ public class Order {
 
     /**
      * Constructor
-     * @param customerID Order's Name
+     * @param customerID Order's customer ID.
      * @param carID Order's car plate
      * @param estimatedExitTime Order's estimated exit time
      * @param parkingLotNumber parking lot for order

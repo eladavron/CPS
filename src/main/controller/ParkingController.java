@@ -21,7 +21,7 @@ import static controller.Controllers.orderController;
  */
 public class ParkingController {
 
-    private Map<Integer, ParkingLot> _parkingLotList;
+        private Map<Integer, ParkingLot> _parkingLotList;
     private Integer _numberOfSlotsOccupied;
 
 
@@ -251,6 +251,11 @@ public class ParkingController {
      */
     public void setParkingSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer x, Integer y, Integer z){
         this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(status);
+    }
+
+    public void reserveParkingSpace(Integer parkingLotNumber, Integer orderID , Integer x, Integer y, Integer z){
+        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setOccupyingOrderID(orderID);
+        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(ParkingSpace.ParkingStatus.ORDERED);
     }
 
     /**
