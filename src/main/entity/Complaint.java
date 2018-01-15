@@ -85,14 +85,6 @@ public class Complaint {
         this._refund = refund;
     }
 
-    public ComplaintStatus getStatus() {
-        return _status;
-    }
-
-    public void setStatus(ComplaintStatus status) {
-        this._status = status;
-    }
-
 
     @Override
     public boolean equals(Object o) {
