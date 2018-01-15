@@ -2,6 +2,9 @@ package entity;
 
 
 import java.util.Date;
+import java.util.LinkedHashMap;
+
+import static entity.Subscription.SubscriptionType.FULL;
 
 /**
  *  A simple class to notify that this Subscription is a full
@@ -18,7 +21,16 @@ public class FullSubscription extends Subscription {
      * @param endDate
      */
     public FullSubscription (int subsId, int carId, int userId, Date endDate){
-        super( subsId,  carId,  userId, endDate, SubscriptionType.FULL);
+        super( subsId,  carId,  userId, endDate, FULL);
+    }
+
+    /**
+     * A custom constructor for manual JSON Deserialization.
+     * @param deserialize
+     */
+    public FullSubscription(LinkedHashMap deserialize)
+    {
+        super((Integer) deserialize.get("subscriptionID"), (Integer) deserialize.get("userID"), (Integer) deserialize.get("carID"), new Date((Long) deserialize.get("expiration")), FULL);
     }
 
     /**
@@ -27,7 +39,7 @@ public class FullSubscription extends Subscription {
      * @param userId
      */
     public FullSubscription (int userId, int carId){
-        super(userId, carId, SubscriptionType.FULL);
+        super(userId, carId, FULL);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 
 import client.GUI.CPSClientGUI;
@@ -84,19 +84,12 @@ public class NewPreorder implements Initializable {
      */
     private boolean validateForm() {
         Validation.clearAllHighlighted();
-        boolean validate = true;
-        if (cmbParkingLot.getValue() == null) //Makes sure parking lot is selected
-        {
-            Validation.showError(cmbParkingLot, "Please select parking lot!");
-            validate = false;
-        }
-        if (cmbCarID.getValue() == null)
-        {
-            Validation.showError(cmbCarID, "Please select which car to park...");
-            validate = false;
-        }
-        //Validate times:
-        return Validation.validateTimes(_entryDateTime, _exitDateTime) && validate;
+        /*
+         If full subscription, do not allow parking for more than 14 days.
+         */
+        return Validation.validateTimes(_entryDateTime, _exitDateTime)
+                && Validation.notEmpty(cmbParkingLot, cmbCarID)
+                && Validation.validateParkingLength(_entryDateTime,_exitDateTime, cmbCarID.getValue());
     }
 
     /**
@@ -112,7 +105,7 @@ public class NewPreorder implements Initializable {
         Date entryTime = _entryDateTime.getDateTime();
         Date exitTime = _exitDateTime.getDateTime();
         int parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getParkingLotID();
-        PreOrder newOrder = new PreOrder(CPSClientGUI.getSession().getUser().getUID(), cmbCarID.getValue(), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
+        PreOrder newOrder = new PreOrder(CPSClientGUI.getLoggedInUserID(), cmbCarID.getValue(), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);
         MessageRunnable onSuccess = new MessageRunnable() {

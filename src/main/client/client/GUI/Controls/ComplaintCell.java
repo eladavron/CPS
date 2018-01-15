@@ -1,12 +1,11 @@
 package client.GUI.Controls;
 
-import client.GUI.Forms.Customers.ManagePreorders;
+import client.GUI.Forms.Customers.ManageComplaints;
 import client.GUI.Helpers.ErrorHandlers;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import entity.Complaint;
 import entity.Message;
-import entity.PreOrder;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -18,7 +17,7 @@ import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 
-public class PreorderCell extends ListCell<PreOrder>{
+public class ComplaintCell extends ListCell<Complaint>{
 
 
     @FXML
@@ -30,9 +29,9 @@ public class PreorderCell extends ListCell<PreOrder>{
     @FXML
     private Label lblText;
 
-    ManagePreorders _parent;
+    ManageComplaints _parent;
 
-    public PreorderCell(ManagePreorders parent)
+    public ComplaintCell(ManageComplaints parent)
     {
         _parent = parent;
         try {
@@ -45,7 +44,7 @@ public class PreorderCell extends ListCell<PreOrder>{
     }
 
     @Override
-    protected void updateItem(PreOrder item, boolean empty) {
+    protected void updateItem(Complaint item, boolean empty) {
         super.updateItem(item, empty);
         if (empty)
         {
@@ -55,14 +54,18 @@ public class PreorderCell extends ListCell<PreOrder>{
         {
             if (item != null)
             {
-                lblText.setText("Order No. " + item.getOrderID() + "\n"
-                        + "From: " + item.getEstimatedEntryTime() + "\n"
-                        + "To: " + item.getEstimatedExitTime() +"\n"
-                        + "Car No. "+  item.getCarID());
+                lblText.setText("Complaint No. " + item.getComplaintID()
+                        + "Regarding Order No. " + item.getRelatedOrderID()
+                        + "\nComplaint Status: " + item.getStatus()
+                        + (item.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + item.getRefund() + " NIS (The cheque is in the mail)." : "")
+                        +"\nAssigned Representative: " + item.getCustomeServiceRepresentive().getName());
+
+                btnDelete.setVisible(item.getStatus().equals(Complaint.ComplaintStatus.NEW) || item.getStatus().equals(Complaint.ComplaintStatus.OPEN));
+
                 btnDelete.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
-                        deletePreorder(item);
+                        cancelComplaint(item);
                     }
                 });
                 setGraphic(paneRow);
@@ -70,35 +73,25 @@ public class PreorderCell extends ListCell<PreOrder>{
         }
     }
 
-    private void deletePreorder(PreOrder preOrder)
+    private void cancelComplaint(Complaint complaint)
     {
         WaitScreen waitScreen = new WaitScreen();
+        Message cancelComplaint = new Message(Message.MessageType.DELETE, Message.DataType.COMPLAINT, complaint);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        _parent.queryPreorders();
-                    }
-                });
+                waitScreen.setOnClose(()->_parent.queryComplaints());
+                waitScreen.hide();
             }
         };
-        MessageRunnable onFailure = new MessageRunnable() {
+        MessageRunnable onFailed = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showDefaultError(this.getErrorString());
+                waitScreen.showDefaultError(getErrorString());
             }
         };
-        Message deleteMessage = new Message(Message.MessageType.DELETE,
-                Message.DataType.PREORDER,
-                preOrder);
 
-        MessageTasker taskDelete = new MessageTasker("Connecting...",
-                "Cancelling order...",
-                "Order cancelled!",
-                "Failed to cancel order!",
-                deleteMessage, onSuccess, onFailure);
-        waitScreen.run(taskDelete);
+        MessageTasker cancelTasker = new MessageTasker(cancelComplaint, onSuccess, onFailed);
+        waitScreen.run(cancelTasker);
     }
 }

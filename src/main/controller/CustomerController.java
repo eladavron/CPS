@@ -26,6 +26,7 @@ public class CustomerController {
         FAILED,
         SUCCESS_ADDED,
         RENEWED,
+        QUERY_RESPONSE
     }
 
     private CustomerController(){
@@ -146,7 +147,7 @@ public class CustomerController {
      * @param estimatedEntryTime
      * @return order
      */
-    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
+    public Order addNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewPreOrder(customerID, carID, estimatedExitTime,  parkingLotNumber, estimatedEntryTime);
         Map<Integer, Order> activeOrders = customer.getActiveOrders();
@@ -159,8 +160,8 @@ public class CustomerController {
      * OverLoading function for a given template of a PreOrder.
      * @param newPreOrder
      */
-    public Order addNewOrder(PreOrder newPreOrder){
-        return addNewOrder(newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
+    public Order addNewPreOrder(PreOrder newPreOrder){
+        return addNewPreOrder(newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
     }
 
     /**

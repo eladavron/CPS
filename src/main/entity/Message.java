@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A message object between client and server
@@ -35,6 +37,7 @@ public class Message {
         PRIMITIVE, //Any data type native to Java, such as String, Double, Integer, etc.
         ORDER,
         PREORDER,
+        COMPLAINT,
         USER,
         CARS,
         CUSTOMER,
@@ -101,7 +104,11 @@ public class Message {
                         switch (userType)
                         {
                             case CUSTOMER:
-                                user = mapper.convertValue(msg.getData().get(3), Customer.class);
+                                /*
+                                 Once again the custom classes break the converter, have to create it manually.
+                                 */
+                                LinkedHashMap userMap = (LinkedHashMap) msg.getData().get(3);
+                                user = new Customer(userMap);
                                 break;
                             case EMPLOYEE:
                                 user = mapper.convertValue(msg.getData().get(3), Employee.class);
@@ -115,31 +122,31 @@ public class Message {
                         _data.add(session);
                     } else if (_dataType == DataType.SUBSCRIPTION){
                         if (msg.getData().size() > 0) {
-                            Subscription.SubscriptionType subType = mapper.convertValue(msg.getData().get(0), Subscription.SubscriptionType.class);
-                            Subscription sub;
-                            LinkedHashMap myData = (LinkedHashMap) msg.getData().get(1);
-                            Integer userID = (Integer) myData.get("userID");
-                            Integer carID = (Integer) myData.get("carID");
-                            switch (subType) {
-                                case REGULAR:
-                                case REGULAR_MULTIPLE:
-                                    String regularExitTime = (String) myData.get("regularExitTime");
-                                    Integer parkingLotNumber = (Integer) myData.get("parkingLotNumber");
-                                    sub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
-                                    break;
-                                case FULL:
-                                    sub = new FullSubscription(userID, carID);
-                                    break;
-                                default:
-                                    throw new NotImplementedException("Unimplemented subscription type: " + subType);
-                            }
-                            _data.add(subType);
-                            _data.add(sub);
                             if (_type == MessageType.FINISHED || _type == MessageType.FAILED) {
                                 CustomerController.SubscriptionOperationReturnCodes rc;
-                                rc = mapper.convertValue(msg.getData().get(3), CustomerController.SubscriptionOperationReturnCodes.class);
+                                rc = mapper.convertValue(msg.getData().get(0), CustomerController.SubscriptionOperationReturnCodes.class);
                                 _data.add(rc);
                             }
+                            for (int i = 1; i < msg.getData().size(); i++)
+                            {
+                                LinkedHashMap myData = (LinkedHashMap) msg.getData().get(i);
+                                Subscription.SubscriptionType subType = mapper.convertValue(myData.get("subscriptionType"), Subscription.SubscriptionType.class);
+                                Subscription sub;
+                                switch (subType) {
+                                    case REGULAR:
+                                    case REGULAR_MULTIPLE:
+                                        sub = new RegularSubscription(myData);
+                                        break;
+                                    case FULL:
+                                        sub = new FullSubscription(myData);
+                                        break;
+                                    default:
+                                        throw new NotImplementedException("Unimplemented subscription type: " + subType);
+                                }
+                                _data.add(sub);
+                            }
+
+
                         }
                     }else{
                         for (Object dataObject : msg.getData()) {
@@ -182,6 +189,20 @@ public class Message {
         catch (Exception ex)
         {
             throw new InvalidMessageException(ex);
+        }
+    }
+
+    public static Long getSidFromJson(String json)
+    {
+        Pattern pattern = Pattern.compile("\\\"sid\\\"\\:(\\-?\\d*)");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find())
+        {
+            return Long.valueOf(matcher.group(1));
+        }
+        else
+        {
+            return null;
         }
     }
 

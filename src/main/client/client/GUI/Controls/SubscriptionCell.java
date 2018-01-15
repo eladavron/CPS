@@ -1,6 +1,6 @@
 package client.GUI.Controls;
 
-import client.GUI.Forms.ManageSubscriptions;
+import client.GUI.Forms.Customers.ManageSubscriptions;
 import client.GUI.Helpers.ErrorHandlers;
 import entity.Subscription;
 import javafx.event.ActionEvent;

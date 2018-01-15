@@ -54,6 +54,8 @@ public class Inits {
         {
             minutes.getItems().add((i<10 ? "0" : "") + i);
         }
+        hour.getSelectionModel().select(0);
+        minutes.getSelectionModel().select(0);
     }
 
     public static void initCars(ComboBox<Integer> comboBox)

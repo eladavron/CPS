@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;

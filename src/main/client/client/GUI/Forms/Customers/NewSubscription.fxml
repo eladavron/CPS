@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <?import java.lang.String?>
-<TitledPane animated="false" collapsible="false" stylesheets="@../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.NewSubscription">
+<TitledPane animated="false" collapsible="false" stylesheets="@../../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.Customers.NewSubscription">
     <graphic> <!-- The header -->
         <HBox>
             <children>

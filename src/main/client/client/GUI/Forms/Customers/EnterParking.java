@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
@@ -10,7 +10,10 @@ import client.GUI.Helpers.Validation;
 import entity.Message;
 import entity.Order;
 import entity.PreOrder;
+import entity.Subscription;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,9 +21,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -42,6 +47,9 @@ public class EnterParking implements Initializable {
     private Button btnCreate;
 
     @FXML
+    private ComboBox<Subscription> cmbSubscription;
+
+    @FXML
     private ComboBox<String> cmbExitHour;
 
     @FXML
@@ -50,7 +58,12 @@ public class EnterParking implements Initializable {
     @FXML
     private ComboBox<Integer> cmbCar;
 
+    @FXML
+    private FlowPane flowSubscription;
+
     private DateTimeCombo _exitDateTime;
+
+    private ObservableList<Subscription> _subList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -63,6 +76,13 @@ public class EnterParking implements Initializable {
             }
         });
         cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());
+        cmbCar.valueProperty().addListener((observable, oldValue, newValue) -> {
+            _subList.clear();
+            ArrayList<Subscription> subs = CPSClientGUI.getSubscriptionsByCar(newValue);
+          _subList.addAll(subs);
+          flowSubscription.setVisible(!_subList.isEmpty());
+        });
+        flowSubscription.setVisible(false);
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
     }
 
@@ -95,7 +115,7 @@ public class EnterParking implements Initializable {
         WaitScreen waitScreen = new WaitScreen();
         Date exitTime = _exitDateTime.getDateTime();
         Integer parkingLotNumber = CPSClientGUI.getSession().getParkingLot().getParkingLotID();
-        Order newOrder = new Order(CPSClientGUI.getSession().getUser().getUID(), cmbCar.getValue(),exitTime,parkingLotNumber);
+        Order newOrder = new Order(CPSClientGUI.getLoggedInUserID(), cmbCar.getValue(),exitTime,parkingLotNumber);
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
 

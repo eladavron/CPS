@@ -2,8 +2,7 @@ package client.GUI;
 
 import client.ClientController;
 import client.GUI.Helpers.ErrorHandlers;
-import entity.Message;
-import entity.Session;
+import entity.*;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,10 +21,7 @@ import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * The main GUI application
@@ -36,19 +32,21 @@ public class CPSClientGUI extends Application{
     /**
      * FXML paths
      */
-    public final static String CUSTOMER_SCREEN = "Forms/CustomerScreen.fxml";
-    public final static String ENTER_PARKING = "Forms/EnterParking.fxml";
     public final static String LOGIN_SCREEN = "Forms/LoginScreen.fxml";
-    public final static String NEW_PREORDER = "Forms/NewPreorder.fxml";
-    public final static String MANAGE_PREORDERS = "Forms/ManagePreorders.fxml";
-    public final static String MANAGE_CARS = "Forms/ManageCars.fxml";
-    public final static String MANAGE_SUBSCRIPTIONS = "Forms/ManageSubscriptions.fxml";
-
+    public final static String CUSTOMER_SCREEN = "Forms/Customers/CustomerScreen.fxml";
+    public final static String ENTER_PARKING = "Forms/Customers/EnterParking.fxml";
+    public final static String NEW_PREORDER = "Forms/Customers/NewPreorder.fxml";
+    public final static String MANAGE_PREORDERS = "Forms/Customers/ManagePreorders.fxml";
+    public final static String MANAGE_CARS = "Forms/Customers/ManageCars.fxml";
+    public final static String MANAGE_SUBSCRIPTIONS = "Forms/Customers/ManageSubscriptions.fxml";
+    public static final String NEW_COMPLAINT = "Forms/Customers/NewComplaint.fxml";
+    public static final String MANAGE_COMPLAINTS = "Forms/Customers/ManageComplaints.fxml";
     /**
      * Public Finals
      */
     public final static int DEFAULT_TIMEOUT = 10;
     public final static int DEFAULT_WAIT_TIME = 3;
+
 
     public static boolean IS_DEBUG;
 
@@ -400,6 +398,47 @@ public class CPSClientGUI extends Application{
     //endregion
 
     //region getters and setters
+
+    public static Integer getLoggedInUserID()
+    {
+        if (_session != null && _session.getUser() != null)
+            return _session.getUser().getUID();
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Checks if the logged in user has a subscription of a given type for a car ID and returns it.
+     * @param carID Car ID to check.
+     * @param type Type of subscription to check. Can be null for ALL;
+     * @return null if no sub was found
+     */
+    public static ArrayList<Subscription> getSubscriptionsByCarAndType(Integer carID, Subscription.SubscriptionType type)
+    {
+        ArrayList<Subscription> returnList = new ArrayList<>();
+        if (_session.getUserType() == User.UserType.CUSTOMER)
+        {
+            ArrayList subs = ((Customer)_session.getUser()).getSubscriptionList();
+            for (Object sub : subs)
+            {
+                if (sub instanceof Subscription && ((Subscription) sub).getCarID() == carID) //Found sub for this car type.
+                {
+                    if (type != null && ((Subscription) sub).getSubscriptionType().equals(type)) //Subscription is of the requested type.
+                        returnList.add((Subscription)sub);
+                    else if (type == null) //Or if no type specified
+                        returnList.add((Subscription)sub);
+                }
+            }
+        }
+        return returnList;
+    }
+
+    public static ArrayList<Subscription> getSubscriptionsByCar(Integer carID)
+    {
+        return getSubscriptionsByCarAndType(carID, null);
+    }
 
     public static Session getSession()
     {

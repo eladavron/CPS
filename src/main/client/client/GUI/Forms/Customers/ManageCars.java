@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.CarCell;
@@ -62,7 +62,7 @@ public class ManageCars implements Initializable{
     public void queryServerForCars()
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message queryMessage = new Message(Message.MessageType.QUERY, Message.DataType.CARS, CPSClientGUI.getSession().getUser().getUID(), CPSClientGUI.getSession().getUserType());
+        Message queryMessage = new Message(Message.MessageType.QUERY, Message.DataType.CARS, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
@@ -127,7 +127,7 @@ public class ManageCars implements Initializable{
         Optional<String> result = newCarDialog.showAndWait();
         result.ifPresent(s -> {
             WaitScreen waitScreen = new WaitScreen();
-            Message newCar = new Message(Message.MessageType.CREATE, Message.DataType.CARS, CPSClientGUI.getSession().getUser().getUID(), Integer.valueOf(s));
+            Message newCar = new Message(Message.MessageType.CREATE, Message.DataType.CARS, CPSClientGUI.getLoggedInUserID(), Integer.valueOf(s));
             MessageRunnable onSuccess = new MessageRunnable() {
                 @Override
                 public void run() {

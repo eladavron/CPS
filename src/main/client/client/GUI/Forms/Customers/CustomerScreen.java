@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import Exceptions.NotImplementedException;
 import client.GUI.CPSClientGUI;
@@ -86,9 +86,13 @@ public class CustomerScreen implements Initializable {
             filename = CPSClientGUI.MANAGE_PREORDERS;
         } else if (event.getSource() == btnManageSubs) {
             filename = CPSClientGUI.MANAGE_SUBSCRIPTIONS;
-        }
-
-        else {
+        } else if (event.getSource() == btnFileComplaint)
+        {
+            filename = CPSClientGUI.NEW_COMPLAINT;
+        } else if (event.getSource() == btnCheckComplaint)
+        {
+            filename = CPSClientGUI.MANAGE_COMPLAINTS;
+        } else {
             //TODO: Handle?
             throw new NotImplementedException(event.getSource().toString());
         }

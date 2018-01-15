@@ -695,22 +695,22 @@ public class DBController {
 
     public boolean insertSubscription(Subscription subs){
         String params = "idUser, idCar, endDate";
+        Subscription.SubscriptionType subType = subs.getSubscriptionType();
         String values = String.format("%s, %s, '%s'", subs.getUserID(), subs.getCarID(), _simpleDateFormatForDb.format(subs.getExpiration()));
-        switch (subs.getSubscriptionType()){
+        switch (subType){
             case FULL:
                 break;
-
             case REGULAR_MULTIPLE:
             case REGULAR:
                 RegularSubscription rSubs = (RegularSubscription) subs;
-                params.concat( ", idParkingLot, regularExitTime");
-                values.concat(String.format(", %s, '%s'" ,rSubs.getParkingLotNumber(), rSubs.getRegularExitTime()));
+                params += ", idParkingLot, regularExitTime, subscriptionType";
+                values += String.format(", %s, '%s', '%s'" ,rSubs.getParkingLotNumber(), rSubs.getRegularExitTime(), subType);
                 break;
 
             default:
                 return false;
         }
-        String query = String.format("INSET INTO SubscriptionToUser (%s) VALUES (%s)", params, values);
+        String query = String.format("INSERT INTO SubscriptionToUser (%s) VALUES (%s)", params, values);
         try {
             Statement stmt = db_conn.createStatement();
             int subsId;

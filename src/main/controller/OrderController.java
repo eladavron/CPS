@@ -57,6 +57,7 @@ public class OrderController {
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
     public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
+        newOrder.setEstimatedEntryTime(newOrder.getActualEntryTime());
         //UID is select within the dbController and then set in it as well.
         newOrder.setOrderStatus(Order.OrderStatus.IN_PROGRESS);
         dbController.insertOrder(newOrder);

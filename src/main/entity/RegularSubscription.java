@@ -1,6 +1,9 @@
 package entity;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
+
+import static entity.Subscription.SubscriptionType.REGULAR;
 
 /**
  * This Class represents a regular subscription of a customer's car.
@@ -39,6 +42,16 @@ public class RegularSubscription extends Subscription {
         this._regularExitTime = (regularExitTime == null) ? "00:00" : regularExitTime; // default when not presented
     }
 
+    /**
+     * A custom constructor for manual JSON Deserialization.
+     * @param deserialize Json deserialized LinkedHashMap
+     */
+    public RegularSubscription(LinkedHashMap deserialize)
+    {
+        super((Integer) deserialize.get("userID"), (Integer) deserialize.get("carID"), REGULAR);
+        this._parkingLotNumber = (Integer) deserialize.get("parkingLotNumber");
+        this._regularExitTime = deserialize.containsKey("regularExitTime") ? (String) deserialize.get("regularExitTime") : "00:00";
+    }
 
     public String getRegularExitTime() {
         return _regularExitTime;

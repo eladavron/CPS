@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import Exceptions.NotImplementedException;
 import client.GUI.CPSClientGUI;
@@ -142,7 +142,7 @@ public class NewSubscription implements Initializable{
         WaitScreen waitScreen = new WaitScreen();
         Message newSubMessage = new Message(Message.MessageType.CREATE, Message.DataType.SUBSCRIPTION);
         Subscription newSubscription;
-        Integer userID = CPSClientGUI.getSession().getUser().getUID();
+        Integer userID = CPSClientGUI.getLoggedInUserID();
         switch (cmbSubType.getSelectionModel().getSelectedIndex()) {
             case REGULAR:
                 newSubMessage.addData(SubscriptionType.REGULAR);
@@ -166,10 +166,10 @@ public class NewSubscription implements Initializable{
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                SubscriptionType type = (SubscriptionType) getMessage().getData().get(0);
+
+                SubscriptionOperationReturnCodes returnCodes = (SubscriptionOperationReturnCodes) getMessage().getData().get(0);
                 Subscription newSub = (Subscription) getMessage().getData().get(1);
-                SubscriptionOperationReturnCodes returnCodes = (SubscriptionOperationReturnCodes) getMessage().getData().get(2);
-                String subName = StringUtils.SubscriptionTypeName(type);
+                String subName = StringUtils.SubscriptionTypeName(newSub.getSubscriptionType());
                 String message = returnCodes.equals(SubscriptionOperationReturnCodes.SUCCESS_ADDED) ?
                         String.format("You now have a new %s subscription!", subName)
                         : String.format("Your %s subscription has been renewed!", subName);

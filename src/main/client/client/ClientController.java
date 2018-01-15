@@ -1,5 +1,6 @@
 package client;
 
+import Exceptions.InvalidMessageException;
 import client.GUI.CPSClientGUI;
 import entity.Message;
 
@@ -39,7 +40,17 @@ public class ClientController extends ocsf.client.AbstractClient
             System.out.println("RECIEVED: " + (String)msg);
         }
         String json = (String) msg;
-        Message receivedMessage = new Message(json);
+        Message receivedMessage;
+        try {
+            receivedMessage = new Message(json);
+        } catch (InvalidMessageException im) {
+            receivedMessage = new Message(Message.MessageType.FAILED,
+                    Message.DataType.PRIMITIVE,
+                    "The server sent an unintelligible response.\nPlease contact system administrator for more information.");
+            Long SID = Message.getSidFromJson(json);
+            if (SID != null)
+                receivedMessage.setSID(SID);
+        }
         CPSClientGUI.addMessageToQueue(receivedMessage);
     }
 }

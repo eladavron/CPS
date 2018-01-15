@@ -1,7 +1,10 @@
 package utils;
 
+import Exceptions.NotImplementedException;
+
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class TimeUtils {
 
@@ -25,5 +28,28 @@ public class TimeUtils {
         int field;
         cal.add(unit.value, num);
         return cal.getTime();
+    }
+
+    /**
+     * Calculates the difference between two days in whatever unit you choose.
+     * @param one One of the dates.
+     * @param two The other date.
+     * @param units The time unit you want to calculate in.
+     * @return the difference in the selected time unit.
+     */
+    public static long timeDifference(Date one, Date two, Units units)
+    {
+        long diff = Math.abs(one.getTime() - two.getTime());
+        switch (units)
+        {
+            case DAYS:
+                return TimeUnit.MILLISECONDS.toDays(diff);
+            case HOURS:
+                return TimeUnit.MILLISECONDS.toHours(diff);
+            case MINUTES:
+                return TimeUnit.MILLISECONDS.toMinutes(diff);
+            default:
+                throw new NotImplementedException("No such unit as " + units.toString());
+        }
     }
 }

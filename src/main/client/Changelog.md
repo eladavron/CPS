@@ -1,11 +1,23 @@
+# 15.01.2018
+* Fixed stupid null value bug in time selectors
+
 # 14.01.2018
-* **12:11** - Fixing some UI bugs with deleting cars.
-* **15:15** - Added Email validation in registration/login. `u` is still accepted though.
-* **16:17** - Fixed bug with field highlighting. Started working on Subscription screen.
+## GUI Fixes
+* Fixed bug with field highlighting. 
 * Fixed bug with cells not showing all information.
-* **18:05** - Finished the "Add Subscription" GUI and validation. Still WIP: The client/server flow.
-* **20:15** - Finished the entire "Subscription" GUI and client-side logic.
-* **21:00** - Closing the app will attempt to inform the server of a logout.
+* Closing the app will attempt to inform the server of a logout.
+
+## General Improvements
+* Users with a "Full" subscription will not be allowed to order a parking space for more than 14 days.
+
+## Login / Register
+* Fixing some UI bugs with deleting cars.
+* Added Email validation in registration/login. `u` is still accepted though.
+
+## Subscriptions
+* "View Subscription" screen finished (untested)  
+* "Add Subscription" screen finished (untested)
+
 
 # 13.01.2018
 ## General

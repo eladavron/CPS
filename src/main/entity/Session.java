@@ -11,6 +11,7 @@ public class Session {
     private User.UserType _userType;
     private Customer _customer; //Temporary to make things work for now - will be changed later.
     private User _user; //Generic user morphism
+    private String _email; // user email
     private ParkingLot _parkingLot;
 
     /**
@@ -25,7 +26,7 @@ public class Session {
      * @param user Logged in user.
      * @param parkingLot Logged in parking lot. Can be null if logged in remotely.
      */
-    public Session(int sid, User user, User.UserType type, ParkingLot parkingLot) {
+    public Session(int sid, User user, User.UserType type, String email, ParkingLot parkingLot) {
         this._sid = sid;
         this._user = user;
         this._userType = type;
@@ -35,6 +36,7 @@ public class Session {
                 this._customer = (Customer) user;
                 break;
         }
+        this._email = email;
         this._parkingLot = parkingLot;
     }
 
@@ -76,11 +78,15 @@ public class Session {
         }
     }
 
-    public ParkingLot getParkingLot() {
-        return _parkingLot;
-    }
+    public String getEmail() { return _email; }
 
-    public void setParkingLot(ParkingLot parkingLot) {
-        this._parkingLot = parkingLot;
+    public void setEmail(String _email) { this._email = _email; };
+
+        public ParkingLot getParkingLot() {
+            return _parkingLot;
+        }
+
+        public void setParkingLot(ParkingLot parkingLot) {
+            this._parkingLot = parkingLot;
+        }
     }
-}

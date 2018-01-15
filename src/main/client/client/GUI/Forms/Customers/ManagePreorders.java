@@ -1,4 +1,4 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.PreorderCell;
@@ -61,7 +61,7 @@ public class ManagePreorders implements Initializable {
     public void queryPreorders()
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.PREORDER, CPSClientGUI.getSession().getUser().getUID(), CPSClientGUI.getSession().getUserType());
+        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.PREORDER, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {

@@ -3,6 +3,7 @@ package server;
 import Exceptions.InvalidMessageException;
 import Exceptions.NotImplementedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import controller.CustomerController;
 import entity.*;
 import ocsf.server.ConnectionToClient;
 import utils.TimeUtils;
@@ -11,10 +12,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static controller.Controllers.*;
+import static controller.Controllers.customerController;
+import static controller.Controllers.dbController;
+import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
+import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
 
 /**
  * Handles messages from client GUI:
@@ -132,12 +134,9 @@ public class MessageHandler {
             return false;
         } catch (InvalidMessageException e) {
             Message replyInvalid = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, e.getMessage());
-            Pattern pattern = Pattern.compile("\\\"sid\\\"\\:(\\-?\\d*)");
-            Matcher matcher = pattern.matcher(json);
-            if (matcher.find())
-            {
-                replyInvalid.setSID(Long.valueOf(matcher.group(1)));
-            }
+            Long SID = Message.getSidFromJson(json);
+            if (SID != null)
+                replyInvalid.setSID(SID);
             sendToClient(replyInvalid, clientConnection);
             e.printStackTrace();
             return false;
@@ -197,6 +196,10 @@ public class MessageHandler {
         {
             loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, "Wrong Username or Password");
         }
+        else if(!logginUser.getEmail().equals("u") && isUserAlreadyLoggedIn(email)) //login ok - checking if already logged in and not superuser
+        {
+            loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, email + "is already logged on!");
+        }
         else //login ok
         {
             Session session = new Session();
@@ -210,6 +213,17 @@ public class MessageHandler {
         }
         loginResponse.setSID(msg.getSID());
         sendToClient(loginResponse, clientConnection);
+    }
+
+    private static boolean isUserAlreadyLoggedIn(String email) {
+        for (Session session : getSessionsMap().values())
+        {
+            if (session.getEmail().equals(email))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void handleUserQueries(Message queryMsg, Message response)
@@ -233,7 +247,11 @@ public class MessageHandler {
                 break;
             case SUBSCRIPTION:
                 response.setDataType(Message.DataType.SUBSCRIPTION);
-                response.setData(customerController.getCustomer(userID).getSubscriptionList());
+                response.addData(QUERY_RESPONSE);
+                for (Object sub : customerController.getCustomer(userID).getSubscriptionList())
+                {
+                    response.addData(sub);
+                }
                 break;
             case SESSION:
                 break;
@@ -326,7 +344,7 @@ public class MessageHandler {
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
-                Order newPreOrder = orderController.makeNewPreOrder(preorder);
+                Order newPreOrder = customerController.addNewPreOrder(preorder);
                 createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, newPreOrder);
                 break;
             case CARS:
@@ -339,21 +357,36 @@ public class MessageHandler {
                 }
                 createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.CARS, carToAdd);
                 break;
-//            case SUBSCRIPTION: // WIP
-//                Customer subCustomer = customerController.getCustomer((Integer) createMsg.getData().get(0));
-//                Subscription subscription = mapper.convertValue(createMsg.getData().get(1),Subscription.class);
-//                switch(subscription.getSubscriptionType())
-//                {
-//                    case REGULAR:
-//                        customerController.addNewRegularSubscription(subCustomer,subscription.getCarID(),)
-//                        break;
-//                    case FULL:
-//                        break;
-//                    default:
-//                        throw new NotImplementedException("Subscription type does not exists: " + subscription.getSubscriptionType());
-//                }
-//
-//                break;
+            case SUBSCRIPTION: // WIP
+
+                Subscription subscription = (Subscription) createMsg.getData().get(0);
+                Subscription.SubscriptionType subType = subscription.getSubscriptionType();
+                CustomerController.SubscriptionOperationReturnCodes rc = FAILED;
+                switch(subType)
+                {
+                    case REGULAR:
+                    case REGULAR_MULTIPLE:
+                        rc = customerController.addNewRegularSubscription((RegularSubscription) subscription);
+                        break;
+                    case FULL:
+                        rc = customerController.addNewFullSubscription((FullSubscription) subscription);
+                        break;
+                    default:
+                        throw new NotImplementedException("Subscription type does not exists: " + subType.toString());
+                }
+
+                if (rc != FAILED)
+                {
+                    createMsgResponse = new Message(Message.MessageType.FINISHED,
+                            Message.DataType.SUBSCRIPTION,
+                            rc,
+                            subscription);
+                }else
+                {
+                    createMsgResponse = new Message(Message.MessageType.FAILED,
+                            Message.DataType.SUBSCRIPTION);
+                }
+                break;
             default:
                 createMsgResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());
                 return false;

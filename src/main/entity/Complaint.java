@@ -8,15 +8,23 @@ public class Complaint {
     private Customer _customer;
     private Integer _relatedOrderID;
     private double _refund;
+    private ComplaintStatus _status;
 
     public enum ComplaintStatus{
         NEW,
         OPEN,
         ACCEPTED,
-        REJECTED
+        REJECTED,
+        CANCELLED
     }
 
+    /**
+     * Empty constructor for Jackson
+     */
+    public Complaint(){}
+
     public Complaint(Employee customerServiceRepresentive, Customer customer, Integer relatedOrderID, Integer refund) {
+        this._status = ComplaintStatus.NEW;
         this._customerServiceRepresentive = customerServiceRepresentive;
         this._complaintID++;
         this._customer = customer;
@@ -33,6 +41,14 @@ public class Complaint {
 
     public void setCustomeServiceRepresentive(Employee customeServiceRepresentive) {
         this._customerServiceRepresentive = customeServiceRepresentive;
+    }
+
+    public ComplaintStatus getStatus() {
+        return _status;
+    }
+
+    public void setStatus(ComplaintStatus status) {
+        this._status = status;
     }
 
     public Integer getComplaintID() {

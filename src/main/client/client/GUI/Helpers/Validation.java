@@ -1,6 +1,9 @@
 package client.GUI.Helpers;
 
+import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
+import entity.Subscription;
+import entity.User;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
@@ -8,6 +11,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import org.apache.commons.validator.routines.EmailValidator;
+import utils.TimeUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -165,6 +169,31 @@ public class Validation {
                 }
             }
         }
+    }
+
+    /**
+     * Makes sure you don't plan to park for more than 14 days.
+     * For now only checks if the selected car number has a full subscription.
+     * @param entryTime A DateTimeCombo denoting entry time. Can be null (if entering now).
+     * @param exitTime A DateTimeCombo denoting the estimated exit time. Can't be null!
+     * @param carID The car ID for the parking request. Will be checked against the logged in user.
+     * @return True if valid, false if not - while highlighting the error.
+     */
+    public static boolean validateParkingLength(DateTimeCombo entryTime, DateTimeCombo exitTime, Integer carID)
+    {
+        Date entry = (entryTime == null) ? new Date() : entryTime.getDateTime();
+        Date exit = exitTime.getDateTime();
+        if (CPSClientGUI.getSession().getUserType().equals(User.UserType.CUSTOMER))
+        {
+            if (!CPSClientGUI.getSubscriptionsByCarAndType(carID, Subscription.SubscriptionType.FULL).isEmpty() //Has subscription
+                    && TimeUtils.timeDifference(entry, exit, TimeUtils.Units.DAYS) > 14) //Full subscription asks to park for more than 14 days
+            {
+
+                exitTime.showError("You can't park for more than 14 days with a full subscription!");
+                return false;
+            }
+        }
+        return true;
     }
 
     public static void removeHighlight(Node control)

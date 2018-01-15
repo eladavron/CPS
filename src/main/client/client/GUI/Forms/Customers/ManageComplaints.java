@@ -1,12 +1,12 @@
-package client.GUI.Forms;
+package client.GUI.Forms.Customers;
 
 import client.GUI.CPSClientGUI;
-import client.GUI.Controls.SubscriptionCell;
+import client.GUI.Controls.ComplaintCell;
 import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import entity.Complaint;
 import entity.Message;
-import entity.Subscription;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,58 +22,56 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class ManageSubscriptions implements Initializable {
+public class ManageComplaints implements Initializable {
 
     @FXML
     private Button btnBack;
 
     @FXML
+    private Button btnRefresh;
+
+    @FXML
     private Button btnNew;
 
     @FXML
-    private ListView<Subscription> listViewSubs;
+    private ListView<Complaint> listViewComplaint;
 
-    private ObservableList<Subscription> _subList = FXCollections.observableArrayList();
+    private ObservableList<Complaint> _complaintList = FXCollections.observableArrayList();
 
-    private ManageSubscriptions _this;
+    private ManageComplaints _this;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         _this = this;
-        listViewSubs.setCellFactory(new Callback<ListView<Subscription>, ListCell<Subscription>>() {
+        listViewComplaint.setItems(_complaintList);
+        listViewComplaint.setCellFactory(new Callback<ListView<Complaint>, ListCell<Complaint>>() {
             @Override
-            public ListCell<Subscription> call(ListView<Subscription> param) {
-                return new SubscriptionCell(_this);
+            public ListCell<Complaint> call(ListView<Complaint> param) {
+                return new ComplaintCell(_this);
             }
         });
-        listViewSubs.setItems(_subList);
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                querySubscriptions();
-            }
-        });
+        Platform.runLater(this::queryComplaints);
     }
 
-    private void querySubscriptions()
+    @FXML
+    void refreshList(ActionEvent event) {
+        queryComplaints();
+    }
+
+    public void queryComplaints()
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.SUBSCRIPTION, CPSClientGUI.getSession().getUser().getUID(), CPSClientGUI.getSession().getUserType());
+        Message queryComplaints = new Message(Message.MessageType.QUERY, Message.DataType.COMPLAINT, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                _subList.clear();
+                _complaintList.clear();
                 ArrayList subs = getMessage().getData();
-                if (subs.size() == 0) //Empty list
-                {
-                    waitScreen.showSuccess("You have no active subscriptions!",
-                            "You can add a new subscription using the  \"New\" button.", 5);
-                }
-                else
+                if (subs.size() != 0) //Empty list
                 {
                     for (Object sub : subs)
                     {
-                        _subList.add((Subscription) sub);
+                        _complaintList.add((Complaint) sub);
                     }
                     waitScreen.hide();
                 }
@@ -90,22 +88,19 @@ public class ManageSubscriptions implements Initializable {
                 "Checking subscription...",
                 "Subscription found!",
                 "No subscriptions to display!",
-                queryOrdersMsg,
+                queryComplaints,
                 onSuccess,
                 onFailed);
         waitScreen.run(queryOrders);
     }
 
     @FXML
-    void addSubscription(ActionEvent event)
-    {
-        CPSClientGUI.changeGUI("Forms/NewSubscription.fxml"); //For now, only this control should access this so it's not moved to the main.
+    void createComplaint(ActionEvent event) {
+        CPSClientGUI.changeGUI(CPSClientGUI.NEW_COMPLAINT);
     }
 
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(true);
     }
-
-
 }

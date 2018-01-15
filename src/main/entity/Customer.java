@@ -2,6 +2,7 @@ package entity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -35,6 +36,17 @@ public class Customer extends User{
 	 * Default constructor
 	 */
 	public Customer(){}
+
+	/**
+	 * A custom JSON map converter
+	 */
+	public Customer(LinkedHashMap deserialize){
+		super((Integer) deserialize.get("uid"), (String) deserialize.get("name"), (String) deserialize.get("password"), (String) deserialize.get("email"), UserType.CUSTOMER);
+		this._carIDList = (ArrayList) deserialize.get("carIDList");
+		this._subscriptionList = new HashMap<>();
+		this._activeOrders = new HashMap<>();
+	}
+
 	/**
 	 * Get the customer's car ids list.
 	 * @return Customer's car id list.

@@ -1,7 +1,7 @@
 package client.GUI.Controls;
 
-import client.GUI.Forms.ManageCars;
 import client.GUI.CPSClientGUI;
+import client.GUI.Forms.Customers.ManageCars;
 import client.GUI.Helpers.ErrorHandlers;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
@@ -83,7 +83,7 @@ public class CarCell extends ListCell<Integer>{
         };
         Message deleteMessage = new Message(Message.MessageType.DELETE,
                 Message.DataType.CARS,
-                CPSClientGUI.getSession().getUser().getUID(),
+                CPSClientGUI.getLoggedInUserID(),
                 car);
 
         MessageTasker taskDelete = new MessageTasker("Connecting...",
