@@ -21,7 +21,6 @@ public class EmployeeController {
         return ourInstance;
     }
 
-    //TODO: Get employees from DB and load them to the employeeList.
     private EmployeeController() {
         System.out.print("\tWaking up the employees...");
         getEmployeesFromDB();

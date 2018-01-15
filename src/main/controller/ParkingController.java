@@ -10,9 +10,11 @@ import entity.ParkingSpace;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static controller.Controllers.dbController;
 import static controller.Controllers.orderController;
 
 
@@ -21,7 +23,7 @@ import static controller.Controllers.orderController;
  */
 public class ParkingController {
 
-        private Map<Integer, ParkingLot> _parkingLotList;
+    private Map<Integer, ParkingLot> _parkingLotList;
     private Integer _numberOfSlotsOccupied;
 
 
@@ -33,10 +35,7 @@ public class ParkingController {
     /**
      * A private default constructor which prevents any other class from creating another instance.
      */
-    private ParkingController() {
-        this._parkingLotList = new HashMap<>();
-        this._numberOfSlotsOccupied = 0;
-    }
+    private ParkingController() { }
 
     /** Static 'instance' method */
     public static ParkingController getInstance() {
@@ -52,15 +51,38 @@ public class ParkingController {
     /**
      * Initiating parking lot of number "parkingLotNumber" and settings its parking spaces as FREE.
      * @param parkingLotNumber The number of the parking lot to initiate.
+     * @param parkingSpaces list of existing spaces on DB for this parking lot.
      */
-    public void initiateParkingLot(Integer parkingLotNumber){
-        for(int i = 1; i <= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
-            for(int j = 1; j <= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
-                for(int k=1; k <= _parkingLotList.get(parkingLotNumber).getHeight(); k++){
-                    _parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[i][j][j].setStatus(ParkingSpace.ParkingStatus.FREE);
+    private void initiateParkingLot(Integer parkingLotNumber, ArrayList<ParkingSpace> parkingSpaces)
+    {
+        ParkingLot thisParkingLot = this._parkingLotList.get(parkingLotNumber);
+        for (ParkingSpace parkingSpace : parkingSpaces)
+        {
+            thisParkingLot.getParkingSpaceMatrix()
+                    [parkingSpace.getDepth()]
+                    [parkingSpace.getWidth()]
+                    [parkingSpace.getHeight()]
+                    = parkingSpace
+            ;
+        }
+
+        for(int i = 1; i <= thisParkingLot.getDepth(); i++)
+        {
+            for(int j = 1; j <= thisParkingLot.getWidth(); j++)
+            {
+                for(int k=1; k <= thisParkingLot.getHeight(); k++)
+                {
+                   ParkingSpace currentParkingSpace = thisParkingLot.getParkingSpaceMatrix()[i][j][k];
+                   if (currentParkingSpace.getOccupyingOrderID() == null)
+                       // Meaning this is a new parkingSpace unknown to DB
+                        dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
                 }
             }
         }
+    }
+
+    public void initiateParkingLot(Integer parkingLotNumber){
+        initiateParkingLot(parkingLotNumber,dbController.getParkingSpaces(parkingLotNumber));
     }
 
     /**
@@ -87,9 +109,12 @@ public class ParkingController {
             this._numberOfSlotsOccupied += 1;
             this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(++_heightNumOccupied);
             _heightNumOccupied = this._parkingLotList.get(parkingLotNumber).getHeightNumOccupied();
-            this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setOccupyingOrderID(orderID);
-            this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
-            return true;
+            //Car is inserted onto the ParkingLot in position :(depth,width,height)
+            ParkingSpace currentParkingLot = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
+            currentParkingLot.setOccupyingOrderID(orderID);
+            currentParkingLot.setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
+            //TODO: make sure BY ref works here! (and also in the rest of the code ofc)..
+            return dbController.updateParkingSpace(parkingLotNumber, currentParkingLot);
         }
 
 
@@ -99,18 +124,21 @@ public class ParkingController {
      * Exit parking lot by giving the order id of the parking space. Set its status to FREE and set its occupying
      * order ID to -1.
      * @param orderID The occupying ID of the parking space to be exited of.
+     * @return on failure false.
      */
-    public void exitParkingLot(Integer orderID){
+    public boolean exitParkingLot(Integer orderID)
+    {
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
 
         initCurrentParkingValues(parkingLotNumber);
 
-        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setOccupyingOrderID(-1);
-        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied].setStatus(ParkingSpace.ParkingStatus.FREE);
+        ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
+        currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.FREE);
+        currentParkingSpace.setOccupyingOrderID(null);
         this._numberOfSlotsOccupied -= 1;
-
         updateAfterExit(parkingLotNumber);
+        return dbController.updateParkingSpace(parkingLotNumber,currentParkingSpace);
     }
 
 
@@ -268,6 +296,27 @@ public class ParkingController {
                 .setIsFullState(!(this._parkingLotList
                         .get(parkingLotNumber).getIsFullState())
                 );
+    }
+
+    /**
+     * Private function that retrieves the parkingLot list form the DB, on startup.
+     */
+    public ArrayList<Object> getParkingLots() {
+        ArrayList<Object> parkingLots = dbController.getParkingLots();
+        setParkingLotsList(parkingLots);
+        return parkingLots;
+    }
+
+    /**
+     * Private function used in order to convert the general obj array into parkingLot
+     * and then map it into our parkingLot list.
+     * @param list - the parkingLot list taken from the DB.
+     */
+    private void setParkingLotsList(ArrayList<Object> list) {
+        list.forEach(parkingLotObj -> {
+            ParkingLot parkingLot = (ParkingLot) parkingLotObj;
+            _parkingLotList.put(parkingLot.getParkingLotID(), parkingLot);
+        });
     }
 }
 

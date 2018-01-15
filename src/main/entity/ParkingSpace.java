@@ -1,9 +1,7 @@
 package entity;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
-import entity.Order;
 
 /**
  * A sample class of how a Parking Space class will look like in the system.
@@ -16,8 +14,11 @@ public class ParkingSpace {
 	 */
 	private Integer _occupyingOrderID;
 	private ParkingStatus _status;
+	private Integer _depth;
+	private Integer _width;
+	private Integer _height;
 
-	/**
+    /**
 	 * FREE - Free parking space and can be ordered/occupied.
 	 * ORDERED - Ordered parking space and cannot be used.
 	 * UNAVAILABLE - Unavailable parking space for some reason.
@@ -34,7 +35,7 @@ public class ParkingSpace {
 	 * Default constructor for initiating parking lot purposes. Setting its status to FREE.
 	 */
 	public ParkingSpace() {
-		this._occupyingOrderID = -1;
+		this._occupyingOrderID = null;
 		this._status = ParkingStatus.FREE;
 	}
 
@@ -66,18 +67,56 @@ public class ParkingSpace {
 		this._status = status;
 	}
 
-	@Override
-    public String toString() {
-        return String.format("Parking space of order id. : %d: ", this._occupyingOrderID);
+    public Integer getDepth() {
+        return _depth;
     }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		ParkingSpace that = (ParkingSpace) o;
-		return Objects.equals(_occupyingOrderID, that._occupyingOrderID) &&
-				_status == that._status;
-	}
+    public void setDepth(Integer depth) {
+        this._depth = depth;
+    }
 
+    public Integer getWidth() {
+        return _width;
+    }
+
+    public void setWidth(Integer width) {
+        this._width = width;
+    }
+
+    public Integer getHeight() {
+        return _height;
+    }
+
+    public void setHeight(Integer height) {
+        this._height = height;
+    }
+
+    @Override
+    public String toString() {
+        return "ParkingSpace{" +
+                "_occupyingOrderID=" + _occupyingOrderID +
+                ", _status=" + _status +
+                ", _depth=" + _depth +
+                ", _width=" + _width +
+                ", _height=" + _height +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ParkingSpace)) return false;
+        ParkingSpace that = (ParkingSpace) o;
+        return Objects.equals(_occupyingOrderID, that._occupyingOrderID) &&
+                _status == that._status &&
+                Objects.equals(_depth, that._depth) &&
+                Objects.equals(_width, that._width) &&
+                Objects.equals(_height, that._height);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(_occupyingOrderID, _status, _depth, _width, _height);
+    }
 }

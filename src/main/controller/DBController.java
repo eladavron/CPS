@@ -451,6 +451,100 @@ public class DBController {
         return myLots;
     }
 
+    /**
+     * Returns all the Knowen! parkingSpaces of a parking lot (number)
+     * @param parkingLotNumber
+     * @return empty if none found, null on exception.
+     */
+    public ArrayList<ParkingSpace> getParkingSpaces(Integer parkingLotNumber){
+        ResultSet rs = queryTable("ParkingSpace", "idParkingLot", parkingLotNumber);
+        return parseParkingSpacesFromDB(rs);
+    }
+
+    private ArrayList<ParkingSpace> parseParkingSpacesFromDB(ResultSet rs) {
+        ArrayList<ParkingSpace> myParkingSpaces = new ArrayList<>();
+        if (rs == null){
+            return null;
+        }
+        else {
+            try {
+                while (rs.next()) {
+                    ParkingSpace rowParkingSpace = new ParkingSpace(
+                            rs.getInt("idOccupyingOrder")
+                    );
+                    rowParkingSpace.setHeight(rs.getInt("height"));
+                    rowParkingSpace.setWidth(rs.getInt("width"));
+                    rowParkingSpace.setDepth(rs.getInt("depth"));
+                    rowParkingSpace.setStatus(ParkingSpace.ParkingStatus.valueOf(rs.getString("status")));
+                    myParkingSpaces.add(rowParkingSpace);
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Parking lots", e.getMessage());
+                return null;
+            }
+        }
+        return myParkingSpaces;
+    }
+
+    /**
+     * This function will search for an existing space on the parkingLot...update it accordingly
+     *  Or it will insert one of none exists yet.
+     * @param parkingLotNumber the specific parking lot
+     * @param parkingSpace the parking space that got his status changed.
+     * @return True if successful, False otherwise.
+     */
+    public boolean updateParkingSpace(Integer parkingLotNumber, ParkingSpace parkingSpace){
+        ResultSet rs;
+        String occupyingOrder = "";
+        String query;
+        try {
+            Statement stmt = db_conn.createStatement();
+
+            if (parkingSpace.getOccupyingOrderID() == null)
+            {
+                occupyingOrder ="NULL";
+            }
+            else
+            {
+                occupyingOrder = parkingSpace.getOccupyingOrderID().toString();
+            }
+            int result;
+            //First we check if this parking space spot is in the database already:
+            rs = stmt.executeQuery(String.format("SELECT * FROM ParkingSpace WHERE (idParkingLot = %s AND depth = %s AND width = %s AND height = %s )",
+                    parkingLotNumber,
+                    parkingSpace.getDepth(),
+                    parkingSpace.getWidth(),
+                    parkingSpace.getHeight()
+            ));
+            if (rs.next()){
+                //then it is:
+                Integer parkingIDNum = rs.getInt("idParkingSpace");
+                query = String.format(
+                        "UPDATE ParkingSpace SET idOccupyingOrder = %s , status = '%s'" +
+                                " WHERE idParkingSpace = %s ",
+                        occupyingOrder,
+                        parkingSpace.getStatus(),
+                        parkingIDNum
+                );
+            }
+            else
+            {// this is a new parking space!
+                query = String.format("INSERT INTO ParkingSpace " +
+                                "(idParkingLot, status, idOccupyingOrder, height, width, depth)" +
+                                " VALUES ('%s', '%s', %s, '%s', '%s', '%s')",
+                        parkingLotNumber, parkingSpace.getStatus(), occupyingOrder,
+                        parkingSpace.getHeight(), parkingSpace.getWidth(), parkingSpace.getDepth()
+                );
+            }
+            result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            return result == 1;
+        } catch (SQLException e)
+        {
+            System.err.printf("An error occurred inserting during updating the car space of occupying order: %s ", occupyingOrder, e.getMessage());
+            return false;
+        }
+    }
+
 
 
    public ArrayList<User> getCustomers()

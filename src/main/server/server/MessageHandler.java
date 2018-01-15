@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 import static controller.Controllers.customerController;
 import static controller.Controllers.dbController;
+import static controller.Controllers.parkingController;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
 
@@ -284,7 +285,7 @@ public class MessageHandler {
 
         if (queryMsg.getDataType().equals(Message.DataType.PARKING_LOT)) //Parking lot queries are userless
         {
-            ArrayList<Object> parkingLots = dbController.getParkingLots();
+            ArrayList<Object> parkingLots = parkingController.getParkingLots();
             response.setDataType(Message.DataType.PARKING_LOT);
             response.setData(parkingLots);
         }
