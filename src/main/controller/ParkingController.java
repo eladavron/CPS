@@ -303,7 +303,9 @@ public class ParkingController {
      */
     public ArrayList<Object> getParkingLots() {
         ArrayList<Object> parkingLots = dbController.getParkingLots();
+        System.out.println(parkingLots);
         setParkingLotsList(parkingLots);
+        System.out.println("!");
         return parkingLots;
     }
 
@@ -313,10 +315,11 @@ public class ParkingController {
      * @param list - the parkingLot list taken from the DB.
      */
     private void setParkingLotsList(ArrayList<Object> list) {
-        list.forEach(parkingLotObj -> {
+        for (Object parkingLotObj : list)
+        {
             ParkingLot parkingLot = (ParkingLot) parkingLotObj;
             _parkingLotList.put(parkingLot.getParkingLotID(), parkingLot);
-        });
+        }
     }
 }
 
