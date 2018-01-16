@@ -41,12 +41,15 @@
                      </BorderPane.margin></Button>
                </right>
                <left>
-                  <FlowPane alignment="CENTER_LEFT" hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
+                  <HBox alignment="CENTER_LEFT" spacing="5.0">
                      <children>
-                        <Label fx:id="lblStatus" />
+                        <Label fx:id="lblStatus">
+                           <HBox.margin>
+                              <Insets left="5.0" right="5.0" />
+                           </HBox.margin></Label>
                         <Button fx:id="btnLogout" mnemonicParsing="false" onAction="#doLogout" text="Logout" />
                      </children>
-                  </FlowPane>
+                  </HBox>
                </left>
             </BorderPane>
          </children>

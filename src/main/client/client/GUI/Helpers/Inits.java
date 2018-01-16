@@ -2,12 +2,12 @@ package client.GUI.Helpers;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
-import entity.Message;
-import entity.ParkingLot;
-import entity.PreOrder;
-import entity.User;
+import entity.*;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableView;
 import javafx.util.StringConverter;
 
 import java.util.ArrayList;
@@ -37,6 +37,21 @@ public class Inits {
         queryServer(Message.DataType.PREORDER, comboBox);
     }
 
+
+    /**
+     * Inits a parkins apces tab pane with the parking spaces in the supplied parking lot.
+     * Each pane is a floor, and inside it is a table denoting the rows and columns of that floow.
+     * @param pane
+     * @param parkingLot
+     */
+    public static void initParkingSpacesView(TabPane pane, ParkingLot parkingLot)
+    {
+        for (int h = 0; h < parkingLot.getHeight(); h++)
+        {
+            Tab newTab = new Tab();
+            TableView<ParkingSpace> floor = new TableView<>();
+        }
+    }
 
     public static void initTimeSelection(ComboBox<String> hour, ComboBox<String> minutes)
     {
@@ -112,11 +127,7 @@ public class Inits {
         }
 
         Message query = new Message(Message.MessageType.QUERY, type, user.getUID(), user.getUserType());
-        MessageTasker queryParkingLots = new MessageTasker("Connecting...",
-                "Getting information from server...",
-                "Success!",
-                "Failed!",
-                query, onSuccess, onFailure);
+        MessageTasker queryParkingLots = new MessageTasker(query, onSuccess, onFailure);
         waitScreen.run(queryParkingLots);
     }
 }

@@ -111,12 +111,7 @@ public class NewPreorder implements Initializable {
             @Override
             public void run() {
                 PreOrder preorder = (PreOrder) getMessage().getData().get(0);
-                waitScreen.showSuccess("Order created successfully!", "Order details:\n" +
-                        "Customer ID: " + preorder.getCostumerID() + "\n" +
-                        "Order ID: " + preorder.getOrderID() +"\n" +
-                        "Parking Lot ID: " + preorder.getParkingLotNumber() +"\n" +
-                        "Parking Start: " + preorder.getEstimatedEntryTime() + "\n" +
-                        "Estimated Exit: " + preorder.getEstimatedExitTime());
+                waitScreen.showSuccess("Order created successfully!", preorder.toGUIString());
                 waitScreen.setOnClose(new Runnable() {
                     @Override
                     public void run() {
@@ -131,13 +126,7 @@ public class NewPreorder implements Initializable {
                 waitScreen.showError("Order failed!", getErrorString());
             }
         };
-        MessageTasker createOrder = new MessageTasker("Sending order...",
-                "Reserving...",
-                "Order created!",
-                "Order failed!",
-                newMessage,
-                onSuccess,
-                onFailure);
+        MessageTasker createOrder = new MessageTasker(newMessage, onSuccess, onFailure, "Reserving...");
         waitScreen.run(createOrder, 10);
     }
 

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Session {
     private int _sid;
     private User.UserType _userType;
-    private Customer _customer; //Temporary to make things work for now - will be changed later.
     private User _user; //Generic user morphism
     private String _email; // user email
     private ParkingLot _parkingLot;
@@ -39,12 +38,6 @@ public class Session {
         this._sid = sid;
         this._user = user;
         this._userType = type;
-        switch (type)
-        {
-            case CUSTOMER:
-                this._customer = (Customer) user;
-                break;
-        }
         this._email = email;
         this._parkingLot = parkingLot;
     }
@@ -65,37 +58,45 @@ public class Session {
         this._sid = sid;
     }
 
-    public Customer getCustomer() {
-        return _customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this._customer = customer;
+    public Customer getCustomer()
+    {
+        if (_userType.equals(User.UserType.CUSTOMER))
+            return (Customer)_user;
+        else
+            return null; //Dangerous - maybe throw an exception instead?
     }
 
     public User getUser() {
         return _user;
     }
 
+    public Integer getUserId()
+    {
+        if (_user != null)
+            return _user.getUID();
+        else
+            return null;
+    }
+
     public void setUser(User user) {
         this._user = user;
         this._userType = user.getUserType();
-        switch (_userType)
-        {
-            case CUSTOMER:
-                _customer = (Customer) user;
-        }
     }
 
     public String getEmail() { return _email; }
 
     public void setEmail(String _email) { this._email = _email; };
 
-        public ParkingLot getParkingLot() {
-            return _parkingLot;
-        }
-
-        public void setParkingLot(ParkingLot parkingLot) {
-            this._parkingLot = parkingLot;
-        }
+    public ParkingLot getParkingLot() {
+        return _parkingLot;
     }
+
+    public void setParkingLot(ParkingLot parkingLot) {
+        this._parkingLot = parkingLot;
+    }
+
+    @Override
+    public String toString() {
+        return "Session #" + _sid + ": " + _user.getName() + "(" + _userType + "), Parking Lot: " + _parkingLot;
+    }
+}

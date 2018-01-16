@@ -89,13 +89,7 @@ public class ManagePreorders implements Initializable {
                 waitScreen.showDefaultError(getErrorString());
             }
         };
-        MessageTasker queryOrders = new MessageTasker("Connecting...",
-                "Looking for you orders...",
-                "Orders found!",
-                "No orders to display",
-                queryOrdersMsg,
-                onSuccess,
-                onFailed);
+        MessageTasker queryOrders = new MessageTasker(queryOrdersMsg, onSuccess, onFailed, "Looking for you orders...");
         waitScreen.run(queryOrders);
     }
 

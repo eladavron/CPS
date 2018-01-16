@@ -1,5 +1,6 @@
 package client.GUI.Forms;
 
+import Exceptions.LoginException;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.CarLister;
 import client.GUI.Controls.WaitScreen;
@@ -24,6 +25,11 @@ import javafx.scene.paint.Color;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
+
+import static client.GUI.CPSClientGUI.CUSTOMER_SCREEN;
+import static client.GUI.CPSClientGUI.EMPLOYEE_SCREEN;
+import static entity.User.UserType.MANAGER;
+import static entity.User.UserType.SUPERMAN;
 
 public class LoginScreen {
 
@@ -164,11 +170,7 @@ public class LoginScreen {
             };
         };
 
-        MessageTasker taskRegister = new MessageTasker("Registering...",
-                "Registering...",
-                "Registration Successful!",
-                "Registration failed!",
-                newUserMessage, onSuccess,onFailed);
+        MessageTasker taskRegister = new MessageTasker(newUserMessage, onSuccess,onFailed, "Registering...");
         waitScreen.run(taskRegister);
     }
 
@@ -267,7 +269,29 @@ public class LoginScreen {
             public void run() {
                 Session session = (Session) getMessage().getData().get(0);
                 CPSClientGUI.setSession(session);
-                waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
+                /*
+                Check if Customer or Employee
+                 */
+                String redirect;
+                switch (session.getUserType())
+                {
+                    case CUSTOMER:
+                        redirect = CUSTOMER_SCREEN;
+                        break;
+                    case MANAGER: //Technically shouldn't happen
+                    case EMPLOYEE:
+                        if (session.getParkingLot().getParkingLotManagerID().equals(session.getUser().getUID())) //Employee is the manager of this lot!
+                        {
+                            session.getUser().setUserType(MANAGER);
+                        }
+                        if (session.getUser().getUID() == 0)
+                            session.getUser().setUserType(SUPERMAN);
+                        redirect = EMPLOYEE_SCREEN;
+                        break;
+                    default:
+                        throw new LoginException("Unknown user type " + session.getUserType());
+                }
+                waitScreen.redirectOnClose(redirect);
                 waitScreen.showSuccess("Welcome " + session.getUser().getName(),"Welcome to the CPS service!", 2);
             }
         };
@@ -281,13 +305,7 @@ public class LoginScreen {
                 waitScreen.showError("Login Failed!", getErrorString(), 3);
             }
         };
-        MessageTasker _loginTask = new MessageTasker("Sending user details...",
-                "Verifying...",
-                "Successful!",
-                "Verification failed!",
-                loginMessage,
-                onSuccess,
-                onFailure);
+        MessageTasker _loginTask = new MessageTasker(loginMessage, onSuccess, onFailure, "Logging in...");
         waitScreen.run(_loginTask, 10);
     }
 

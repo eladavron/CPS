@@ -87,11 +87,7 @@ public class ManageCars implements Initializable{
             }
         };
 
-        MessageTasker tasker = new MessageTasker("Fetching car list...",
-                "Receiving...",
-                "Car List Received!",
-                "Failed to get car list!",
-                queryMessage, onSuccess, onFailed);
+        MessageTasker tasker = new MessageTasker(queryMessage, onSuccess, onFailed, "Fetching car list...");
 
         waitScreen.run(tasker);
     }
@@ -142,11 +138,7 @@ public class ManageCars implements Initializable{
                 }
             };
 
-            MessageTasker taskNewCar = new MessageTasker("Adding Car...",
-                    "Adding Car...",
-                    "Car Added!",
-                    "Something went wrong...",
-                    newCar, onSuccess,onFailure);
+            MessageTasker taskNewCar = new MessageTasker(newCar, onSuccess,onFailure, "Adding Car...");
 
             waitScreen.run(taskNewCar);
         });

@@ -1,3 +1,25 @@
+# 16.01.2018
+## Generic Client Side Improvements
+* Vastly improved the `MessageTasker` class to not be so cumbersome to construct.
+
+## Generic Server Side Improvements
+* Server now supports console commands, such as:
+  * `refresh`: Re-inits all controllers (including DB). 
+  * `sessions`: Shows all active sessions.
+  * `drop`: Allows you to drop a specific session (will ask you which)
+  * `purge`: Drops ALL sessions.
+  * `exit`: Exits the server.
+  
+ * Improved entire login and validation flow.
+
+## Employee Screen
+* Logging in as an employee now display the newly implemented Employee screen.
+* If logging in at a certain parking lot and the employee happens to be the manager of that parking lot,
+  they will also see the "manage" panels.
+
+## GUI Fixes
+* Fixed a bug where going back from a 2nd level screen would display an empty gui.
+
 # 15.01.2018
 * Fixed stupid null value bug in time selectors
 

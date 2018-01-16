@@ -29,10 +29,15 @@ import java.util.*;
  * @author Elad Avron
  */
 public class CPSClientGUI extends Application{
+
     /**
      * FXML paths
      */
     public final static String LOGIN_SCREEN = "Forms/LoginScreen.fxml";
+    /*
+    Customer Screens
+     */
+
     public final static String CUSTOMER_SCREEN = "Forms/Customers/CustomerScreen.fxml";
     public final static String ENTER_PARKING = "Forms/Customers/EnterParking.fxml";
     public final static String NEW_PREORDER = "Forms/Customers/NewPreorder.fxml";
@@ -41,6 +46,14 @@ public class CPSClientGUI extends Application{
     public final static String MANAGE_SUBSCRIPTIONS = "Forms/Customers/ManageSubscriptions.fxml";
     public static final String NEW_COMPLAINT = "Forms/Customers/NewComplaint.fxml";
     public static final String MANAGE_COMPLAINTS = "Forms/Customers/ManageComplaints.fxml";
+
+    /*
+    Employee Screens
+     */
+
+    public static final String EMPLOYEE_SCREEN = "Forms/Employees/EmployeeScreen.fxml";
+    public static final String PARKING_SPACES = "Forms/Employees/ParkingSpaces.fxml";
+
     /**
      * Public Finals
      */
@@ -192,11 +205,11 @@ public class CPSClientGUI extends Application{
      * Replaces the inner gui page with the supplied filename.
      * @param filename a local fxml filename to load.
      */
-    public static void changeGUI(String filename) {
+    public static void changeGUI(String filename, boolean addToHistory) {
         try {
             URL guiURL = CPSClientGUI.class.getResource(filename);
             Node guiRoot = FXMLLoader.load(guiURL);
-            if (_pageRoot.getChildren().size() > 0)
+            if (addToHistory && _pageRoot.getChildren().size() > 0)
                 _history.push(_pageRoot.getChildren().get(0));
             _pageRoot.getChildren().clear();
             _pageRoot.getChildren().add(guiRoot);
@@ -209,6 +222,11 @@ public class CPSClientGUI extends Application{
         {
             ErrorHandlers.GUIError(io, false);
         }
+    }
+
+    public static void changeGUI(String filename)
+    {
+        changeGUI(filename, true);
     }
 
     /**
@@ -232,12 +250,12 @@ public class CPSClientGUI extends Application{
         {
             if (guiRoot.getId().equals("rootOrders")) //TODO: Maybe find a safer way to do this, it's a dirty cheat.
             {
-                changeGUI(MANAGE_PREORDERS);
+                changeGUI(MANAGE_PREORDERS, false);
                 return;
             }
             else if (guiRoot.getId().equals("rootSubs"))
             {
-                changeGUI(MANAGE_SUBSCRIPTIONS);
+                changeGUI(MANAGE_SUBSCRIPTIONS, false);
                 return;
                 //TODO: if we make sub for sub view then go back without making it. and try to go back again...fails.
             }
@@ -359,6 +377,7 @@ public class CPSClientGUI extends Application{
             System.err.println("Failed to log out properly.");
         }
         finally {
+            CPSClientGUI.setStatus("",Color.BLACK);
             _session = null;
         }
     }

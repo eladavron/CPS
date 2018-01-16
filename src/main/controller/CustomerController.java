@@ -30,12 +30,7 @@ public class CustomerController {
     }
 
     private CustomerController(){
-        System.out.println("\tFinding the list of customers...");
-        System.out.println("\t\tMorag: Or!\n\t\tOr:    What?... \n\t\tMorag: Where did you put the list of our customers?"
-            + "\n\t\tElad:  It's right there by the suit case with all the money we got from this");
         getCustomersFromDb();
-        System.out.println("\t\tAviad: Oh found it! \n\t\tRami:  Ok I will quickly put it into the system!");
-
     }
 
     private Map<Integer, Customer> _customersList = new HashMap<>();

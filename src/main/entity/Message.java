@@ -36,7 +36,8 @@ public class Message {
     };
     public enum DataType {
         PRIMITIVE, //Any data type native to Java, such as String, Double, Integer, etc.
-        ORDER,
+        SINGLE_ORDER, //For getting a single order from the server
+        ORDER, //For getting ALL orders (that match a query) from the server
         PREORDER,
         COMPLAINT,
         USER,

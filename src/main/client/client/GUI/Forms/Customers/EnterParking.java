@@ -123,12 +123,7 @@ public class EnterParking implements Initializable {
             @Override
             public void run() {
                 Order order = (Order) getMessage().getData().get(0);
-                waitScreen.showSuccess("Car Parked!", "Order details:\n" +
-                        "Customer ID: " + order.getCostumerID() + "\n" +
-                        "Order ID: " + order.getOrderID() +"\n" +
-                        "Parking Lot ID: " + order.getParkingLotNumber() +"\n" +
-                        "Parking Start: " + order.getActualEntryTime() + "\n" +
-                        "Estimated Exit: " + order.getEstimatedExitTime());
+                waitScreen.showSuccess("Car Parked!", order.toGUIString());
                 waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
             }
         };
@@ -138,13 +133,7 @@ public class EnterParking implements Initializable {
                 waitScreen.showError("Parking Failed!", getErrorString());
             }
         };
-        MessageTasker createOrder = new MessageTasker("Attempting to park...",
-                "Checking availability...",
-                "Parking successful!",
-                "Parking failed!",
-                newMessage,
-                onSuccess,
-                onFailure);
+        MessageTasker createOrder = new MessageTasker(newMessage, onSuccess, onFailure, "Attempting to park...");
         waitScreen.run(createOrder, 10);
     }
 

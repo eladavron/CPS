@@ -84,13 +84,7 @@ public class ManageComplaints implements Initializable {
                 waitScreen.showDefaultError(getErrorString());
             }
         };
-        MessageTasker queryOrders = new MessageTasker("Connecting...",
-                "Checking complaints...",
-                "complaints found!",
-                "No complaints to display!",
-                queryComplaints,
-                onSuccess,
-                onFailed);
+        MessageTasker queryOrders = new MessageTasker(queryComplaints, onSuccess, onFailed, "Checking for complaints...");
         waitScreen.run(queryOrders);
     }
 

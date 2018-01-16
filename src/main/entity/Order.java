@@ -234,4 +234,14 @@ public class Order {
                 ;
     }
 
+    public String toGUIString()
+    {
+        return "Order details:\n" +
+                "\tCustomer ID: " + this.getCostumerID() + "\n" +
+                "\tOrder ID: " + this.getOrderID() +"\n" +
+                "\tParking Lot ID: " + this.getParkingLotNumber() +"\n" +
+                "\tParking Start: " + this.getEstimatedEntryTime() + "\n" +
+                "\tEstimated Exit: " + this.getEstimatedExitTime();
+    }
+
 }

@@ -97,11 +97,7 @@ public class PreorderCell extends ListCell<PreOrder>{
                 Message.DataType.PREORDER,
                 preOrder);
 
-        MessageTasker taskDelete = new MessageTasker("Connecting...",
-                "Cancelling order...",
-                "Order cancelled!",
-                "Failed to cancel order!",
-                deleteMessage, onSuccess, onFailure);
+        MessageTasker taskDelete = new MessageTasker(deleteMessage, onSuccess, onFailure, "Cancelling order...");
         waitScreen.run(taskDelete);
     }
 }

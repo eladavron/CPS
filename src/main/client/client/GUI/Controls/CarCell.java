@@ -86,11 +86,7 @@ public class CarCell extends ListCell<Integer>{
                 CPSClientGUI.getLoggedInUserID(),
                 car);
 
-        MessageTasker taskDelete = new MessageTasker("Connecting...",
-                "Deleting Car...",
-                "Car Removed!",
-                "Failed to remove car!",
-                deleteMessage, onSuccess, onFailure);
+        MessageTasker taskDelete = new MessageTasker(deleteMessage, onSuccess, onFailure, "Removing car...");
         waitScreen.run(taskDelete);
     }
 }

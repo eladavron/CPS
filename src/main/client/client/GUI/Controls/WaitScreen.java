@@ -418,5 +418,16 @@ public class WaitScreen extends AnchorPane implements Initializable {
     {
         return this.lblTitle.getText();
     }
+
+    public void setText(String text) {
+        this.lblMessage.textProperty().unbind();
+        this.lblMessage.setText(text);
+    }
+
+    public String getText()
+    {
+        return this.lblMessage.getText();
+    }
+
     //endregion
 }

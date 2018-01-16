@@ -1,18 +1,17 @@
 package controller;
 
+import com.itextpdf.text.DocumentException;
+import entity.Complaint;
 import entity.Employee;
 import entity.ParkingSpace;
 import entity.User;
-import com.itextpdf.text.DocumentException;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static controller.Controllers.customerServiceController;
-import static controller.Controllers.dbController;
-import static controller.Controllers.parkingController;
+import static controller.Controllers.*;
 
 public class EmployeeController {
     private Map<Integer, Employee> _employeeList = new HashMap<>();
@@ -23,9 +22,7 @@ public class EmployeeController {
     }
 
     private EmployeeController() {
-        System.out.print("\tWaking up the employees...");
         getEmployeesFromDB();
-        System.out.println("Awake!");
     }
 
     /**
@@ -125,6 +122,19 @@ public class EmployeeController {
 
     public Employee getEmployeeByID(Integer employeeID){
         return  this._employeeList.get(employeeID);
+    }
+
+    /**
+     * Gets the employee by it's email.
+     * @param email
+     * @return the employee of this email or null if isnt found.
+     */
+    public Employee getEmployeeByEmail(String email){
+        for (Employee employee : this._employeeList.values() )
+        {
+            if (employee.getEmail().equals(email)) return employee;
+        }
+        return  null;
     }
 
 }

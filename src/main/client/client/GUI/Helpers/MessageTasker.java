@@ -27,9 +27,6 @@ import static entity.Message.MessageType.PAYMENT;
 public class MessageTasker extends Task<Message> {
 
     private String _sendingMessage;
-    private String _queuedMessage ;
-    private String _successMessage;
-    private String _failedMessage;
     private Message _message;
     private MessageRunnable _onSuccess;
     private MessageRunnable _onFailure;
@@ -43,35 +40,19 @@ public class MessageTasker extends Task<Message> {
      * @param onFailure The action to perform when failing.
      */
     public MessageTasker(Message message, MessageRunnable onSuccess, MessageRunnable onFailure) {
-        this("Sending...",
-                "Queued...",
-                "Success!",
-                "Failed!",
-                message, onSuccess, onFailure);
+        this(message, onSuccess, onFailure, "Please hold...");
     }
 
     /**
      * Extended constructor.
-     * Sets messages other than default ones.
-     * @param sendingMessage The message to display while sending request.
-     * @param queuedMessage The message to display when request is queued.
-     * @param successMessage The message to display when the request succeeds.
-     * @param failedMessage The message to display if the request fails.
+     * Sets messages other than default ones.*
      * @param message The Message object sending to the server.
      * @param onSuccess The action to perform when succeeding.
      * @param onFailure The action to perform when failing.
+     * @param customSendingMessage The message to display while sending request.
      */
-    public MessageTasker(String sendingMessage,
-                         String queuedMessage,
-                         String successMessage,
-                         String failedMessage,
-                         Message message,
-                         MessageRunnable onSuccess,
-                         MessageRunnable onFailure) {
-        this._sendingMessage = sendingMessage;
-        this._queuedMessage = queuedMessage;
-        this._successMessage = successMessage;
-        this._failedMessage = failedMessage;
+    public MessageTasker(Message message, MessageRunnable onSuccess, MessageRunnable onFailure, String customSendingMessage) {
+        this._sendingMessage = customSendingMessage;
         this._message = message;
         this._onSuccess = onSuccess;
         this._onFailure = onFailure;
@@ -119,10 +100,10 @@ public class MessageTasker extends Task<Message> {
                 switch (incoming.getType())
                 {
                     case QUEUED:
-                        updateMessage(_queuedMessage);
+                        updateMessage(_sendingMessage);
                         break;
                     case FAILED:
-                        updateMessage(_failedMessage);
+                        updateMessage("Operation failed!");
                         _onFailure.setMessage(incoming);
                         throw new Exception("The server responded with an error: " + incoming.getData().get(0));
                     case NEED_PAYMENT:
@@ -139,7 +120,7 @@ public class MessageTasker extends Task<Message> {
                         });
                         break;
                     case FINISHED:
-                        updateMessage(_successMessage);
+                        updateMessage("Operation Successful!");
                         _onSuccess.setMessage(incoming);
                         return null;
                     default:
@@ -196,30 +177,6 @@ public class MessageTasker extends Task<Message> {
 
     public void setSendingMessage(String sendingMessage) {
         this._sendingMessage = sendingMessage;
-    }
-
-    public String getQueuedMessage() {
-        return _queuedMessage;
-    }
-
-    public void setQueuedMessage(String queuedMessage) {
-        this._queuedMessage = queuedMessage;
-    }
-
-    public String getSuccessMessage() {
-        return _successMessage;
-    }
-
-    public void setSuccessMessage(String successMessage) {
-        this._successMessage = successMessage;
-    }
-
-    public String getFailedMessage() {
-        return _failedMessage;
-    }
-
-    public void setFailedMessage(String failedMessage) {
-        this._failedMessage = failedMessage;
     }
 
     public Runnable getOnSuccess() {

@@ -12,6 +12,10 @@ public class Employee extends User{
     private String _password;
     private Date _creationDate;
 
+    /**
+     * Default Constructor for Jackson
+     */
+    public Employee() {}
 
     /**
      * Constructor

@@ -70,13 +70,7 @@ public class ExitParking {
                 waitScreen.showDefaultError(getErrorString());
             }
         };
-        MessageTasker queryOrders = new MessageTasker("Connecting...",
-                "Looking for you car(s)...",
-                "Car(s) found!",
-                "No cars found!",
-                queryOrdersMsg,
-                onSuccess,
-                onFailed);
+        MessageTasker queryOrders = new MessageTasker(queryOrdersMsg, onSuccess, onFailed, "Looking for your car...");
         queryOrders.setWaitScreen(waitScreen);
         waitScreen.run(queryOrders);
     }
@@ -102,13 +96,7 @@ public class ExitParking {
                 waitScreen.showDefaultError(getErrorString());
             }
         };
-        MessageTasker taskFinish = new MessageTasker("Finding car...",
-                "Retrieving car...",
-                "Car retrieved!",
-                "Failed!",
-                finishOrderMsg,
-                onSuccess,
-                onFailed);
+        MessageTasker taskFinish = new MessageTasker(finishOrderMsg, onSuccess, onFailed, "Retrieving car...");
         taskFinish.setWaitScreen(waitScreen);
         waitScreen.run(taskFinish);
     }

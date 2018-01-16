@@ -8,7 +8,7 @@ import java.util.Objects;
  */
 public class User {
 
-	public enum UserType{USER, CUSTOMER, MANAGER, EMPLOYEE}
+	public enum UserType{USER, CUSTOMER, MANAGER, EMPLOYEE, SUPERMAN } //SUPERMAN = Network Manager
 
 	/**
      * Private attributes

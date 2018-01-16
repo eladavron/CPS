@@ -85,13 +85,7 @@ public class ManageSubscriptions implements Initializable {
                 waitScreen.showDefaultError(getErrorString());
             }
         };
-        MessageTasker queryOrders = new MessageTasker("Connecting...",
-                "Checking subscription...",
-                "Subscription found!",
-                "No subscriptions to display!",
-                queryOrdersMsg,
-                onSuccess,
-                onFailed);
+        MessageTasker queryOrders = new MessageTasker(queryOrdersMsg, onSuccess, onFailed, "Checking subscription...");
         waitScreen.run(queryOrders);
     }
 
