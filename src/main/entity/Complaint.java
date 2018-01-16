@@ -34,9 +34,14 @@ public class Complaint {
         this._status = ComplaintStatus.NEW;
     }
 
-    /**
-     * Getters and Setters.
-     */
+    public static Integer getGlobalComplaintID() {
+        return _globalComplaintID;
+    }
+
+    public static void setGlobalComplaintID(Integer globalComplaintID) {
+        Complaint._globalComplaintID = globalComplaintID;
+    }
+
     public Employee getCustomerServiceRepresentive() {
         return _customerServiceRepresentive;
     }
@@ -99,7 +104,7 @@ public class Complaint {
     @Override
     public String toString() {
         return "Complaint" +
-                "No.: " + _complaintID +
+                "No.: " + this._complaintID +
                 ", handled by: " + this._customerServiceRepresentive._email;
     }
 }

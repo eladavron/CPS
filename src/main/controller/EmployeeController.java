@@ -1,10 +1,9 @@
 package controller;
 
-import entity.Complaint;
-import entity.Employee;
-import entity.ParkingSpace;
-import entity.User;
+import com.itextpdf.text.DocumentException;
+import entity.*;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +23,7 @@ public class EmployeeController {
     private EmployeeController() {
         System.out.print("\tWaking up the employees...");
         getEmployeesFromDB();
-        System.out.println("Awake!");;
+        System.out.println("Awake!");
     }
 
     /**
@@ -86,4 +85,45 @@ public class EmployeeController {
         customerServiceController.handleComplaint(complaint);
     }
 
+
+    // These functions belong to **MANAGER FUNCTIONS** and are implemented in EmployeeController since
+    // manager is an Employee.
+    /**
+     * Get the current status map of the parking lot as a pdf file.
+     * TODO: Maybe show the pdf after creation (idk maybe).
+     * @param parkingLotNumber The number of the parking lot to export its status map.
+     */
+    public void getParkingLotSpacesImage(Integer parkingLotNumber) throws DocumentException {
+        try {
+            parkingController.createPDF(parkingLotNumber);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //TODO: This function will work when we add the ReportController... Unitl then it will be commented.
+//    public Report getReport(Integer reportID){
+//        return reportController.getReport(reportID);
+//    }
+
+    public boolean isGeneralManager(Integer employeeID ){
+        if(employeeID == 0){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isParkingLotManager(Integer parkingLotNumber, Integer employeeID ){
+        if(parkingController.getParkingLotByID(parkingLotNumber).getParkingLotManagerID().equals(employeeID)){
+            return true;
+        }
+        return false;
+    }
+
+    public Employee getEmployeeByID(Integer employeeID){
+        return  this._employeeList.get(employeeID);
+    }
+
 }
+
+

@@ -12,6 +12,7 @@ public class Employee extends User{
     private String _password;
     private Date _creationDate;
 
+
     /**
      * Constructor
      * @param uID Employee's UID

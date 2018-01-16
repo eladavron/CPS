@@ -152,6 +152,14 @@ public class ParkingLot {
         this._depthNumOccupied = depthNumOccupied;
     }
 
+	public Integer getParkingLotManagerID() {
+		return _parkingLotManagerID;
+	}
+
+	public void setParkingLotManagerID(Integer parkingLotManagerID) {
+		this._parkingLotManagerID = parkingLotManagerID;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%d. %s", this._parkingLotID, this._location);

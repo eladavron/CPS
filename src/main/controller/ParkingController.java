@@ -283,6 +283,7 @@ public class ParkingController {
         this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(status);
     }
 
+    //TODO: Try to wrap those 2 calls in one function.
     public void reserveParkingSpace(Integer parkingLotNumber, Integer orderID , Integer x, Integer y, Integer z){
         this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setOccupyingOrderID(orderID);
         this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(ParkingSpace.ParkingStatus.ORDERED);
@@ -320,6 +321,10 @@ public class ParkingController {
             ParkingLot parkingLot = (ParkingLot) parkingLotObj;
             _parkingLotList.put(parkingLot.getParkingLotID(), parkingLot);
         }
+    }
+
+    public  ParkingLot getParkingLotByID(Integer parkingLotNumber){
+        return this._parkingLotList.get(parkingLotNumber);
     }
 }
 
