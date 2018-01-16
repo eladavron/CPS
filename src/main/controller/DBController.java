@@ -381,7 +381,6 @@ public class DBController {
      * @return specific / all orders , null if error
      */
     public Map<Integer, Object> getOrdersByID(int orderId) {
-        ArrayList<Object> myOrders = new ArrayList<>();
         ResultSet rs;
 
         if (orderId == -1) { // get all rows
@@ -400,7 +399,6 @@ public class DBController {
      * @return specific / all orders , null if error
      */
     public Map<Integer, Object> getOrdersByUserID(int userID) {
-        ArrayList<Order> myOrders = new ArrayList<>();
         ResultSet rs;
 
         if (userID == -1) { // get all rows
@@ -639,7 +637,7 @@ public class DBController {
      * @return
      */
     private ResultSet queryUserTable(User.UserType userType) {
-        String query = String.format("SELECT * FROM Users" );
+        String query = String.format("SELECT * FROM Users");
 
         if (userType != null) {
             query += String.format(" WHERE userType = '%s'", userType);
@@ -931,7 +929,6 @@ public class DBController {
     }
 
     private Order.OrderStatus parseOrderStatus(String str){
-        //ENUM('PRE_ORDER', 'IN_PROGRESS', 'FINISHED', 'DELETED')
         Order.OrderStatus ret;
         switch (str){
             case "PRE_ORDER":
@@ -951,4 +948,175 @@ public class DBController {
         }
         return ret;
     }
+
+
+    /**
+     * Complaints
+     */
+    /**
+     * Insert new complaint to DB
+     * @param complaint object to insert
+     * @return True if successful, False otherwise.
+     */
+    public boolean insertComplaint(Complaint complaint){
+        try {
+            Statement stmt = db_conn.createStatement();
+            int complaintId;
+            String representativeID = (complaint.getCustomerServiceRepresentativeID() == -1) ? "NULL" :
+                    complaint.getCustomerServiceRepresentativeID().toString();
+            stmt.executeUpdate(String.format("INSERT INTO Complaints (idUser, idOrder, idRepresentative," +
+                            " status, description, refund)" +
+                            " VALUES ('%s', '%s', %s," +
+                            "'%s', '%s', '%s')",
+                    complaint.getCustomerID(), complaint.getRelatedOrderID(), representativeID,
+                    complaint.getStatus(), complaint.getDescription(), complaint.getRefund()),
+                    Statement.RETURN_GENERATED_KEYS);
+
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next())
+                complaintId = rs.getInt(1); //Get the UID from the DB.
+            else
+                throw new SQLException("Couldn't get auto-generated complaintID");
+
+            complaint.setComplaintID(complaintId);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting %s:\n%s\n", complaint, e.getMessage());
+            return false;
+        }
+    }
+    /**
+     * Update  complaint in DB
+     * @param complaint object to insert
+     * @return True if successful, False otherwise.
+     */
+    public boolean updateComplaint(Complaint complaint){
+        if (complaint.getComplaintID() == -1){
+            System.err.printf("Can't update complaint without complaintID.\nComplaint: %s\n", complaint);
+            return false;
+        }
+        try {
+            Statement stmt = db_conn.createStatement();
+            String representativeID = (complaint.getCustomerServiceRepresentativeID() == -1) ? "NULL" :
+                    complaint.getCustomerServiceRepresentativeID().toString();
+            stmt.executeUpdate(String.format("UPDATE Complaints SET idUser = '%s', idOrder ='%s', idRepresentative = %s," +
+                            " status = '%s', description = '%s', refund = '%s'" +
+                            "WHERE idComplaints = '%s'",
+                    complaint.getCustomerID(), complaint.getRelatedOrderID(), representativeID,
+                    complaint.getStatus(), complaint.getDescription(), complaint.getRefund(), complaint.getComplaintID()),
+                    Statement.RETURN_GENERATED_KEYS);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred inserting %s:\n%s\n", complaint, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * get Complaints from DB (all Complaints)
+     * @return all Complaints in map
+     */
+    public Map<Integer, Object> getAllComplaints() {
+        return getComplaintsByID(-1);
+    }
+
+    /**
+     * get Complaints from DB
+     * @param complaintId specific order identifier, '-1' for all orders
+     * @return specific / all orders , null if error
+     */
+    public Map<Integer, Object> getComplaintsByID(int complaintId) {
+        ResultSet rs;
+
+        if (complaintId == -1) { // get all rows
+            rs = queryTable("Complaints");
+
+        } else { // get specific order
+            rs = queryTable("Complaints", "idComplaints", complaintId);
+        }
+
+        return parseComplaintsFromDBToMap(rs);
+    }
+
+
+    public Map<Integer, Object> parseComplaintsFromDBToMap(ResultSet rs){
+        Map<Integer, Object>  myComplaints = new HashMap<>();
+        if (rs == null){
+            return null;
+        }
+        else {
+            try {
+                while (rs.next()) {
+                    Complaint.ComplaintStatus _complaintStatus = parseComplaintStatus(rs.getString("status"));
+                    if (null == _complaintStatus){
+                        System.err.printf("Error occurred getting complaintStatus from table \"%s\"", "Complaints");
+                        return null;
+                    }
+                    Integer rep = (rs.getInt("idRepresentative") == 0)? -1 : rs.getInt("idRepresentative");
+                    Complaint rowComplaint = new Complaint(
+                            rs.getInt("idComplaints"),
+                            rs.getInt("idUser"),
+                            rs.getInt("idOrder"),
+                            rep,
+                            _complaintStatus,
+                            rs.getString("description"),
+                            rs.getDouble("refund")
+                    );
+                    myComplaints.put(rs.getInt("idComplaints"), rowComplaint);
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Complaints", e.getMessage());
+                return null;
+            }
+        }
+        return myComplaints;
+    }
+
+    /**
+     * Cancelling a complaint by setting its state to canceled
+     * @param complaintID
+     * @return True for success, false otherwise.
+     */
+    public boolean cancelComplaint(Integer complaintID){
+        try {
+            Statement stmt = db_conn.createStatement();
+            stmt.executeUpdate(String.format("UPDATE Complaints SET status = '%s'" +
+                            "WHERE idComplaints = '%s'",
+                    Complaint.ComplaintStatus.CANCELLED, complaintID),
+                    Statement.RETURN_GENERATED_KEYS);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred cancelling complaint with id %s:\n%s\n", complaintID, e.getMessage());
+            return false;
+        }
+    }
+
+    private Complaint.ComplaintStatus parseComplaintStatus(String status) {
+        Complaint.ComplaintStatus ret;
+        switch (status){
+            case "NEW":
+                ret = Complaint.ComplaintStatus.NEW;
+                break;
+            case "OPEN":
+                ret = Complaint.ComplaintStatus.OPEN;
+                break;
+            case "ACCEPTED":
+                ret = Complaint.ComplaintStatus.ACCEPTED;
+                break;
+            case "REJECTED":
+                ret = Complaint.ComplaintStatus.REJECTED;
+                break;
+            case "CANCELLED":
+                ret = Complaint.ComplaintStatus.CANCELLED;
+                break;
+            default:
+                return null;
+        }
+        return ret;
+    }
+
+
 }

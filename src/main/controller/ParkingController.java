@@ -35,8 +35,8 @@ public class ParkingController {
     /**
      * A private default constructor which prevents any other class from creating another instance.
      */
-    private ParkingController() {
-        _parkingLotList = new HashMap<>();
+    private ParkingController(){
+        _parkingLotList = new HashMap<>() ;
     }
 
     /** Static 'instance' method */

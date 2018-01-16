@@ -1,7 +1,9 @@
 package controller;
 
+import entity.Employee;
+import entity.ParkingSpace;
+import entity.User;
 import com.itextpdf.text.DocumentException;
-import entity.*;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -79,10 +81,11 @@ public class EmployeeController {
 
     /**
      * Employee Controller calls the handleComplaint function which is implemented in CustomerServiceController.
-     * @param complaint The complaint to handle/manage.
+     * @param complaintID The complaintID to handle/manage.
+     * @param representativeToHandleComplaint set representative to handle the complaint.
      */
-    public void manageComplaint(Complaint complaint){
-        customerServiceController.handleComplaint(complaint);
+    public void manageComplaint(Integer complaintID, Integer representativeToHandleComplaint){
+        CustomerServiceController.complaintController.fileComplaint(complaintID, representativeToHandleComplaint);
     }
 
 

@@ -58,7 +58,9 @@ public class ComplaintCell extends ListCell<Complaint>{
                         + "Regarding Order No. " + item.getRelatedOrderID()
                         + "\nComplaint Status: " + item.getStatus()
                         + (item.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + item.getRefund() + " NIS (The cheque is in the mail)." : "")
-                        +"\nAssigned Representative: " + item.getCustomerServiceRepresentive().getName());
+                        //+"\nAssigned Representative: " + item.getCustomerServiceRepresentative().getName());  // TODO : not working with Employee object. will not compile like this
+                        +"\nAssigned Representative: " + item.getCustomerServiceRepresentativeID());  // workAround -> gets the ID [OrB -> don't want to mess up the gui]
+
 
                 btnDelete.setVisible(item.getStatus().equals(Complaint.ComplaintStatus.NEW) || item.getStatus().equals(Complaint.ComplaintStatus.OPEN));
 

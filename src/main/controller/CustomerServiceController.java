@@ -1,12 +1,7 @@
 package controller;
 
-import entity.Complaint;
-import entity.Customer;
-import entity.Employee;
-
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+
 
 import static controller.Controllers.orderController;
 import static controller.Controllers.parkingController;
@@ -16,25 +11,17 @@ import static controller.Controllers.parkingController;
  * Customer service controller which is responsible for all the functionality of CSR.
  */
 public class CustomerServiceController {
-    private Map<Integer,Complaint> _complaintsList = new HashMap<>();
     private static CustomerServiceController ourInstance = new CustomerServiceController();
+    public static ComplaintController complaintController; //child controller
 
     public static CustomerServiceController getInstance() {
         return ourInstance;
     }
 
     private CustomerServiceController() {
+        complaintController = ComplaintController.getInstance();
     }
 
-    /**
-     * Handle complaint by setting a full refund.
-     * @param complaint The complaint to handle.
-     */
-    public void handleComplaint(Complaint complaint) {
-        Integer orderID = complaint.getRelatedOrderID();
-        complaint.setRefund(orderController.getOrder(orderID).getPrice());
-        complaint.setStatus(Complaint.ComplaintStatus.ACCEPTED);
-    }
 
     /**
      * Reserve a parking lot space and change its status to RESERVED for the specific order ID.
@@ -54,11 +41,6 @@ public class CustomerServiceController {
 
     }
 
-    /**
-     * Create a customer complaint.
-     */
-    public void createComplaint(Employee customerServiceRepresentive, Customer customer, Integer orderID){
-        Complaint complaint = new Complaint(customerServiceRepresentive,customer,orderID,0);
-        _complaintsList.put(complaint.getComplaintID(), complaint);
-    }
+
+
 }
