@@ -239,6 +239,7 @@ public class CPSClientGUI extends Application{
             {
                 changeGUI(MANAGE_SUBSCRIPTIONS);
                 return;
+                //TODO: if we make sub for sub view then go back without making it. and try to go back again...fails.
             }
         }
         _pageRoot.getChildren().add(guiRoot);

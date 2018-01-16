@@ -6,6 +6,7 @@ import entity.Subscription;
 import utils.TimeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import static controller.Controllers.dbController;
@@ -26,10 +27,11 @@ public class SubscriptionController {
      * instantiating.
      */
     private SubscriptionController() {
-        // get all subscriptions from DB
-        System.out.print("\tNow where did we put the subscriptions...");
-        this._subscriptionsList = DBController.getInstance().getAllSubscriptions();
-        System.out.println("Here they are!");
+        this._subscriptionsList = new HashMap<>();
+//        // get all subscriptions from DB
+//        System.out.print("\tNow where did we put the subscriptions...");
+//        this._subscriptionsList = DBController.getInstance().getAllSubscriptions();
+//        System.out.println("Here they are!");
     }
 
     /**
@@ -144,5 +146,19 @@ public class SubscriptionController {
                 subscriptionsIDs.add(subscription.getSubscriptionID());
         }
         return subscriptionsIDs;
+    }
+
+    public void putAll(ArrayList<Object> objectsList)
+    {
+        for (Object obj : objectsList)
+        {
+            Subscription subs;
+            if (obj instanceof RegularSubscription)
+                subs = (RegularSubscription) obj;
+            else
+                subs = (FullSubscription) obj;
+            this._subscriptionsList.put(subs.getSubscriptionID(), subs);
+
+        }
     }
 }

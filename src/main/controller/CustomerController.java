@@ -63,6 +63,7 @@ public class CustomerController {
      */
     private void getCustomersFromDb() {
         setCustomersList(dbController.getCustomers());
+
     }
 
     /**
@@ -79,10 +80,12 @@ public class CustomerController {
      * @param list - the customer list taken from the DB.
      */
     private void setCustomersList(ArrayList<User> list) {
-        list.forEach(user -> {
+        for (User user : list){
             Customer customer = (Customer) user;
             _customersList.put(customer.getUID(), customer);
-        });
+            orderController.putAll(customer.getActiveOrders());
+            subscriptionController.putAll(customer.getSubscriptionList());
+        }
     }
 
 
