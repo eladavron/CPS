@@ -7,6 +7,11 @@ import entity.*;
 import java.util.*;
 
 import static controller.Controllers.*;
+import static controller.CustomerController.SubscriptionOperationReturnCodes.*;
+import static entity.Billing.priceList.*;
+import static entity.Order.OrderStatus.*;
+import static entity.Subscription.SubscriptionType.*;
+
 
 /**
  * Singleton Customer controller to be responsible over the methods of customer.
@@ -198,10 +203,10 @@ public class CustomerController {
     public Billing.priceList getHourlyParkingCost(Integer customerID, Order orderToFinish){
         Billing.priceList price;
         Map<Integer, Subscription> subscriptionsList = customerController.getCustomer(customerID).getSubscriptionMap();
-        price = Billing.priceList.PRE_ORDER_ONE_TIME_PARKING;
+        price = PRE_ORDER_ONE_TIME_PARKING;
         if (!(orderToFinish instanceof PreOrder))
         {
-            price = Billing.priceList.ONE_TIME_PARKING;
+            price = ONE_TIME_PARKING;
         }
         ArrayList<Integer> existingSubscriptionIDs = SubscriptionController.getInstance()
                 .findSubscriptionsByCarID(subscriptionsList, orderToFinish.getCarID());
@@ -211,8 +216,8 @@ public class CustomerController {
             for (Integer subscriptionID : existingSubscriptionIDs)
             {
                 Subscription current = subscriptionsList.get(subscriptionID);
-                if (current.getSubscriptionType() == Subscription.SubscriptionType.FULL)
-                    return Billing.priceList.NO_CHARGE_DUE_TO_SUBSCRIPTION;
+                if (current.getSubscriptionType().equals(FULL))
+                    return NO_CHARGE_DUE_TO_SUBSCRIPTION;
                 else
                 // There is a a subscription listed on this car but need to check if its of the same parkingLot as the order's.
                 {
@@ -221,7 +226,7 @@ public class CustomerController {
                             && validateRegularTimes(orderToFinish))
                     {
                         // Then we have a RegularSubscription!
-                        price = Billing.priceList.NO_CHARGE_DUE_TO_SUBSCRIPTION;
+                        price = NO_CHARGE_DUE_TO_SUBSCRIPTION;
                     }
                 }
             }
@@ -239,7 +244,7 @@ public class CustomerController {
         Customer customer = _customersList.get(currentOrder.getCostumerID());
         for (Object order : customer.getActiveOrders().values()){
             if (((Order)order).getCarID().equals(currentOrder.getCarID())
-                    && ((Order)order).getOrderStatus().equals(Order.OrderStatus.FINISHED))
+                    && ((Order)order).getOrderStatus().equals(FINISHED))
             { //Then this car has entered the parking Lot today!
                 return false;
             }
@@ -271,7 +276,6 @@ public class CustomerController {
         ArrayList<Integer> carList = customer.getCarIDList();
         if (carList.contains(carID)) {
             if (carList.size() > 1) {
-                //TODO ADD THIS AFTER SUPPORT OF CAR REMOVAL.
                 if(dbController.removeCarFromCustomer(customer.getUID(), carID)){
                     customer.getCarIDList().remove(carID);
                     return true;
@@ -298,24 +302,24 @@ public class CustomerController {
         Customer cust = customerController.getCustomer(subs.getUserID());
         Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getSubscriptionType() == Subscription.SubscriptionType.REGULAR && subscription.getCarID() == subs.getCarID()){
+            if (subscription.getSubscriptionType().equals(REGULAR)&& subscription.getCarID() == subs.getCarID()){
                 RegularSubscription regularSub = (RegularSubscription) subscription;
                 if (regularSub.getParkingLotNumber().equals(subs.getParkingLotNumber())) //then this is just a renewal of an existing subscription!
                 {
                     regularSub.setRegularExitTime(subs.getRegularExitTime()); // in case times has changed
                     if (subscriptionController.renewSubscription(regularSub)) //just renewing it's expiration date does the job.
-                        return SubscriptionOperationReturnCodes.RENEWED;
+                        return RENEWED;
                     else
-                        return SubscriptionOperationReturnCodes.FAILED;
+                        return FAILED;
                 }
             }
         }
 
         if (subscriptionController.addRegularSubscription(subs) != -1) {
             cust.getSubscriptionMap().put(subs.getSubscriptionID(), subs);
-            return SubscriptionOperationReturnCodes.SUCCESS_ADDED;
+            return SUCCESS_ADDED;
         }else
-            return SubscriptionOperationReturnCodes.FAILED;
+            return FAILED;
     }
 
     /**
@@ -328,22 +332,22 @@ public class CustomerController {
         Customer cust = customerController.getCustomer(fSubs.getUserID());
         Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getSubscriptionType() == Subscription.SubscriptionType.FULL && subscription.getCarID() == fSubs.getCarID()){
+            if (subscription.getSubscriptionType().equals(FULL) && subscription.getCarID() == fSubs.getCarID()){
                 subscriptionController.renewSubscription(subscription); //just renewing it's expiration date does the job.
             }
         }
         //Has no Full Subscription over this car
         if (subscriptionController.addFullSubscription(fSubs) != -1) {
             cust.getSubscriptionMap().put(fSubs.getSubscriptionID(), fSubs);
-            return SubscriptionOperationReturnCodes.SUCCESS_ADDED;
+            return SUCCESS_ADDED;
         }else
-            return SubscriptionOperationReturnCodes.FAILED;
+            return FAILED;
     }
 
     public boolean sendEntryTimeBreachedNotification(PreOrder preOrder)
     {
         Customer lateCustomer = getCustomer(preOrder.getCostumerID());
-        System.out.println("Notification to late customer " + lateCustomer.getName() + " was sent to " + lateCustomer.getEmail());
+        System.out.println("Order #" + preOrder.getOrderID() + " is late. Parking reminder for " + lateCustomer.getName() + " was sent to " + lateCustomer.getEmail());
         return true; //Assuming mailing always works
     }
 }

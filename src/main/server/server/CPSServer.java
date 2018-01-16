@@ -58,7 +58,7 @@ public class CPSServer extends AbstractServer {
         try {
             MessageHandler.handleMessage((String) msg, client);
         } catch (IOException e) {
-            MessageHandler.dropSession(client);
+            SessionManager.dropSession(client);
             e.printStackTrace();
         }
     }
@@ -171,10 +171,10 @@ public class CPSServer extends AbstractServer {
 
 
         /*
-        Starting periodic tasks
+        Init scheduled tasks
          */
         PeriodicLateCheck periodicLateCheck = new PeriodicLateCheck();
-        PeriodicLateCheck.startTimer();
+        periodicLateCheck.execute();
 
         /**
          * Start listening and handle messages.
@@ -197,7 +197,7 @@ public class CPSServer extends AbstractServer {
         while (true) {
             try{
                 message = fromConsole.readLine().replaceAll("\\s+","");
-                int size = MessageHandler.getSessionsMap().size();
+                int size = SessionManager.getSessionsMap().size();
                 switch (message) {
                     case "refresh":
                         System.out.println("Please wait, refreshing all controllers...");
@@ -213,7 +213,7 @@ public class CPSServer extends AbstractServer {
                         break;
                     case "sessions":
                         System.out.println(String.format("Currently there are %d active sessions" + (size > 0 ? ":" : "."), size));
-                        for (Session session : MessageHandler.getSessionsMap().values()) {
+                        for (Session session : SessionManager.getSessionsMap().values()) {
                             System.out.println("\t" + session);
                         }
                         break;
@@ -227,14 +227,14 @@ public class CPSServer extends AbstractServer {
                         String input = fromConsole.readLine();
                         if (input.matches("\\d+")) //Matches a number
                         {
-                            Session sessionToDrop = MessageHandler.getSession(Integer.valueOf(input));
+                            Session sessionToDrop = SessionManager.getSession(Integer.valueOf(input));
                             if (sessionToDrop == null)
                             {
                                 System.out.println("Session #" + input + " not found!");
                             }
                             else
                             {
-                                MessageHandler.dropSession(sessionToDrop);
+                                SessionManager.dropSession(sessionToDrop);
                                 //TODO: Anything else you need to - like disconnect actual listening?
                                 System.out.println("Session #" + sessionToDrop.getSid() + " dropped!");
                             }
@@ -251,7 +251,7 @@ public class CPSServer extends AbstractServer {
                             break;
                         }
                         System.out.print("Purging all sessions...");
-                        MessageHandler.getSessionsMap().clear();
+                        SessionManager.getSessionsMap().clear();
                         System.out.println("Done!");
                         //TODO: Anything else you need to - like disconnect actual listening?
                         break;

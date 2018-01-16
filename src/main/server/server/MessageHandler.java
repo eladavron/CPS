@@ -27,84 +27,6 @@ import static entity.Message.MessageType;
  */
 public class MessageHandler {
     private static ObjectMapper mapper = new ObjectMapper();
-    private static HashMap<Long, Order> messagesThatNeedPayment = new HashMap<>();
-
-    public static HashMap<ConnectionToClient, Session> getSessionsMap() {
-        return _sessionsMap;
-    }
-
-    /**
-     * Sessions
-     */
-    private static HashMap<ConnectionToClient, Session> _sessionsMap = new HashMap<ConnectionToClient, Session>();
-
-    /**
-     * Get a session from the map by SID.
-     * @param SID Session ID to search
-     * @return Session if found, null if not.
-     */
-    public static Session getSession(int SID)
-    {
-        for (Session session : _sessionsMap.values())
-        {
-            if (session.getSid() == SID)
-            {
-                return session;
-            }
-        }
-        return null;
-    }
-
-    public static Session getSession(ConnectionToClient clientConnection){
-        return _sessionsMap.get(clientConnection);
-    }
-
-    public static void saveSession(ConnectionToClient clientConnection, Session session){
-        _sessionsMap.put(clientConnection, session);
-        System.out.println("Session added: " + session);
-    }
-
-    public static void dropSession(ConnectionToClient clientConnection)
-    {
-        _sessionsMap.remove(clientConnection);
-    }
-
-    public static void dropSession(Session session)
-    {
-        for (ConnectionToClient connection : _sessionsMap.keySet())
-        {
-            if (_sessionsMap.get(connection).equals(session))
-                dropSession(connection);
-        }
-    }
-
-    private static ArrayList<Object> getDummyOrders(ConnectionToClient clientConnection) {
-        //TODO: Query DB for all orders for this users.
-        //In the meantime, here's a dummy response:
-        Order dummyOrder1 = new Order(getSession(clientConnection).getUser().getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0);
-        Order dummyOrder2 = new Order(getSession(clientConnection).getUser().getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1);
-        //TODO: IMPORTANT return order ID from DB
-        dummyOrder1.setOrderID(11);
-        dummyOrder2.setOrderID(22);
-        ArrayList<Object> dummies = new ArrayList<Object>();
-        dummies.add(dummyOrder1);
-        dummies.add(dummyOrder2);
-        return dummies;
-    }
-
-    private static ArrayList<Object> getDummyPreOrders(ConnectionToClient clientConnection) {
-        //TODO: Query DB for all orders for this users.
-        //In the meantime, here's a dummy response:
-        PreOrder dummyOrder1 = new PreOrder(getSession(clientConnection).getUser().getUID(), 1234567, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 3), 0, 0.0, new Date());
-        PreOrder dummyOrder2 = new PreOrder(getSession(clientConnection).getUser().getUID(), 7654321, TimeUtils.addTime(new Date(), TimeUtils.Units.DAYS, 4), 1, 0.0, new Date());
-        //TODO: IMPORTANT return order ID from DB
-        dummyOrder1.setOrderID(11);
-        dummyOrder2.setOrderID(22);
-        ArrayList<Object> dummies = new ArrayList<Object>();
-        dummies.add(dummyOrder1);
-        dummies.add(dummyOrder2);
-        return dummies;
-    }
 
     public static void sendToClient(Message message, ConnectionToClient clientConnection) throws IOException {
         String json = message.toJson();
@@ -187,7 +109,7 @@ public class MessageHandler {
             }
             else
             {
-                getSession(clientConnection).setOrderInNeedOfPayment(order);
+                SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(order);
                 endParkingResponse.setType(MessageType.NEED_PAYMENT);
                 endParkingResponse.setDataType(PRIMITIVE);
                 endParkingResponse.addData(neededPayment);
@@ -207,11 +129,11 @@ public class MessageHandler {
     private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws IOException {
         Message response = new Message();
         response.setTransID(paymentNeededMsg.getTransID());
-        Order orderInNeedOfPayment = getSession(clientConnection).getOrderInNeedOfPayment();
-        Customer payingCustomer = getSession(clientConnection).getCustomer();
+        Order orderInNeedOfPayment = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
+        Customer payingCustomer = SessionManager.getSession(clientConnection).getCustomer();
         if (orderInNeedOfPayment != null){
             customerController.finishOrder(payingCustomer,orderInNeedOfPayment.getOrderID());
-            getSession(clientConnection).setOrderInNeedOfPayment(null);
+            SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(null);
         }
         response.setType(MessageType.FINISHED);
         sendToClient(response, clientConnection);
@@ -224,7 +146,7 @@ public class MessageHandler {
         logoutResponse.setTransID(msg.getTransID());
         logoutResponse.setDataType(PRIMITIVE);
         logoutResponse.addData("So long, and thanks for all the fish");
-        dropSession(clientConnection);
+        SessionManager.dropSession(clientConnection);
     }
 
     private static void handleLogin(Message msg, ConnectionToClient clientConnection) throws IOException {
@@ -264,7 +186,7 @@ public class MessageHandler {
             Session session = new Session(clientConnection.hashCode(),
                     loggingUser, loggingUser.getUserType(), email, parkingLot);
 
-            saveSession(clientConnection,session);
+            SessionManager.saveSession(clientConnection,session);
             loginResponse = new Message(MessageType.FINISHED, Message.DataType.SESSION, session.getSid(), session.getParkingLot(), session.getUserType(), session.getUser());
         }
         catch (LoginException le)
@@ -276,7 +198,7 @@ public class MessageHandler {
     }
 
     private static boolean isUserAlreadyLoggedIn(String email) {
-        for (Session session : getSessionsMap().values())
+        for (Session session : SessionManager.getSessionsMap().values())
         {
             if (session.getEmail().equals(email))
             {

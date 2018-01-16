@@ -9,17 +9,18 @@ import java.util.concurrent.TimeUnit;
 
 import static controller.Controllers.customerController;
 import static controller.Controllers.orderController;
+import static scheduledTasks.scheduledTask.logScheduledTask;
 import static utils.TimeUtils.*;
 
-public class PeriodicLateCheck {
+public class PeriodicLateCheck extends scheduledTask{
 
     private static final long MAXIMUM_BREACH_TIME = 30*MINUTES_IN_MS;
 
-    public static void startTimer() {
+    public void execute() {
 
         Runnable runnable = () -> {
 
-            System.out.println("Checking for late orders");
+            logScheduledTask("Checking for late orders");
             for (PreOrder thisPreOrder : orderController.getAllPreOrders())
             {                                                  //BreachPeriod==between 0 and 30 mins after estimated.
                 if (!thisPreOrder.isMarkedLate() && isEstimatedEntryTimeBreachedByZeroToThirtyMins(thisPreOrder))
@@ -32,7 +33,7 @@ public class PeriodicLateCheck {
                 else if(needToCancelOrderDueToEntryTimeBreached(thisPreOrder))
                 {
                     orderController.deleteOrder(thisPreOrder.getOrderID());
-                    System.out.println("Order " + thisPreOrder.getOrderID() + " was deleted due to late customer");
+                    logScheduledTask("Order #" + thisPreOrder.getOrderID() + " was deleted due to late customer");
                 }
             }
         };
