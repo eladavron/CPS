@@ -1,6 +1,7 @@
 package server;
 
 import controller.Controllers;
+import entity.Message;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
@@ -64,6 +65,7 @@ public class CPSServer extends AbstractServer
         try {
             MessageHandler.handleMessage((String)msg, client);
         } catch (IOException e) {
+            MessageHandler.dropSession(client);
             e.printStackTrace();
         }
     }

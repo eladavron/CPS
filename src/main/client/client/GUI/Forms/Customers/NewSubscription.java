@@ -37,6 +37,7 @@ public class NewSubscription implements Initializable{
     @FXML
     private Button btnBack;
 
+
     @FXML
     private ComboBox<String> cmbExitMinute;
 
@@ -87,9 +88,11 @@ public class NewSubscription implements Initializable{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Inits.initCars(cmbSingleCar);
-        Platform.runLater(() -> Inits.initParkingLots(cmbParkingLot));
-        Inits.initTimeSelection(cmbExitHour,cmbExitMinute);
+        Platform.runLater(()->{
+            Inits.initCars(cmbSingleCar);
+            Inits.initParkingLots(cmbParkingLot);
+            Inits.initTimeSelection(cmbExitHour,cmbExitMinute);
+        });
         for (Integer carNum : cmbSingleCar.getItems())
         {
             CheckBox newCar = new CheckBox();
@@ -126,9 +129,7 @@ public class NewSubscription implements Initializable{
                 flowEstimatedExit.setVisible(!newValue.equals(FULL));
             }
         });
-
     }
-
 
     @FXML
     void attemptNew(ActionEvent event) {
@@ -159,6 +160,7 @@ public class NewSubscription implements Initializable{
             case FULL:
                 newSubMessage.addData(SubscriptionType.FULL);
                 newSubscription = new FullSubscription(userID, cmbSingleCar.getValue());
+                break;
             default:
                 throw new NotImplementedException("Unexpected subscription type: " + cmbSubType.getValue());
         }
@@ -174,7 +176,7 @@ public class NewSubscription implements Initializable{
                         String.format("You now have a new %s subscription!", subName)
                         : String.format("Your %s subscription has been renewed!", subName);
 
-                message += "Subscription ID: " + newSub.getSubscriptionID() + "\n"
+                message += "\nSubscription ID: " + newSub.getSubscriptionID() + "\n"
                         + "For car: " + newSub.getCarID() + "\n"
                         + "Now Expires on: " + newSub.getExpiration();
                 waitScreen.setGoBackOnClose(true);

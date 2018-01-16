@@ -16,7 +16,7 @@ public class Customer extends User{
 	 */
 	private ArrayList<Integer> _carIDList;
 	private Map<Integer, Subscription> _subscriptionList;
-	private Map<Integer, Order> _activeOrders;
+	private Map<Integer, Object> _activeOrders;
 	
 	/**
 	 * Customer Class Constructor.
@@ -88,7 +88,7 @@ public class Customer extends User{
 	 * Get the customer's active orders' list.
 	 * @return Customer's active orders' list.
 	 */
-	public Map<Integer, Order> getActiveOrders() {
+	public Map<Integer, Object> getActiveOrders() {
 		return _activeOrders;
 	}
 	
@@ -96,7 +96,7 @@ public class Customer extends User{
 	 * Set the customer's active orders' list.
 	 * @param activeOrders Active orders list to set the customer's active orders' list.
 	 */
-	public void setActiveOrders(Map<Integer, Order> activeOrders) {
+	public void setActiveOrders(Map<Integer, Object> activeOrders) {
 		this._activeOrders = activeOrders;
 	}
 	

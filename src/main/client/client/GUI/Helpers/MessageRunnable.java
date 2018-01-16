@@ -37,6 +37,7 @@ public abstract class MessageRunnable implements Runnable {
         if (getMessage() != null
                 && getMessage().getType() == Message.MessageType.FAILED
                 && getMessage().getData() != null
+                && getMessage().getData().size() > 0
                 && getMessage().getData().get(0) != null)
         {
             returnString += (String)getMessage().getData().get(0) +"\n";

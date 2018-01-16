@@ -16,6 +16,9 @@ import java.net.SocketException;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
+import static entity.Message.DataType.PRIMITIVE;
+import static entity.Message.MessageType.PAYMENT;
+
 /**
  * A custom <code>Task</code> class that sends a message to the server with easy-to-set error and success screens.
  * Note that for the {@link #onFailedProperty()} to execute an exception must be thrown. If it's run manually without
@@ -103,7 +106,7 @@ public class MessageTasker extends Task<Message> {
     protected Message call() throws Exception {
         updateMessage(_sendingMessage);
         CPSClientGUI.sendToServer(_message);
-        long sid = _message.getSID();
+        long sid = _message.getTransID();
         while (CPSClientGUI.getMessageQueue(sid) == null) //Wait for incoming message
         {
            Thread.sleep(100); //I hate busy-waits
@@ -163,14 +166,16 @@ public class MessageTasker extends Task<Message> {
         if (result.isPresent() && result.get() == ButtonType.OK)
         {
             updateMessage("Sending payment...");
-            Message payment = new Message(Message.MessageType.PAYMENT, Message.DataType.PRIMITIVE, amount);
-            payment.setSID(message.getSID());
+            Message payment = new Message(PAYMENT, PRIMITIVE, amount);
+            payment.setTransID(message.getTransID());
             if (_waitScreen != null)
                 _waitScreen.resetTimeout(CPSClientGUI.DEFAULT_TIMEOUT);
             CPSClientGUI.sendToServer(payment);
         }
         else
         {
+            Message payment = new Message(PAYMENT, PRIMITIVE, 0.0);
+            CPSClientGUI.sendToServer(payment);
             throw new PaymentRequiredException(amount);
         }
     }

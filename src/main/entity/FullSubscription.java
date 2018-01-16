@@ -30,7 +30,10 @@ public class FullSubscription extends Subscription {
      */
     public FullSubscription(LinkedHashMap deserialize)
     {
-        super((Integer) deserialize.get("subscriptionID"), (Integer) deserialize.get("userID"), (Integer) deserialize.get("carID"), new Date((Long) deserialize.get("expiration")), FULL);
+        super((Integer) deserialize.get("subscriptionID"),
+                (Integer) deserialize.get("carID"),
+                (Integer) deserialize.get("userID"),
+                new Date((Long) deserialize.get("expiration")), FULL);
     }
 
     /**

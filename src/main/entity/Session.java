@@ -13,6 +13,15 @@ public class Session {
     private User _user; //Generic user morphism
     private String _email; // user email
     private ParkingLot _parkingLot;
+    private Order _orderInNeedOfPayment = null;
+
+    public Order getOrderInNeedOfPayment() {
+        return _orderInNeedOfPayment;
+    }
+
+    public void setOrderInNeedOfPayment(Order _orderInNeedOfPayment) {
+        this._orderInNeedOfPayment = _orderInNeedOfPayment;
+    }
 
     /**
      * Empty constructor for Jackson

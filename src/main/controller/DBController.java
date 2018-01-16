@@ -309,8 +309,8 @@ public class DBController {
         }
     }
 
-    public Map<Integer, Order> parseOrdersFromDBToMap(ResultSet rs){
-        Map<Integer, Order>  myOrders = new HashMap<>();
+    public Map<Integer, Object> parseOrdersFromDBToMap(ResultSet rs){
+        Map<Integer, Object>  myOrders = new HashMap<>();
         if (rs == null){
             return null;
         }
@@ -322,20 +322,42 @@ public class DBController {
                         System.err.printf("Error occurred getting OrderStatus from table \"%s\"", "Orders");
                         return null;
                     }
-                    Order rowOrder = new Order(
-                            rs.getInt("idOrders"),
-                            rs.getInt("idCar"),
-                            rs.getInt("idCustomer"),
-                            rs.getInt("idParkingLot"),
-                            _orderStatus,
-                            rs.getDate("entryTimeEstimated"),
-                            rs.getDate("entryTimeActual"),
-                            rs.getDate("exitTimeEstimated"),
-                            rs.getDate("exitTimeActual"),
-                            rs.getDouble("price"),
-                            rs.getDate("orderCreationTime")
+                    /*
+                    Saving all orders in the server as "Order" and not differentiating preorders causes lots of problems.
+                    Instead, from now on all maps will map to OBJECTS, which we will cast as needed:
+                     */
+                    switch (_orderStatus)
+                    {
+                        case PRE_ORDER:
+                            PreOrder rowOrder = new PreOrder(
+                                    rs.getInt("idCustomer"),
+                                    rs.getInt("idCar"),
+                                    rs.getDate("exitTimeEstimated"),
+                                    rs.getInt("idParkingLot"),
+                                    rs.getDouble("price"),
+                                    rs.getDate("entryTimeEstimated")
                             );
-                    myOrders.put(rs.getInt("idOrders"), rowOrder);
+                            rowOrder.setOrderID(rs.getInt("idOrders"));
+                            myOrders.put(rowOrder.getOrderID(), rowOrder);
+                            break;
+                        case DELETED:
+                        case IN_PROGRESS:
+                            Order activeOrder = new Order(
+                                    rs.getInt("idOrders"),
+                                    rs.getInt("idCustomer"),
+                                    rs.getInt("idCar"),
+                                    rs.getInt("idParkingLot"),
+                                    _orderStatus,
+                                    rs.getDate("entryTimeEstimated"),
+                                    rs.getDate("entryTimeActual"),
+                                    rs.getDate("exitTimeEstimated"),
+                                    rs.getDate("exitTimeActual"),
+                                    rs.getDouble("price"),
+                                    rs.getDate("orderCreationTime")
+                            );
+                            myOrders.put(activeOrder.getOrderID(), activeOrder);
+                            break;
+                    }
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Orders", e.getMessage());
@@ -349,7 +371,7 @@ public class DBController {
      * get orders from DB (all orders)
      * @return all orders in list
      */
-    public Map<Integer, Order> getAllOrders() {
+    public Map<Integer, Object> getAllOrders() {
         return getOrdersByID(-1);
     }
 
@@ -358,8 +380,8 @@ public class DBController {
      * @param orderId specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public Map<Integer, Order> getOrdersByID(int orderId) {
-        ArrayList<Order> myOrders = new ArrayList<>();
+    public Map<Integer, Object> getOrdersByID(int orderId) {
+        ArrayList<Object> myOrders = new ArrayList<>();
         ResultSet rs;
 
         if (orderId == -1) { // get all rows
@@ -377,7 +399,7 @@ public class DBController {
      * @param userID specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public Map<Integer, Order> getOrdersByUserID(int userID) {
+    public Map<Integer, Object> getOrdersByUserID(int userID) {
         ArrayList<Order> myOrders = new ArrayList<>();
         ResultSet rs;
 
@@ -667,7 +689,7 @@ public class DBController {
                     );
 
                     // Now we will pull the list of active orders by using the DBs get order by id of user.
-                    Map<Integer, Order> myOrders = new HashMap<>();
+                    Map<Integer, Object> myOrders = new HashMap<>();
                     String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND" +
                                     " orderType != '%s' AND orderType != '$s' ", userID,
                             Order.OrderStatus.DELETED, Order.OrderStatus.FINISHED);

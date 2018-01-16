@@ -35,7 +35,9 @@ public class ParkingController {
     /**
      * A private default constructor which prevents any other class from creating another instance.
      */
-    private ParkingController() { }
+    private ParkingController() {
+        _parkingLotList = new HashMap<>();
+    }
 
     /** Static 'instance' method */
     public static ParkingController getInstance() {
@@ -303,9 +305,7 @@ public class ParkingController {
      */
     public ArrayList<Object> getParkingLots() {
         ArrayList<Object> parkingLots = dbController.getParkingLots();
-        System.out.println(parkingLots);
         setParkingLotsList(parkingLots);
-        System.out.println("!");
         return parkingLots;
     }
 

@@ -1,7 +1,9 @@
 package server;
 
 import Exceptions.InvalidMessageException;
+import Exceptions.LastCarRemovalException;
 import Exceptions.NotImplementedException;
+import Exceptions.OrderNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.CustomerController;
 import entity.*;
@@ -14,7 +16,6 @@ import java.util.Date;
 import java.util.HashMap;
 
 import static controller.Controllers.customerController;
-import static controller.Controllers.dbController;
 import static controller.Controllers.parkingController;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
@@ -25,7 +26,6 @@ import static controller.CustomerController.SubscriptionOperationReturnCodes.QUE
  *  2. Create
  *  3. Update
  *  4. Delete
- *  @author Aviad Bar-David
  */
 public class MessageHandler {
     private static ObjectMapper mapper = new ObjectMapper();
@@ -82,7 +82,7 @@ public class MessageHandler {
     }
 
     public static void sendToClient(Message message, ConnectionToClient clientConnection) throws IOException {
-        String json = mapper.writeValueAsString(message);
+        String json = message.toJson();
         if (CPSServer.IS_DEBUG)
         {
             System.out.println("SENT (" + clientConnection.getInetAddress() + "): " + json);
@@ -102,7 +102,7 @@ public class MessageHandler {
             }
 
             Message replyOnReceiveMsg = new Message(Message.MessageType.QUEUED, Message.DataType.PRIMITIVE, "tempString");
-            replyOnReceiveMsg.setSID(msg.getSID());
+            replyOnReceiveMsg.setTransID(msg.getTransID());
             sendToClient(replyOnReceiveMsg, clientConnection);
 
             switch(msgType)
@@ -121,7 +121,7 @@ public class MessageHandler {
                     break;
                 case END_PARKING:
                     handleEndParking(msg, clientConnection);
-                    //TODO: Implement ASPS too
+                    break;
                 case DELETE:
                     handleDeletion(msg, clientConnection);
                     break;
@@ -137,7 +137,7 @@ public class MessageHandler {
             Message replyInvalid = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, e.getMessage());
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
-                replyInvalid.setSID(SID);
+                replyInvalid.setTransID(SID);
             sendToClient(replyInvalid, clientConnection);
             e.printStackTrace();
             return false;
@@ -145,43 +145,58 @@ public class MessageHandler {
         return true;
     }
 
-    private static void handleEndParking(Message msg, ConnectionToClient client) throws IOException {
-        //TODO: IMPORTANT! THIS IS A DUMMY RESPONSE!!!
+    private static void handleEndParking(Message endParkingMsg, ConnectionToClient clientConnection) throws IOException {
+
         Message endParkingResponse = new Message();
-        Order order = (Order)msg.getData().get(0);
-        endParkingResponse.setSID(msg.getSID());
-        //TODO: Check if order owns money
-        if (order.getOrderID() == 11) //DUMMY - end ok
-        {
-            endParkingResponse.setType(Message.MessageType.FINISHED);
-        }
-        if (order.getOrderID() == 22) //DUMMY - payment needed
-        {
-            messagesThatNeedPayment.put(msg.getSID(), order);
+        endParkingResponse.setTransID(endParkingMsg.getTransID());
+        Order order = (Order)endParkingMsg.getData().get(0);
+        Customer departingCustomer = customerController.getCustomer(order.getCostumerID());
+
+        try{
+
+            Double neededPayment = customerController.finishOrder(departingCustomer,order.getOrderID());
+            if (neededPayment.equals((double)0))
+            {
+                endParkingResponse.setType(Message.MessageType.FINISHED);
+                endParkingResponse.setDataType(Message.DataType.PRIMITIVE);
+            }
+            else
+            { 
+            getSession(clientConnection).setOrderInNeedOfPayment(order);
             endParkingResponse.setType(Message.MessageType.NEED_PAYMENT);
             endParkingResponse.setDataType(Message.DataType.PRIMITIVE);
-            endParkingResponse.addData(33.45);
+            endParkingResponse.addData(neededPayment);
+            }
+
+            sendToClient(endParkingResponse, clientConnection);
+
+        }catch (OrderNotFoundException e){
+            endParkingResponse.setType(Message.MessageType.FAILED);
+            endParkingResponse.setDataType(Message.DataType.PRIMITIVE);
+            endParkingResponse.addData("Order ID " + order.getOrderID() + " was not found, please contact CPS personnel");
+            sendToClient(endParkingResponse, clientConnection);
         }
-        sendToClient(endParkingResponse, client);
+
     }
 
-    private static void handlePayment(Message msg, ConnectionToClient client) throws IOException {
+    private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws IOException {
         Message response = new Message();
-        response.setSID(msg.getSID());
-        if (messagesThatNeedPayment.containsKey(msg.getSID()))
-        {
-            Order orderToUpdate = messagesThatNeedPayment.get(msg.getSID());
-            //TODO: UPDATE THE DB THAT THIS ORDER PAID!!!
+        response.setTransID(paymentNeededMsg.getTransID());
+        Order orderInNeedOfPayment = getSession(clientConnection).getOrderInNeedOfPayment();
+        Customer payingCustomer = getSession(clientConnection).getCustomer();
+        if (orderInNeedOfPayment != null){
+            customerController.finishOrder(payingCustomer,orderInNeedOfPayment.getOrderID());
+            getSession(clientConnection).setOrderInNeedOfPayment(null);
         }
         response.setType(Message.MessageType.FINISHED);
-        sendToClient(response, client);
+        sendToClient(response, clientConnection);
     }
 
     private static void handleLogout(Message msg, ConnectionToClient clientConnection) throws IOException {
         Message logoutResponse = new Message();
         ArrayList<Object> data = new ArrayList<Object>();
         logoutResponse.setType(Message.MessageType.LOGOUT);
-        logoutResponse.setSID(msg.getSID());
+        logoutResponse.setTransID(msg.getTransID());
         logoutResponse.setDataType(Message.DataType.PRIMITIVE);
         logoutResponse.addData("So long, and thanks for all the fish");
         dropSession(clientConnection);
@@ -192,27 +207,24 @@ public class MessageHandler {
         String email =(String) msg.getData().get(0);
         String pwd =(String) msg.getData().get(1);
         ParkingLot parkingLot = (ParkingLot) msg.getData().get(2);
-        User logginUser = customerController.getCustomerByEmail(email); //TODO: Get other types if it's not a user
-        if (logginUser == null || !logginUser.getPassword().equals(pwd)) //no customer or wrong pwd
+        User loggingUser = customerController.getCustomerByEmail(email); //TODO: Get other types if it's not a user
+        if (loggingUser == null || !loggingUser.getPassword().equals(pwd)) //no customer or wrong pwd
         {
             loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, "Wrong Username or Password");
         }
-        else if(!logginUser.getEmail().equals("u") && isUserAlreadyLoggedIn(email)) //login ok - checking if already logged in and not superuser
+        else if(!loggingUser.getEmail().equals("u") && isUserAlreadyLoggedIn(email)) //login ok - checking if already logged in and not superuser
         {
-            loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, email + "is already logged on!");
+            loginResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE, email + " is already logged on!");
         }
         else //login ok
         {
-            Session session = new Session();
-            session.setParkingLot(parkingLot);
-            session.setUserType(logginUser.getUserType());
-            String name = logginUser.getName();
-            session.setUser(logginUser);
-            session.setSid(clientConnection.hashCode());//hashCode is generated by a random hexa-string
+            Session session = new Session(clientConnection.hashCode(),loggingUser,
+                                          loggingUser.getUserType(),email,parkingLot);
+            
             saveSession(clientConnection,session);
             loginResponse = new Message(Message.MessageType.FINISHED, Message.DataType.SESSION, session.getSid(), session.getParkingLot(), session.getUserType(), session.getUser());
         }
-        loginResponse.setSID(msg.getSID());
+        loginResponse.setTransID(msg.getTransID());
         sendToClient(loginResponse, clientConnection);
     }
 
@@ -295,7 +307,7 @@ public class MessageHandler {
         }
 
         response.setType(Message.MessageType.FINISHED);
-        response.setSID(queryMsg.getSID());
+        response.setTransID(queryMsg.getTransID());
         sendToClient(response, clientConnection);
         return true;
     }
@@ -303,26 +315,46 @@ public class MessageHandler {
     private static void handleDeletion(Message deleteMsg, ConnectionToClient clientConnection) throws IOException {
 
         Message response = new Message();
-        response.setSID(deleteMsg.getSID());
-
         switch(deleteMsg.getDataType())
         {
             case CARS:
                 Integer uID = (Integer)deleteMsg.getData().get(0);
                 Integer carToDelete = (Integer)deleteMsg.getData().get(1);
                 response.setDataType(deleteMsg.getDataType());
-                if (customerController.removeCar(customerController.getCustomer(uID),carToDelete))
-                {//success
-                    response.setType(Message.MessageType.FINISHED);
-                }
-                else
+                try{
+                    if (customerController.removeCar(customerController.getCustomer(uID),carToDelete))
+                    {//success
+                        response.setType(Message.MessageType.FINISHED);
+                    }
+                    else
+                    {
+                        response.setType(Message.MessageType.FAILED);
+                        response.setDataType(Message.DataType.PRIMITIVE);
+                        response.addData("Car removal from DB failed");
+                    }
+                }catch(LastCarRemovalException e)
                 {
                     response.setType(Message.MessageType.FAILED);
                     response.setDataType(Message.DataType.PRIMITIVE);
-                    response.addData("Car removal from DB failed");
+                    response.addData("It is required to have at least 1 registered car");
+                }
+
+                break;
+            case PREORDER:
+                PreOrder preOrderToDelete = (PreOrder) deleteMsg.getData().get(0);
+                Customer customer = customerController.getCustomer(preOrderToDelete.getCostumerID());
+                Order removedOrder = customerController.removeOrder(customer, preOrderToDelete.getOrderID());
+                if (removedOrder == null)
+                { //TODO: Add support for payment required && order not found exception
+                    response.setType(Message.MessageType.FAILED);
+                }
+                else
+                {
+                    response = new Message(Message.MessageType.FINISHED, Message.DataType.PREORDER, removedOrder);
                 }
                 break;
         }
+        response.setTransID(deleteMsg.getTransID());
         sendToClient(response,clientConnection);
     }
 
@@ -336,11 +368,8 @@ public class MessageHandler {
                 createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.CUSTOMER, newCustomer);
                 break;
             case ORDER:
-                //TODO: return order from DB
-                //Meanwhile, here's a dummy
                 Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
-//                order.setOrderID(new Random().nextInt()); //TODO: Get from server! This is a dummy response!
-                Order newOrder = customerController.addNewOrder(order); //TODO: uncomment once fully supported and remove dummy response.
+                Order newOrder = customerController.addNewOrder(order);
                 createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.ORDER, newOrder);
                 break;
             case PREORDER:
@@ -358,8 +387,7 @@ public class MessageHandler {
                 }
                 createMsgResponse = new Message(Message.MessageType.FINISHED, Message.DataType.CARS, carToAdd);
                 break;
-            case SUBSCRIPTION: // WIP
-
+            case SUBSCRIPTION:
                 Subscription subscription = (Subscription) createMsg.getData().get(0);
                 Subscription.SubscriptionType subType = subscription.getSubscriptionType();
                 CustomerController.SubscriptionOperationReturnCodes rc = FAILED;
@@ -392,17 +420,12 @@ public class MessageHandler {
                 createMsgResponse = new Message(Message.MessageType.FAILED, Message.DataType.PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());
                 return false;
         }
-        createMsgResponse.setSID(createMsg.getSID());
+        createMsgResponse.setTransID(createMsg.getTransID());
         sendToClient(createMsgResponse, clientConnection);
         return true;
     }
 
     private static boolean handleUpdate(Message updateMsg)
-    {
-        return true;
-    }
-
-    private static boolean handleDelete(Message deleteMsg)
     {
         return true;
     }

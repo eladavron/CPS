@@ -49,7 +49,7 @@ public class ClientController extends ocsf.client.AbstractClient
                     "The server sent an unintelligible response.\nPlease contact system administrator for more information.");
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
-                receivedMessage.setSID(SID);
+                receivedMessage.setTransID(SID);
         }
         CPSClientGUI.addMessageToQueue(receivedMessage);
     }

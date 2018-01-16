@@ -85,9 +85,9 @@ public class ManageComplaints implements Initializable {
             }
         };
         MessageTasker queryOrders = new MessageTasker("Connecting...",
-                "Checking subscription...",
-                "Subscription found!",
-                "No subscriptions to display!",
+                "Checking complaints...",
+                "complaints found!",
+                "No complaints to display!",
                 queryComplaints,
                 onSuccess,
                 onFailed);

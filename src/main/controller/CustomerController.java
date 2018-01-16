@@ -124,7 +124,7 @@ public class CustomerController {
     public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewSimpleOrder(customerID, carID, estimatedExitTime,  parkingLotNumber);
-        Map<Integer, Order> activeOrders = customer.getActiveOrders();
+        Map<Integer, Object> activeOrders = customer.getActiveOrders();
         activeOrders.put(newOrder.getOrderID(), newOrder);
         customer.setActiveOrders(activeOrders);
         return newOrder;
@@ -150,7 +150,7 @@ public class CustomerController {
     public Order addNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewPreOrder(customerID, carID, estimatedExitTime,  parkingLotNumber, estimatedEntryTime);
-        Map<Integer, Order> activeOrders = customer.getActiveOrders();
+        Map<Integer, Object> activeOrders = customer.getActiveOrders();
         activeOrders.put(newOrder.getOrderID(),newOrder);
         customer.setActiveOrders(activeOrders);
         return newOrder;
@@ -167,10 +167,9 @@ public class CustomerController {
     /**
      *  Delete an un-wanted order.
      */
-    public void removeOrder(Customer customer, Integer orderID){
-        Order orderToRemove = customer.getActiveOrders().get(orderID);
-        orderToRemove.setOrderStatus(Order.OrderStatus.DELETED);
-        customer.getActiveOrders().remove(orderID);
+    public Order removeOrder(Customer customer, Integer orderID){
+        Order removedOrder = orderController.deleteOrder(orderID);
+        return removedOrder;
     }
 
     /**
@@ -179,10 +178,10 @@ public class CustomerController {
      * Return: the price for the Customer to pay (by calling BillingController)
      */
     public double finishOrder(Customer customer,Integer orderID) throws OrderNotFoundException {
-        Map<Integer, Order> activeOrders = customer.getActiveOrders();
+        Map<Integer, Object> activeOrders = customer.getActiveOrders();
         Order orderToFinish;
         if (activeOrders.containsKey(orderID)) {
-            orderToFinish = activeOrders.get(orderID);
+            orderToFinish = (Order) activeOrders.get(orderID);
             // The order was found...need to check the client's cost for this order.
             Integer carID = orderToFinish.getCarID();
             Billing.priceList checkedPrice = getHourlyParkingCost(customer.getUID(), orderToFinish);
@@ -240,9 +239,9 @@ public class CustomerController {
     private boolean validateRegularTimes(Order currentOrder) {
         //First we check if this Subscription has not been used today.
         Customer customer = _customersList.get(currentOrder.getCostumerID());
-        for (Order order : customer.getActiveOrders().values()){
-            if (order.getCarID().equals(currentOrder.getCarID())
-                    && order.getOrderStatus().equals(Order.OrderStatus.FINISHED))
+        for (Object order : customer.getActiveOrders().values()){
+            if (((Order)order).getCarID().equals(currentOrder.getCarID())
+                    && ((Order)order).getOrderStatus().equals(Order.OrderStatus.FINISHED))
             { //Then this car has entered the parking Lot today!
                 return false;
             }
@@ -315,7 +314,7 @@ public class CustomerController {
         }
 
         if (subscriptionController.addRegularSubscription(subs) != -1) {
-            //cust.getSubscriptionMap().put(regularSubscription.getSubscriptionID(), regularSubscription);
+            cust.getSubscriptionMap().put(subs.getSubscriptionID(), subs);
             return SubscriptionOperationReturnCodes.SUCCESS_ADDED;
         }else
             return SubscriptionOperationReturnCodes.FAILED;
@@ -333,12 +332,11 @@ public class CustomerController {
         for (Subscription subscription : subscriptionList.values()) {
             if (subscription.getSubscriptionType() == Subscription.SubscriptionType.FULL && subscription.getCarID() == fSubs.getCarID()){
                 subscriptionController.renewSubscription(subscription); //just renewing it's expiration date does the job.
-            }else
-                return SubscriptionOperationReturnCodes.FAILED;
+            }
         }
         //Has no Full Subscription over this car
         if (subscriptionController.addFullSubscription(fSubs) != -1) {
-            //cust.getSubscriptionMap().put(fullSubscription.getSubscriptionID(), fullSubscription);
+            cust.getSubscriptionMap().put(fSubs.getSubscriptionID(), fSubs);
             return SubscriptionOperationReturnCodes.SUCCESS_ADDED;
         }else
             return SubscriptionOperationReturnCodes.FAILED;

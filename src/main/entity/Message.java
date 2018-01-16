@@ -3,6 +3,7 @@ package entity;
 import Exceptions.InvalidMessageException;
 import Exceptions.NotImplementedException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.CustomerController;
 
@@ -46,7 +47,7 @@ public class Message {
         SESSION
     };
 
-    private long _sID;
+    private long _transactionID;
     private ArrayList<Object> _data;
     private MessageType _type;
     private DataType _dataType;
@@ -58,7 +59,7 @@ public class Message {
     public Message(MessageType type, DataType dataType)
     {
         Random rnd = new Random();
-        _sID = rnd.nextLong();
+        _transactionID = rnd.nextLong();
         _type = type;
         _dataType = dataType;
         _data = new ArrayList<>();
@@ -74,7 +75,7 @@ public class Message {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Message msg = mapper.readValue(json, Message.class);
-            _sID =  msg.getSID();
+            _transactionID =  msg.getTransID();
             _type = msg.getType();
             _dataType = msg.getDataType();
             _data = new ArrayList<Object>();
@@ -143,40 +144,48 @@ public class Message {
                                     default:
                                         throw new NotImplementedException("Unimplemented subscription type: " + subType);
                                 }
+                                sub.setSubscriptionID((Integer) myData.get("subscriptionID"));
                                 _data.add(sub);
                             }
-
-
                         }
-                    }else{
-                        for (Object dataObject : msg.getData()) {
-                            switch (_dataType) {
-                                case CARS: //Cars are Integers
-                                case PRIMITIVE:
-                                    _data.add(dataObject);
-                                    break;
-                                case PREORDER:
-                                    PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
-                                    _data.add(preOrder);
-                                    break;
-                                case ORDER:
-                                    Order order = mapper.convertValue(dataObject, Order.class);
-                                    _data.add(order);
-                                    break;
-                                case CUSTOMER:
-                                    Customer customer = mapper.convertValue(dataObject, Customer.class);
-                                    _data.add(customer);
-                                    break;
-                                case USER:
-                                    User user = mapper.convertValue(dataObject, User.class);
-                                    _data.add(user);
-                                    break;
-                                case PARKING_LOT:
-                                    ParkingLot parkingLotQuery = mapper.convertValue(dataObject, ParkingLot.class);
-                                    _data.add(parkingLotQuery);
-                                    break;
-                                default:
-                                    throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
+                    } else {
+                        if (msg.getData() != null && msg.getData().size() > 0) {
+                            for (Object dataObject : msg.getData()) {
+                                switch (_dataType) {
+                                    case CARS: //Cars are Integers
+                                    case PRIMITIVE:
+                                        _data.add(dataObject);
+                                        break;
+                                    case PREORDER:
+                                        PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
+                                        _data.add(preOrder);
+                                        break;
+                                    case ORDER:
+                                        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                                        Order order = mapper.convertValue(dataObject, Order.class);
+                                        _data.add(order);
+                                        break;
+                                    case CUSTOMER:
+                                        LinkedHashMap customerData = (LinkedHashMap) dataObject;
+                                        Integer customerUID = (Integer) customerData.get("uid");
+                                        String customerPwd = (String) customerData.get("password");
+                                        String customerName = (String) customerData.get("name");
+                                        String customerEmail = (String) customerData.get("email");
+                                        ArrayList carList = (ArrayList) customerData.get("carIDList");
+                                        Customer customer = new Customer(customerUID, customerName, customerPwd, customerEmail, carList);
+                                        _data.add(customer);
+                                        break;
+                                    case USER:
+                                        User user = mapper.convertValue(dataObject, User.class);
+                                        _data.add(user);
+                                        break;
+                                    case PARKING_LOT:
+                                        ParkingLot parkingLotQuery = mapper.convertValue(dataObject, ParkingLot.class);
+                                        _data.add(parkingLotQuery);
+                                        break;
+                                    default:
+                                        throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
+                                }
                             }
                         }
                     }
@@ -236,9 +245,9 @@ public class Message {
         this._dataType = _dataType;
     }
 
-    public long getSID() { return _sID; }
+    public long getTransID() { return _transactionID; }
 
-    public void setSID(long sID) { this._sID = sID ;}
+    public void setTransID(long transactionID) { this._transactionID = transactionID ;}
 
     public String toJson() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();

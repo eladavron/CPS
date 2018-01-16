@@ -6,6 +6,7 @@ import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
+import entity.Order;
 import entity.PreOrder;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -16,11 +17,14 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TitledPane;
 import javafx.util.Callback;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+
+import static entity.Order.OrderStatus.PRE_ORDER;
 
 public class ManagePreorders implements Initializable {
 
@@ -35,6 +39,9 @@ public class ManagePreorders implements Initializable {
 
     @FXML
     private Button btnRefresh;
+
+    @FXML
+    private TitledPane rootOrders;
 
     private ObservableList<PreOrder> _listPreorders = FXCollections.observableArrayList();
 
@@ -69,7 +76,8 @@ public class ManagePreorders implements Initializable {
                 ArrayList preorders = getMessage().getData();
                 for (Object preOrder : preorders)
                 {
-                    _listPreorders.add((PreOrder)preOrder);
+                    if (((Order)preOrder).getOrderStatus() == PRE_ORDER)
+                        _listPreorders.add((PreOrder)preOrder);
                 }
                 waitScreen.hide();
             }

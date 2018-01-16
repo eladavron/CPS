@@ -69,14 +69,13 @@ public class NewPreorder implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                Inits.initParkingLots(cmbParkingLot);
                 Inits.initCars(cmbCarID);
+                Inits.initParkingLots(cmbParkingLot);
             }
         });
         _entryDateTime = new DateTimeCombo(entryDatePicker, cmbEntryHour, cmbEntryMinute);
         _exitDateTime = new DateTimeCombo(exitDatePicker, cmbExitHour, cmbExitMinute);
     }
-
 
     /**
      * Validate the form

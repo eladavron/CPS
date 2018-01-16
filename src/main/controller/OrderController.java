@@ -13,7 +13,11 @@ import static controller.Controllers.*;
 public class OrderController {
 
     //TODO: remove this or change thing to be taken from DB once its added to our system.
-    private Map<Integer,Order> _ordersList;
+    /**
+     * This holds either Order or Preorder, but we had to use "Object" as value because polymorphism doesn't work well.
+     * To resolve this, only ever use the supplied "getOrder()" or "getPreOrder()" methods and never access this directly!
+     */
+    private Map<Integer, Object> _ordersList;
 
     private static OrderController instance;
 
@@ -51,7 +55,15 @@ public class OrderController {
      */
     public Order getOrder(Integer orderID)
     {
-        return _ordersList.get(orderID);
+        return (Order) _ordersList.get(orderID);
+    }
+
+    public PreOrder getPreorder(Integer orderID)
+    {
+        Order thisOrder = (Order) _ordersList.get(orderID);
+        if (thisOrder.getOrderStatus() == Order.OrderStatus.PRE_ORDER)
+            return (PreOrder) thisOrder;
+        return null;
     }
 
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
@@ -90,7 +102,7 @@ public class OrderController {
      */
     //TODO : After entering with the car into the parking lot the entry time of Order (super) should be set!)
     public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
-        Order newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, 0, estimatedEntryTime);
+        PreOrder newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, 0, estimatedEntryTime);
         //First we check with the CustomerController if this customer has some special price for this parking.
         priceList priceType = customerController.getHourlyParkingCost(customerID, newPreOrder);
         // Then we calculate the amount to be payed using the billingController and add it to the order.
@@ -122,7 +134,7 @@ public class OrderController {
      * @return order : the finished order with the final price updated
      */
     public Order finishOrder(Integer orderID, priceList priceType){
-        Order order = _ordersList.get(orderID);
+        Order order = getOrder(orderID);
         order.setActualExitTime(new Date());
         order.setPrice(billingController.calculateParkingCharge(
                 order.getActualEntryTime(), order.getActualExitTime(), priceType)
@@ -135,14 +147,15 @@ public class OrderController {
     }
 
     /**
-     * removes the Order from the list AFTER updating it as deleted in the DB.
-     * @param orderID
+     *
+     * @param orderID Order ID
+     * @return Order that was deleted, or null if failed.
      */
     public Order deleteOrder(Integer orderID)
     {
         final Integer THREE_HOURS = 10800000;
         final Integer ONE_HOUR = 3600000;
-        PreOrder orderToDelete = (PreOrder) _ordersList.get(orderID);
+        PreOrder orderToDelete = getPreorder(orderID);
         final Integer REMAINING_TIME = orderToDelete.getEstimatedEntryTime().compareTo(new Date()) ;
         double refund;
         double actualPayment;
@@ -170,8 +183,10 @@ public class OrderController {
         }
         orderToDelete.setCharge(refund);
         orderToDelete.setOrderStatus(Order.OrderStatus.DELETED);
-        dbController.deleteOrder(orderToDelete.getOrderID(), actualPayment);
-        _ordersList.remove(orderID);
-        return orderToDelete;
+        if (dbController.deleteOrder(orderToDelete.getOrderID(), actualPayment)) { //If deletion successful
+            _ordersList.remove(orderID);
+            return orderToDelete;
+        }
+       return null;
     }
 }

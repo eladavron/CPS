@@ -55,10 +55,11 @@ public class PreorderCell extends ListCell<PreOrder>{
         {
             if (item != null)
             {
-                lblText.setText("Order No. " + item.getOrderID() + "\n"
-                        + "From: " + item.getEstimatedEntryTime() + "\n"
-                        + "To: " + item.getEstimatedExitTime() +"\n"
-                        + "Car No. "+  item.getCarID());
+                lblText.setText("Order No. " + item.getOrderID()
+                        + "\nParking Lot: " + item.getParkingLotNumber()
+                        + "\nFrom: " + item.getEstimatedEntryTime()
+                        + "\nTo: " + item.getEstimatedExitTime()
+                        + "\nCar No. "+  item.getCarID());
                 btnDelete.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
@@ -80,10 +81,12 @@ public class PreorderCell extends ListCell<PreOrder>{
                     @Override
                     public void run() {
                         _parent.queryPreorders();
+                        waitScreen.hide();
                     }
                 });
             }
         };
+
         MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {

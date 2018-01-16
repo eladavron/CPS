@@ -228,8 +228,22 @@ public class CPSClientGUI extends Application{
         }
         _pageRoot.getChildren().clear();
         Node guiRoot = _history.pop(); //Pop history.
+        if (guiRoot.getId() != null)
+        {
+            if (guiRoot.getId().equals("rootOrders")) //TODO: Maybe find a safer way to do this, it's a dirty cheat.
+            {
+                changeGUI(MANAGE_PREORDERS);
+                return;
+            }
+            else if (guiRoot.getId().equals("rootSubs"))
+            {
+                changeGUI(MANAGE_SUBSCRIPTIONS);
+                return;
+            }
+        }
         _pageRoot.getChildren().add(guiRoot);
         guiRoot.setDisable(false);
+
         AnchorPane.setTopAnchor(guiRoot, 0.0);
         AnchorPane.setBottomAnchor(guiRoot, 0.0);
         AnchorPane.setLeftAnchor(guiRoot, 0.0);
@@ -361,7 +375,7 @@ public class CPSClientGUI extends Application{
     public static void addMessageToQueue(Message message)
     {
         LinkedList<Message> list;
-        long sid = message.getSID();
+        long sid = message.getTransID();
         if (!_incomingMessages.containsKey(sid)) //No queue exists for this sid
         {
             list = new LinkedList<Message>();

@@ -1,5 +1,6 @@
 package client.GUI.Controls;
 
+import Exceptions.NotImplementedException;
 import client.GUI.Forms.Customers.ManageSubscriptions;
 import client.GUI.Helpers.ErrorHandlers;
 import entity.Subscription;
@@ -73,6 +74,6 @@ public class SubscriptionCell extends ListCell<Subscription> {
 
     private void extendSubscription(Subscription item)
     {
-
+        throw new NotImplementedException("Not yet implemented extension.");
     }
 }

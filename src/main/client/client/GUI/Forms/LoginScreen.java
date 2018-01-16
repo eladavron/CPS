@@ -98,12 +98,7 @@ public class LoginScreen {
         assert paneRegister != null : "fx:id=\"paneRegister\" was not injected: check your FXML file 'LoginScreen.fxml'.";
         if (CPSClientGUI.getConnectionStatus() != CPSClientGUI.ConnectionStatus.RESET)
         {
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    attemptConnect(); //This is in a "run later" so that it runs AFTER the gui is loaded.
-                }
-            });
+            Platform.runLater(this::attemptConnect); //This is in a "run later" so that it runs AFTER the gui is loaded.
         } else { //Connection was reset, need to reconnect.
             setConnectedGUI(false);
         }
@@ -141,7 +136,7 @@ public class LoginScreen {
                 waitScreen.setOnClose(new Runnable() {
                     @Override
                     public void run() {
-                        attemptLogin(newCustomer.getEmail(), newCustomer.getPassword());
+                        Platform.runLater(()-> setConnectedGUI(true));
                     }
                 });
                 StringBuilder carStrings = new StringBuilder();

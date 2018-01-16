@@ -7,7 +7,6 @@ import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
 import entity.Subscription;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -31,6 +30,9 @@ public class ManageSubscriptions implements Initializable {
     private Button btnNew;
 
     @FXML
+    private Button btnRefresh;
+
+    @FXML
     private ListView<Subscription> listViewSubs;
 
     private ObservableList<Subscription> _subList = FXCollections.observableArrayList();
@@ -47,12 +49,7 @@ public class ManageSubscriptions implements Initializable {
             }
         });
         listViewSubs.setItems(_subList);
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                querySubscriptions();
-            }
-        });
+        querySubscriptions(); //TODO: Why doesn't it work on auto-refreshes?
     }
 
     private void querySubscriptions()
@@ -105,8 +102,13 @@ public class ManageSubscriptions implements Initializable {
     }
 
     @FXML
+    void refreshSubs(ActionEvent event) {
+        querySubscriptions();
+    }
+
+    @FXML
     void returnToMain(ActionEvent event) {
-        CPSClientGUI.goBack(true);
+        CPSClientGUI.goBack(false);
     }
 
 

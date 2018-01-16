@@ -36,7 +36,7 @@
                 <FlowPane hgap="10.0" vgap="10.0">
                     <children>
                         <Button fx:id="btnBack" cancelButton="true" mnemonicParsing="false" onAction="#returnToMain" styleClass="icon-button" text="&lt;" />
-                        <Label styleClass="card-title" text="Template">
+                        <Label styleClass="card-title" text="Manage Cars">
                             <font>
                                 <Font name="Arial" size="12.0" />
                             </font>

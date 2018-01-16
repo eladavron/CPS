@@ -109,7 +109,8 @@ public class Validation {
         Tooltip tooltip = new Tooltip(message);
         tooltip.setAutoHide(true);
         Bounds boundInScene = control.localToScreen(control.getBoundsInLocal());
-        tooltip.show(control.getScene().getWindow(), boundInScene.getMaxX() + 5, boundInScene.getMinY());
+        if (boundInScene != null)
+            tooltip.show(control.getScene().getWindow(), boundInScene.getMaxX() + 5, boundInScene.getMinY());
         highlightControl(control, tooltip);
     }
 
