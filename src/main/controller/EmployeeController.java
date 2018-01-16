@@ -130,7 +130,7 @@ public class EmployeeController {
      * @return the employee of this email or null if isnt found.
      */
     public Employee getEmployeeByEmail(String email){
-        for (Employee employee : this._employeeList.values() )
+        for (Employee employee : this._employeeList.values())
         {
             if (employee.getEmail().equals(email)) return employee;
         }

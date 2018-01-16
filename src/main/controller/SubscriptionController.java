@@ -28,10 +28,6 @@ public class SubscriptionController {
      */
     private SubscriptionController() {
         this._subscriptionsList = new HashMap<>();
-//        // get all subscriptions from DB
-//        System.out.print("\tNow where did we put the subscriptions...");
-//        this._subscriptionsList = DBController.getInstance().getAllSubscriptions();
-//        System.out.println("Here they are!");
     }
 
     /**

@@ -12,7 +12,7 @@ public class Report {
      * _generationDate The date of the generation of such report.
      * _type The type of the report.
      */
-    private Integer _managerID;
+    private Integer _managerID; // will be 999 if made by Tasker.
     private Date _generationDate;
     private ReportType _type;
 
@@ -20,7 +20,9 @@ public class Report {
      * Report different types.
      */
     public enum ReportType{
-        ORDERS,
+        DAILY_FINISHED_ORDERS,
+        DAILY_CANCELED_ORDERS,
+        DAILY_LATED_ORDERS,
         COMPLAINTS,
         INACTIVE_SPACES,
     }

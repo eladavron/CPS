@@ -19,7 +19,7 @@ public class TimeUtils {
         DAYS(Calendar.DAY_OF_MONTH), HOURS(Calendar.HOUR_OF_DAY), MINUTES(Calendar.MINUTE);
 
         private final int value;
-        private Units(int value)
+        Units(int value)
         {
             this.value = value;
         }
@@ -29,7 +29,6 @@ public class TimeUtils {
     {
         Calendar cal = Calendar.getInstance();
         cal.setTime(original);
-        int field;
         cal.add(unit.value, num);
         return cal.getTime();
     }
@@ -42,7 +41,7 @@ public class TimeUtils {
      * @return the difference in the selected time unit.
      */
     public static long timeDifference(Date one, Date two, Units units)
-    {
+    {   //TODO : CHECK THIS!
         long diff = Math.abs(one.getTime() - two.getTime());
         switch (units)
         {

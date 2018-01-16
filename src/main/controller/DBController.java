@@ -1,12 +1,12 @@
 package controller;
 
 import entity.*;
+import utils.TimeUtils;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.util.*;
+import java.util.Date;
 
 /**
  * A class that interfaces with the database.
@@ -186,10 +186,32 @@ public class DBController {
             query += String.format(" WHERE %s = %s", field, value);
         }
 
+        return callStatement(query, tableName);
+    }
+
+    /*
+        Overloading function of the function above with field of String type.
+     */
+    private ResultSet queryTable(String tableName, String field, String value) {
+        String query = String.format("SELECT * FROM %s", tableName);
+
+        if ((field != null) && (!value.equals(""))) {
+            query += String.format(" WHERE %s = '%s'", field, value);
+        }
+
+        return  callStatement(query, tableName);
+    }
+
+    /**
+     * private calling Statement of query (prevent code duplication.
+     * @param query
+     * @return
+     */
+    private ResultSet callStatement(String query, String tableName)
+    {
         ResultSet result;
         try {
             Statement stmt = db_conn.createStatement();
-            //result = stmt.executeQuery(String.format("SELECT * FROM %s",tableName));
             result = stmt.executeQuery(query);
         } catch (SQLException e) {
             System.err.printf("An error occurred querying table %s:\n%s\n", tableName, e.getMessage());
@@ -198,7 +220,6 @@ public class DBController {
         }
         return result;
     }
-
 
 
     /* Insertion */
@@ -250,18 +271,18 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
-            String _actualTime = (order.getActualExitTime() == null)
-                    ? _simpleDateFormatForDb.format(new Date(0))
-                    :  _simpleDateFormatForDb.format(order.getActualExitTime());
+            String _actualExitTime = (order.getActualExitTime() == null)
+                    ? "NULL"
+                    :  "'" + _simpleDateFormatForDb.format(order.getActualExitTime()) + "'";
             stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, orderType," +
                             " entryTimeEstimated, entryTimeActual, exitTimeEstimated, exitTimeActual, price)" +
-                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')",
+                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, '%s')",
                     order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(),
                     order.getOrderStatus(),
                     _simpleDateFormatForDb.format(order.getEstimatedEntryTime()),
                     _simpleDateFormatForDb.format(order.getActualEntryTime()),
                     _simpleDateFormatForDb.format(order.getEstimatedExitTime()),
-                    _actualTime, order.getPrice()),
+                    _actualExitTime, order.getPrice()),
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -332,10 +353,10 @@ public class DBController {
                             PreOrder rowOrder = new PreOrder(
                                     rs.getInt("idCustomer"),
                                     rs.getInt("idCar"),
-                                    rs.getDate("exitTimeEstimated"),
+                                    rs.getTimestamp("exitTimeEstimated"),
                                     rs.getInt("idParkingLot"),
                                     rs.getDouble("price"),
-                                    rs.getDate("entryTimeEstimated")
+                                    rs.getTimestamp("entryTimeEstimated")
                             );
                             rowOrder.setOrderID(rs.getInt("idOrders"));
                             myOrders.put(rowOrder.getOrderID(), rowOrder);
@@ -348,12 +369,12 @@ public class DBController {
                                     rs.getInt("idCar"),
                                     rs.getInt("idParkingLot"),
                                     _orderStatus,
-                                    rs.getDate("entryTimeEstimated"),
-                                    rs.getDate("entryTimeActual"),
-                                    rs.getDate("exitTimeEstimated"),
-                                    rs.getDate("exitTimeActual"),
+                                    rs.getTimestamp("entryTimeEstimated"),
+                                    rs.getTimestamp("entryTimeActual"),
+                                    rs.getTimestamp("exitTimeEstimated"),
+                                    rs.getTimestamp("exitTimeActual"),
                                     rs.getDouble("price"),
-                                    rs.getDate("orderCreationTime")
+                                    rs.getTimestamp("orderCreationTime")
                             );
                             myOrders.put(activeOrder.getOrderID(), activeOrder);
                             break;
@@ -1096,7 +1117,7 @@ public class DBController {
 
     private Complaint.ComplaintStatus parseComplaintStatus(String status) {
         Complaint.ComplaintStatus ret;
-        switch (status){
+        switch (status) {
             case "NEW":
                 ret = Complaint.ComplaintStatus.NEW;
                 break;
@@ -1116,6 +1137,138 @@ public class DBController {
                 return null;
         }
         return ret;
+    }
+
+    //Making Reports Section:
+
+    /**
+     * WIP will add one report at a time prob so we can test it with Rami.
+     * @param reportType the type of report to be returned to the Manager/Tasker.
+     * @return the report. (null if wrong type or not implementd yet.
+     */
+    public String makeReportFromDB(Report.ReportType reportType, Integer managerID)
+    {
+        String manager = managerID == 999 ? "Created by CPS's Tasker:" : "Created by Manager:";
+        String reportToReturn ="\n\n\t\t\t\t";
+        switch(reportType)
+        {
+            case DAILY_FINISHED_ORDERS:
+            {
+                reportToReturn += "Daily finished orders report, "
+                        + manager + ":\n" + makeOrdersReport(Order.OrderStatus.FINISHED, 1);
+                return reportToReturn;
+            }
+            case DAILY_CANCELED_ORDERS:
+            {
+                reportToReturn += "Daily canceled orders report,  "
+                        + manager + "\n" + makeOrdersReport(Order.OrderStatus.DELETED, 1);
+                return reportToReturn;
+            }
+            case DAILY_LATED_ORDERS:
+            {
+                reportToReturn += "Daily late customer's orders report, "
+                        + manager + "\n" + makeOrdersReport(null, 1);
+                return reportToReturn;
+            }
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Generic Report maker from Order's table.
+     * @param dayToValidate - The amount of days from the actualy entry to today this report is valid.
+     * @return the wanted report.
+     */
+    private String makeOrdersReport(Order.OrderStatus orderType, Integer dayToValidate)
+    {
+        ResultSet rs;
+        String rowLine = "|___________________________________________________"
+                + "___________________________________________________"
+                + "____________________________________________________|";;
+        StringBuilder report = new StringBuilder(
+                " _________________________________________________________________________________________________________"
+                +"_________________________________________________"
+                +"\n"
+                +"|OrderID | customer ID | status | car ID | price | parking lot number |"
+                + " | actual entry time | actual exit time | estimated entry time | estimated exit time|");
+        ;
+
+        //First we get the Orders OF TYPE ORDER-TYPE from the DB.
+        if (orderType != null)
+        {
+            rs = queryTable("Orders", "orderType", orderType.toString());
+        }
+        else
+        {//Then we are checking late Cars.
+            rs = queryTable("Orders");
+        }
+        //Then we start going through the orders and decided if this order should be inserted into the Report,
+        // according to the dayToValidate.
+        Collection<Object> objArray = parseOrdersFromDBToMap(rs).values();
+        Integer countRows = 0;
+        for (Object orderObj : objArray)
+        {
+            Order order = (Order) orderObj;
+            if (orderType == null)
+            { //Then we are just checking for the cars who got late!
+                if ((TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
+                        TimeUtils.Units.DAYS) <= dayToValidate) &&
+                        (TimeUtils.timeDifference(order.getActualEntryTime(), order.getEstimatedEntryTime(),
+                        TimeUtils.Units.MINUTES) >= 30))
+                {
+                    countRows++;
+                    report.append(addOrderRow(order, rowLine));
+                }
+            }
+            else
+            {
+                if ((TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
+                        TimeUtils.Units.DAYS)) <= dayToValidate)
+                {//Then this Order fits the description...we will add it! :
+                    countRows++;
+                    report.append(addOrderRow(order, rowLine));
+                }
+            }
+        }
+        report.append("\n")
+               .append(rowLine)
+        ;
+        // Adding another flair!
+        return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
+    }
+
+    private String addOrderRow(Order order, String rowLine)
+    {
+        Order.OrderStatus status = order.getOrderStatus();
+        StringBuilder orderRow = new StringBuilder();
+        return String.valueOf(orderRow
+            .append("\n")
+            .append(rowLine)
+            .append(" \n| ").append(order.getOrderID())
+            .append(" | ").append(order.getCostumerID())
+            .append(" | ").append(status.toString())
+            .append(" | ").append(order.getCarID().toString())
+            .append(" | ").append(order.getPrice())
+            .append(" | ").append(order.getParkingLotNumber())
+            .append(" | ").append(makeSimpleDateOrNull(order.getActualEntryTime()))
+            .append(" | ").append(makeSimpleDateOrNull(order.getActualExitTime()))
+            .append(" | ").append(makeSimpleDateOrNull(order.getEstimatedEntryTime()))
+            .append(" | ").append(makeSimpleDateOrNull(order.getEstimatedExitTime()))
+            .append(" | ")
+        );
+    }
+
+    /**
+     * used only above^
+     * @param dateToCheck
+     * @return
+     */
+    private String makeSimpleDateOrNull(Date dateToCheck)
+    {
+        if (dateToCheck == null) return "N/A";
+        return _simpleDateFormatForDb.format(dateToCheck);
     }
 
 

@@ -35,9 +35,6 @@ public class OrderController {
      */
     private OrderController() {
         this._ordersList = new HashMap<>();
-//        System.out.print("\tLooking for all the Orders...");
-//        getOrdersFromDb();
-//        System.out.println("Found them!");
     }
 
     /**
@@ -207,8 +204,17 @@ public class OrderController {
        return null;
     }
 
-    public void putAll(Map<Integer, Object> activeOrders) { //Todo: make sure after cleanup that this is an automated downcast. (or it might break)
-
+    public void putAll(Map<Integer, Object> activeOrders)
+    {
+        for (Object obj : activeOrders.values())
+        {
+            Order order;
+            if (obj instanceof PreOrder)
+                order = (PreOrder) obj;
+            else
+                order = (Order) obj;
+            this._ordersList.put(order.getOrderID(), order);
+        }
         this._ordersList.putAll(activeOrders);
     }
 }
