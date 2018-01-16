@@ -339,4 +339,11 @@ public class CustomerController {
         }else
             return SubscriptionOperationReturnCodes.FAILED;
     }
+
+    public boolean sendEntryTimeBreachedNotification(PreOrder preOrder)
+    {
+        Customer lateCustomer = getCustomer(preOrder.getCostumerID());
+        System.out.println("Notification to late customer " + lateCustomer.getName() + " was sent to " + lateCustomer.getEmail());
+        return true; //Assuming mailing always works
+    }
 }

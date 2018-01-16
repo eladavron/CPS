@@ -8,6 +8,10 @@ import java.util.concurrent.TimeUnit;
 
 public class TimeUtils {
 
+    public static final long SECONDS_IN_MS = 1000;
+    public static final long MINUTES_IN_MS = 60*SECONDS_IN_MS;
+    public static final long HOURS_IN_MS   = 60*MINUTES_IN_MS;
+
     /**
      * An enum of types of time units.
      */

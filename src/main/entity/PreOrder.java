@@ -14,6 +14,8 @@ public class PreOrder extends Order {
 
     private double _charge;
     private Date _estimatedEntryTime;
+    private boolean _isMarkedLate;
+    private boolean _isLateArrivalConfirmedByCustomer;
 
     /**
      * Empty constructor for use with Jackson.
@@ -32,6 +34,8 @@ public class PreOrder extends Order {
         super(customerID, carID, estimatedExitTime, parkingLotNumber);
         this._charge = charge;
         this._estimatedEntryTime =  estimatedEntryTime;
+        this._isMarkedLate = false;
+        this._isLateArrivalConfirmedByCustomer = false;
     }
 
     /**
@@ -52,6 +56,14 @@ public class PreOrder extends Order {
                 "charge=" + _charge +
                 ", estimated entry time=" + _estimatedEntryTime;
     }
+
+    public boolean isLateArrivalConfirmedByCustomer() { return _isLateArrivalConfirmedByCustomer; }
+
+    public void setLateArrivalConfirmedByCustomer() { this._isLateArrivalConfirmedByCustomer = true; }
+
+    public boolean isMarkedLate() { return _isMarkedLate; }
+
+    public void setMarkedLate() { this._isMarkedLate = true; }
 
     public Date getEstimatedEntryTime() {
         return _estimatedEntryTime;
@@ -85,5 +97,4 @@ public class PreOrder extends Order {
 
         return Objects.hash(super.hashCode(), _charge, _estimatedEntryTime);
     }
-
 }

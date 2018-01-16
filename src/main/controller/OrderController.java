@@ -1,14 +1,17 @@
 package controller;
 
 import entity.Billing.priceList;
+import entity.Customer;
 import entity.Order;
 import entity.PreOrder;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static controller.Controllers.*;
+import static entity.Order.OrderStatus.PRE_ORDER;
 
 public class OrderController {
 
@@ -20,6 +23,10 @@ public class OrderController {
     private Map<Integer, Object> _ordersList;
 
     private static OrderController instance;
+
+    public Map<Integer, Object> getOrdersMap() {
+        return _ordersList;
+    }
 
     /**
      * A private Constructor prevents any other class from
@@ -61,9 +68,19 @@ public class OrderController {
     public PreOrder getPreorder(Integer orderID)
     {
         Order thisOrder = (Order) _ordersList.get(orderID);
-        if (thisOrder.getOrderStatus() == Order.OrderStatus.PRE_ORDER)
+        if (thisOrder.getOrderStatus().equals(PRE_ORDER))
             return (PreOrder) thisOrder;
         return null;
+    }
+
+    public ArrayList<PreOrder> getAllPreOrders()
+    {
+        ArrayList<PreOrder> allPreOrdersList = new ArrayList<PreOrder>();
+        for (Object orderObj:_ordersList.values()){
+            if (((Order) orderObj).getOrderStatus().equals(PRE_ORDER))
+                allPreOrdersList.add((PreOrder) orderObj);
+        }
+        return allPreOrdersList;
     }
 
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.

@@ -5,6 +5,7 @@ import entity.Session;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
+import scheduledTasks.PeriodicLateCheck;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -167,6 +168,13 @@ public class CPSServer extends AbstractServer {
             System.exit(1);
             return;
         }
+
+
+        /*
+        Starting periodic tasks
+         */
+        PeriodicLateCheck periodicLateCheck = new PeriodicLateCheck();
+        PeriodicLateCheck.startTimer();
 
         /**
          * Start listening and handle messages.

@@ -158,6 +158,7 @@ public class Message {
                                         _data.add(dataObject);
                                         break;
                                     case PREORDER:
+                                        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                                         PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
                                         _data.add(preOrder);
                                         break;
