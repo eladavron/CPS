@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties
 public class Session {
     private int _sid;
-    private User.UserType _userType;
     private User _user; //Generic user morphism
     private String _email; // user email
     private ParkingLot _parkingLot;
@@ -37,17 +36,16 @@ public class Session {
     public Session(int sid, User user, User.UserType type, String email, ParkingLot parkingLot) {
         this._sid = sid;
         this._user = user;
-        this._userType = type;
         this._email = email;
         this._parkingLot = parkingLot;
     }
 
-    public User.UserType getUserType() {
-        return _userType;
-    }
-
-    public void setUserType(User.UserType userType) {
-        this._userType = userType;
+    public User.UserType getUserType()
+    {
+        if (_user != null)
+            return _user.getUserType();
+        else
+            return null;
     }
 
     public int getSid() {
@@ -60,7 +58,7 @@ public class Session {
 
     public Customer getCustomer()
     {
-        if (_userType.equals(User.UserType.CUSTOMER))
+        if (_user.getUserType().equals(User.UserType.CUSTOMER))
             return (Customer)_user;
         else
             return null; //Dangerous - maybe throw an exception instead?
@@ -80,7 +78,6 @@ public class Session {
 
     public void setUser(User user) {
         this._user = user;
-        this._userType = user.getUserType();
     }
 
     public String getEmail() { return _email; }
@@ -97,6 +94,6 @@ public class Session {
 
     @Override
     public String toString() {
-        return "Session #" + _sid + ": " + _user.getName() + "(" + _userType + "), Parking Lot: " + _parkingLot;
+        return "Session #" + _sid + ": " + _user.getName() + "(" + _user.getUserType() + "), Parking Lot: " + _parkingLot;
     }
 }

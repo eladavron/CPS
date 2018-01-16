@@ -15,6 +15,8 @@ import javafx.scene.paint.Color;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import static client.GUI.CPSClientGUI.PARKING_SPACES;
+
 public class EmployeeScreen implements Initializable{
 
     @FXML
@@ -78,6 +80,12 @@ public class EmployeeScreen implements Initializable{
 
     @FXML
     void handleEmployeeButton(ActionEvent event) {
-        throw new NotImplementedException(((Button) event.getSource()).getText());
+        if (event.getSource() == btnManageParkingSpaces)
+        {
+            CPSClientGUI.changeGUI(PARKING_SPACES);
+        }
+        else {
+            throw new NotImplementedException(((Button) event.getSource()).getText());
+        }
     }
 }

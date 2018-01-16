@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.*?>
+<Tab fx:id="tabFloor" closable="false" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <content>
+      <AnchorPane>
+         <children>
+            <GridPane fx:id="gridFloor"
+                      alignment="CENTER"
+                      hgap="5.0" vgap="5.0"
+                      AnchorPane.bottomAnchor="0"
+                      AnchorPane.leftAnchor="0"
+                      AnchorPane.rightAnchor="0"
+                      AnchorPane.topAnchor="0">
+            </GridPane>
+         </children>
+      </AnchorPane>
+   </content>
+</Tab>

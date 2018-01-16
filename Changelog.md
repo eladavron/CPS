@@ -11,14 +11,19 @@
   * `exit`: Exits the server.
   
  * Improved entire login and validation flow.
+ * Simplified the "Session" object to no longer hold a private field for `UserType` (it was only used in creation
+  anyway, and after that you can just pull it from the user).
 
 ## Employee Screen
 * Logging in as an employee now display the newly implemented Employee screen.
 * If logging in at a certain parking lot and the employee happens to be the manager of that parking lot,
   they will also see the "manage" panels.
+* Created an **AWESOME** view for parking lots, though still untested, that will allow to see and manage parking spaces.
+It's still just a graphical skeleton (with init logic), the status changing logic still needs to be implemented.
 
 ## GUI Fixes
 * Fixed a bug where going back from a 2nd level screen would display an empty gui.
+* GUI error screens will now be more verbose and allow seeing the stack trace.
 
 # 15.01.2018
 * Fixed stupid null value bug in time selectors

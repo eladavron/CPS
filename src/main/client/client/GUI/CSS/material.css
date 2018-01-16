@@ -452,6 +452,10 @@
     -fx-text-fill: -fx-text-base-color;
 }
 
+.tab-pane *.tab-header-background {
+    -fx-background-color: transparent;
+}
+
 /* This needs to be commented out so that the cells fit all content. -Elad */
 /*.list-cell {*/
     /*-fx-cell-size: 40;*/

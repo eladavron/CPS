@@ -34,9 +34,7 @@ public class ComplaintController {
      */
     private ComplaintController() {
         this._complaintsList = new HashMap<>();
-        System.out.print("\tLooking for all the Complaints...");
         getComplaintsFromDb();
-        System.out.println("Found them!");
     }
 
     /**
