@@ -150,10 +150,13 @@ public class OrderController {
     public Order finishOrder(Integer orderID, priceList priceType){
         Order order = getOrder(orderID);
         order.setActualExitTime(new Date());
-        order.setPrice(billingController.calculateParkingCharge(
-                order.getActualEntryTime(), order.getActualExitTime(), priceType)
-                - order.getPrice()
-        );
+        double finalPrice = billingController.calculateParkingCharge(order.getActualEntryTime(), order.getActualExitTime(), priceType);
+        if(order.getEstimatedEntryTime().compareTo(order.getActualEntryTime()) < 0 ){
+            finalPrice = finalPrice*1.2;
+        }
+        order.setPrice(finalPrice - order.getPrice());
+
+
         order.setOrderStatus(Order.OrderStatus.FINISHED);
         //TODO : update order params to match final order. ->DBController
         //TODO: _ordersList.remove(order.getOrderID()); will stay on the list (for today) in order to make sure Regulars arent used twice.
