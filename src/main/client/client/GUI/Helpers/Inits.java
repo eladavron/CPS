@@ -206,7 +206,7 @@ public class Inits {
             user = CPSClientGUI.getSession().getUser();
         }
 
-        Message query = new Message(Message.MessageType.QUERY, PARKING_LOT, user.getUID(), user.getUserType());
+        Message query = new Message(Message.MessageType.QUERY, PARKING_LOT_LIST, user.getUID(), user.getUserType());
         MessageTasker queryParkinglots = new MessageTasker(query, onSuccess, onFailure);
         waitScreen.run(queryParkinglots);
     }

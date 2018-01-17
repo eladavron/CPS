@@ -532,9 +532,7 @@ public class DBController {
         else {
             try {
                 while (rs.next()) {
-                    ParkingSpace rowParkingSpace = new ParkingSpace(
-                            rs.getInt("idOccupyingOrder")
-                    );
+                    ParkingSpace rowParkingSpace = new ParkingSpace(getIntegerNullableFromRS(rs, "idOccupyingOrder"));
                     rowParkingSpace.setHeight(rs.getInt("height"));
                     rowParkingSpace.setWidth(rs.getInt("width"));
                     rowParkingSpace.setDepth(rs.getInt("depth"));
@@ -1400,5 +1398,18 @@ public class DBController {
         }
     }
 
+    /**
+     * Helps parsing nullable ints from database.
+     * @param rs ResultSet to parse
+     * @param columnName Column Name to search for
+     * @return The integer - with value of null
+     * @throws SQLException If SQL exception obviously.
+     */
+    private Integer getIntegerNullableFromRS(ResultSet rs, String columnName) throws SQLException {
+        Integer resultInt = rs.getInt(columnName);
+        if (rs.wasNull())
+            resultInt = null;
+        return resultInt;
+    }
 
 }

@@ -13,8 +13,7 @@ import java.util.ArrayList;
 import static controller.Controllers.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
-import static entity.Message.DataType.COMPLAINT;
-import static entity.Message.DataType.PRIMITIVE;
+import static entity.Message.DataType.*;
 import static entity.Message.MessageType;
 import static entity.Message.MessageType.FINISHED;
 
@@ -77,6 +76,8 @@ public class MessageHandler {
                     handleDeletion(msg, clientConnection);
                     break;
                 case UPDATE:
+                    handleUpdate(msg, clientConnection);
+
                     break;
                 default:
                     throw new InvalidMessageException("Unknown message type: " + msgType);
@@ -272,8 +273,20 @@ public class MessageHandler {
         Message response = new Message();
         response.setDataType(queryMsg.getDataType());
 
-        User user = new User();
-        if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) {
+        if (queryMsg.getDataType().equals(Message.DataType.PARKING_LOT_LIST)) //Parking lot queries are userless
+        {
+            ArrayList<Object> parkingLots = parkingController.getParkingLots();
+            response.setDataType(Message.DataType.PARKING_LOT_LIST);
+            response.setData(parkingLots);
+        }
+        if (queryMsg.getDataType().equals(PARKING_LOT)) //Parking lot queries are user independent
+        {
+            response.setDataType(PARKING_LOT);
+            response.addData(parkingController.getParkingLotByID((Integer) queryMsg.getData().get(0)));
+        }
+        else if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) //It's a user-based query
+        {
+            User user = new User();
             int userID = (int) queryMsg.getData().get(0);
             User.UserType type = (User.UserType) queryMsg.getData().get(1);
             switch (type)
@@ -281,20 +294,12 @@ public class MessageHandler {
                 case CUSTOMER:
                     user = customerController.getCustomer(userID);
                     break;
+                case EMPLOYEE:
+                    user = employeeController.getEmployeeByID(userID);
+                    break;
             }
-        }
-
-        if (queryMsg.getDataType().equals(Message.DataType.PARKING_LOT)) //Parking lot queries are userless
-        {
-            ArrayList<Object> parkingLots = parkingController.getParkingLots();
-            response.setDataType(Message.DataType.PARKING_LOT);
-            response.setData(parkingLots);
-        }
-        else if (queryMsg.getData().get(0) != null)
-        {
             handleUserQueries(queryMsg, response);
         }
-
         response.setMessageType(FINISHED);
         response.setTransID(queryMsg.getTransID());
         sendToClient(response, clientConnection);
@@ -433,8 +438,28 @@ public class MessageHandler {
         return true;
     }
 
-    private static boolean handleUpdate(Message updateMsg)
-    {
+    private static boolean handleUpdate(Message updateMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
+        Message returnMessage = new Message();
+        switch (updateMsg.getDataType()) {
+            case PARKING_SPACE:
+                Integer parkingLotID = (Integer) updateMsg.getData().get(0);
+                int i;
+                for (i = 1; i < updateMsg.getData().size(); i++) {
+                    ParkingSpace space = (ParkingSpace) updateMsg.getData().get(i);
+                    if (dbController.updateParkingSpace(parkingLotID, space)) //If successful
+                    {
+                        parkingController.setParkingSpaceStatus(
+                                parkingLotID, space.getStatus(),
+                                space.getWidth(),
+                                space.getHeight(),
+                                space.getDepth());
+                    }
+                }
+                returnMessage = new Message(FINISHED, PRIMITIVE, i + " parking spaces updated!");
+                break;
+        }
+        returnMessage.setTransID(updateMsg.getTransID());
+        sendToClient(returnMessage, clientConnection);
         return true;
     }
 }

@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<TitledPane animated="false" collapsible="false" stylesheets="@../../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.Employees.ParkingSpaces">
+<TitledPane animated="false" collapsible="false" stylesheets="@../../CSS/material.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.Employees.ManageParkingSpaces">
     <content>
         <BorderPane>
             <center>

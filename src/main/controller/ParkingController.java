@@ -291,18 +291,18 @@ public class ParkingController {
      * This function is responsible for setting a parking space status due to the employee's requirement.
      * @param parkingLotNumber The number of the parking lot to export its status map.
      * @param status The parking space status to set.
-     * @param x The parking space coordinate in width axes.
-     * @param y The parking space coordinate in height axes.
-     * @param z The parking space coordinate in depth axes.
+     * @param width The parking space coordinate in width axes.
+     * @param height The parking space coordinate in height axes.
+     * @param depth The parking space coordinate in depth axes.
      */
-    public void setParkingSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer x, Integer y, Integer z){
-        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(status);
+    public void setParkingSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer width, Integer height, Integer depth){
+        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[depth][width][height].setStatus(status);
     }
 
     //TODO: Try to wrap those 2 calls in one function.
-    public void reserveParkingSpace(Integer parkingLotNumber, Integer orderID , Integer x, Integer y, Integer z){
-        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setOccupyingOrderID(orderID);
-        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[z][x][y].setStatus(ParkingSpace.ParkingStatus.ORDERED);
+    public void reserveParkingSpace(Integer parkingLotNumber, Integer orderID , Integer width, Integer height, Integer depth){
+        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[depth][width][height].setOccupyingOrderID(orderID);
+        this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[depth][width][height].setStatus(ParkingSpace.ParkingStatus.ORDERED);
     }
 
     /**

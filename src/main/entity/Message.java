@@ -44,7 +44,9 @@ public class Message {
         USER,
         CARS,
         CUSTOMER,
-        PARKING_LOT,
+        PARKING_LOT, //For a single parking lot
+        PARKING_LOT_LIST, //For a list of parking lots
+        PARKING_SPACE,
         SUBSCRIPTION,
         SESSION
     };
@@ -86,8 +88,11 @@ public class Message {
             {
                 case QUERY:
                     _data.add(msg.getData().get(0));
-                    User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
-                    _data.add(type);
+                    if (!_dataType.equals(DataType.PARKING_LOT) && !_dataType.equals(DataType.PARKING_LOT_LIST)) //Parking lot queries are userless
+                    {
+                        User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
+                        _data.add(type);
+                    }
                     break;
                 case LOGIN:
                     String username = (String)msg.getData().get(0);
@@ -97,6 +102,19 @@ public class Message {
                     _data.add(1, password);
                     _data.add(2, parkingLot);
                     break;
+                case UPDATE:
+                    switch (_dataType)
+                    {
+                        case PARKING_SPACE:
+                            Integer parkingLotID = (Integer) msg.getData().get(0);
+                            _data.add(parkingLotID);
+                            for (int i = 1; i < msg.getData().size(); i++){
+                                ParkingSpace space = mapper.convertValue(msg.getData().get(i), ParkingSpace.class);
+                                _data.add(space);
+                            }
+                            break;
+                    }
+                break;
                 default: //Not a special message type
                     if (_dataType == DataType.SESSION)
                     {
@@ -182,8 +200,13 @@ public class Message {
                                         _data.add(user);
                                         break;
                                     case PARKING_LOT:
+                                    case PARKING_LOT_LIST:
                                         ParkingLot parkingLotQuery = mapper.convertValue(dataObject, ParkingLot.class);
                                         _data.add(parkingLotQuery);
+                                        break;
+                                    case PARKING_SPACE:
+                                        ParkingSpace parkingSpace = mapper.convertValue(dataObject, ParkingSpace.class);
+                                        _data.add(parkingSpace);
                                         break;
                                     case COMPLAINT:
                                         Complaint complaint = mapper.convertValue(dataObject, Complaint.class);
