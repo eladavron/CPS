@@ -60,7 +60,7 @@ public class NewComplaint implements Initializable {
         MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showDefaultError();
+                waitScreen.showError("Something went wrong...","Ironically, something went wrong filing your complaint...");
             }
         };
         MessageTasker submitComplaintTask = new MessageTasker(newComplaintMsg, onSuccess, onFailure, "Complaining...");

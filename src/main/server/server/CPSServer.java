@@ -54,7 +54,7 @@ public class CPSServer extends AbstractServer {
     public void handleMessageFromClient
     (Object msg, ConnectionToClient client) {
         if (IS_DEBUG)
-            System.out.println("\nRECIEVED (" + client.getInetAddress() + "): " + msg);
+            System.out.println("\nRECEIVED (" + client.getInetAddress() + "): " + msg);
         try {
             MessageHandler.handleMessage((String) msg, client);
         } catch (IOException e) {
@@ -69,7 +69,7 @@ public class CPSServer extends AbstractServer {
      * Called when the server starts listening for connections.
      */
     protected void serverStarted() {
-        System.out.println("Server listening for connections on port " + getPort());
+        System.out.println("Server listening for connections on port " + getPort() +"\n\n********\nReady for action!!!\n********\n\n");
     }
 
     /**

@@ -1,3 +1,9 @@
+# 17.01.2018
+* Added SQL sanitation through StringUtils. Use `StringUtils.sanitizeForSQL(text)` to get a sanitized string for
+ insertion, and then use `StringUtils.desanitizeFromSQL(text)` to get a de-sanitized string.
+
+* Made sure a user couldn't register the same email twice.
+
 # 16.01.2018
 ## Complaint Flow - COMPLETE!
 Customers can now create and cancel complains.

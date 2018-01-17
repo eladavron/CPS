@@ -16,4 +16,18 @@ public class StringUtils {
                 return null;
         }
     }
+
+    /**
+     * Sanitizes strings before insertion to SQL
+     * @return The sanitized string
+     */
+    public static String sanitizeForSQL(String input)
+    {
+        return input.replaceAll("'", "''");
+    }
+
+    public static String desanitizeFromSQL(String input)
+    {
+        return input.replaceAll("''", "'");
+    }
 }

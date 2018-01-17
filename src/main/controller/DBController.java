@@ -1,12 +1,15 @@
 package controller;
 
 import entity.*;
+import utils.StringUtils;
 import utils.TimeUtils;
 
 import java.sql.*;
-
 import java.util.*;
 import java.util.Date;
+
+import static utils.StringUtils.desanitizeFromSQL;
+import static utils.StringUtils.sanitizeForSQL;
 
 /**
  * A class that interfaces with the database.
@@ -109,8 +112,8 @@ public class DBController {
                     while (rs.next()) {
                         String row = String.format("%3d %15s %20s %25s",
                                 rs.getInt("UID"),
-                                rs.getString("name"),
-                                rs.getString("email"),
+                                StringUtils.desanitizeFromSQL(rs.getString("name")),
+                                StringUtils.desanitizeFromSQL(rs.getString("email")),
                                 returnTimeStampFromDB(rs, "create_time"));
                         rowsEmployees.add(row);
                     }
@@ -123,7 +126,7 @@ public class DBController {
                     while (rs.next()) {
                         String row = String.format("%3d %15s %10s %15d",
                                 rs.getInt("UID"),
-                                rs.getString("location"),
+                                StringUtils.desanitizeFromSQL(rs.getString("location")),
                                 rs.getInt("rows") + "x" + rs.getInt("columns") + "x" + rs.getInt("depth"),
                                 rs.getInt("manager_id"));
                         rowsParkingLots.add(row);
@@ -234,7 +237,7 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid = -1;
-            stmt.executeUpdate(String.format("INSERT INTO employees (name, email, password) VALUES ('%s', '%s', '%s')", employee.getName(), employee.getEmail(), employee.getPassword()), Statement.RETURN_GENERATED_KEYS);
+            stmt.executeUpdate(String.format("INSERT INTO employees (name, email, password) VALUES ('%s', '%s', '%s')", sanitizeForSQL(employee.getName()), sanitizeForSQL(employee.getEmail()), sanitizeForSQL(employee.getPassword())), Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next())
                 uid = rs.getInt(1); //Get the UID from the DB.
@@ -495,7 +498,7 @@ public class DBController {
                 while (rs.next()) {
                     ParkingLot rowLot = new ParkingLot(
                             rs.getInt("idParkingLots"),
-                            rs.getString("location"),
+                            desanitizeFromSQL(rs.getString("location")),
                             rs.getInt("rows"),
                             rs.getInt("columns"),
                             rs.getInt("depth"),
@@ -657,9 +660,9 @@ public class DBController {
                 {
                     Employee rowEmployee = new Employee(
                             rs.getInt("UID"),
-                            rs.getString("name"),
-                            rs.getString("email"),
-                            rs.getString("password")
+                            desanitizeFromSQL(rs.getString("name")),
+                            desanitizeFromSQL(rs.getString("email")),
+                            desanitizeFromSQL(rs.getString("password"))
                     );
                     myEmployees.add(rowEmployee);
                 }
@@ -720,9 +723,9 @@ public class DBController {
 
                     Customer rowCustomer = new Customer(
                             rs.getInt("idUsers"),
-                            rs.getString("userName"),
-                            rs.getString("password"),
-                            rs.getString("userEmail"),
+                            desanitizeFromSQL(rs.getString("userName")),
+                            desanitizeFromSQL(rs.getString("password")),
+                            desanitizeFromSQL(rs.getString("userEmail")),
                             myCars
                     );
 
@@ -771,8 +774,8 @@ public class DBController {
             int uid;
             stmt.executeUpdate(String.format("INSERT INTO Users (userName, userEmail, password, userType)"
                 + " VALUES ('%s', '%s', '%s', '%s')",
-                customer.getName(), customer.getEmail(),
-                customer.getPassword(), customer.getUserType()),
+                sanitizeForSQL(customer.getName()), sanitizeForSQL(customer.getEmail()),
+                sanitizeForSQL(customer.getPassword()), customer.getUserType()),
             Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -1011,7 +1014,7 @@ public class DBController {
                             " VALUES ('%s', %s, %s," +
                             "'%s', '%s', '%s')",
                     complaint.getCustomerID(), orderID, representativeID,
-                    complaint.getStatus(), complaint.getDescription(), complaint.getRefund()),
+                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund()),
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -1046,7 +1049,7 @@ public class DBController {
                             " status = '%s', description = '%s', refund = '%s'" +
                             "WHERE idComplaints = '%s'",
                     complaint.getCustomerID(), complaint.getRelatedOrderID(), representativeID,
-                    complaint.getStatus(), complaint.getDescription(), complaint.getRefund(), complaint.getComplaintID()),
+                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund(), complaint.getComplaintID()),
                     Statement.RETURN_GENERATED_KEYS);
             return true;
 
@@ -1103,7 +1106,7 @@ public class DBController {
                             rs.getInt("idOrder"),
                             rep,
                             _complaintStatus,
-                            rs.getString("description"),
+                            desanitizeFromSQL(rs.getString("description")),
                             rs.getDouble("refund")
                     );
                     myComplaints.put(rs.getInt("idComplaints"), rowComplaint);

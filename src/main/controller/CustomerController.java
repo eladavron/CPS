@@ -1,5 +1,6 @@
 package controller;
 
+import Exceptions.CustomerAlreadyExists;
 import Exceptions.LastCarRemovalException;
 import Exceptions.OrderNotFoundException;
 import entity.*;
@@ -9,8 +10,9 @@ import java.util.*;
 import static controller.Controllers.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.*;
 import static entity.Billing.priceList.*;
-import static entity.Order.OrderStatus.*;
-import static entity.Subscription.SubscriptionType.*;
+import static entity.Order.OrderStatus.FINISHED;
+import static entity.Subscription.SubscriptionType.FULL;
+import static entity.Subscription.SubscriptionType.REGULAR;
 
 
 /**
@@ -94,14 +96,21 @@ public class CustomerController {
      * @param customer to add to the System.
      * @return the Customer.
      */
-    public Customer addNewCustomer(Customer customer) {
+    public Customer addNewCustomer(Customer customer) throws CustomerAlreadyExists {
         return addNewCustomer(customer.getUID(),
                               customer.getName(),
                               customer.getPassword(),
                               customer.getEmail(),
                               customer.getCarIDList());
     }
-    public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList){
+    public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList) throws CustomerAlreadyExists {
+        /**
+         * First make sure there are no duplicates!
+         */
+        if (customerController.getCustomerByEmail(email) != null || employeeController.getEmployeeByEmail(email) != null) //Make sure no double registrations!
+        {
+            throw new CustomerAlreadyExists(String.format("A user is already registered with the email \"%s\"!", email));
+        }
         Customer newCustomer = new Customer(uID, name, password, email, carIDList);
         if (!dbController.insertCustomer(newCustomer))
             return null;
