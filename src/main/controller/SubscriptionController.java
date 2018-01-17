@@ -73,7 +73,7 @@ public class SubscriptionController {
      * @param rSubs
      * @return new Subscription id
      */
-    public Integer addRegularSubscription(RegularSubscription rSubs) throws SQLException
+    public Integer addRegularSubscription(RegularSubscription rSubs) throws SQLException //R: not tested.
     {
         assignChargeBySubscriptionType(rSubs);
         if (dbController.insertSubscription(rSubs)) {
@@ -103,7 +103,7 @@ public class SubscriptionController {
      * @param fSubs
      * @return new Subscription id
      */
-    public Integer addFullSubscription(FullSubscription fSubs) throws SQLException
+    public Integer addFullSubscription(FullSubscription fSubs) throws SQLException // R: not tested
     {
         //FullSubscription newSub = new FullSubscription(userID, carID);
         //TODO: add into DB as well. // ID from db

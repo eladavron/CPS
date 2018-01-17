@@ -867,6 +867,10 @@ public class DBController {
 
 
     public boolean insertSubscription(Subscription subs) throws SQLException{
+        if (this.isTest){
+            subs.setSubscriptionID(1);
+            return true;
+        }
         String params = "idUser, endDate";
         Subscription.SubscriptionType subType = subs.getSubscriptionType();
         String values = String.format("%s, '%s'", subs.getUserID(), _simpleDateFormatForDb.format(subs.getExpiration()));
@@ -1017,6 +1021,9 @@ public class DBController {
      * @return True if successful, false otherwise.
      */
     public boolean renewSubscription(Subscription renewedSubs) throws SQLException{
+        if (this.isTest){
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             String query;
@@ -1030,7 +1037,7 @@ public class DBController {
             return true;
 
         } catch (SQLException e) {
-            System.err.printf("An error occurred renewing subscription: %s\n", renewedSubs.getSubscriptionID(), e.getMessage());
+            System.err.printf("An error occurred renewing subscription: %s\n%s", renewedSubs.getSubscriptionID(), e.getMessage());
             throw e;
         }
     }
