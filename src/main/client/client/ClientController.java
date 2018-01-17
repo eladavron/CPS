@@ -37,7 +37,7 @@ public class ClientController extends ocsf.client.AbstractClient
     {
         if (CPSClientGUI.IS_DEBUG)
         {
-            System.out.println("RECIEVED: " + (String)msg);
+            System.out.println("RECEIVED: " + (String)msg);
         }
         String json = (String) msg;
         Message receivedMessage;

@@ -269,14 +269,10 @@ public class DBController {
      * @return True if successful, False otherwise.
      */
     public boolean insertOrder(Order order){
-        if (this.isTest){
-            order.setOrderID(1);
-            return true;
-        }
         try {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
-            int uid = -1;
+            int uid;
             String _actualExitTime = (order.getActualExitTime() == null)
                     ? "NULL"
                     :  "'" + _simpleDateFormatForDb.format(order.getActualExitTime()) + "'";
@@ -603,7 +599,7 @@ public class DBController {
             return result == 1;
         } catch (SQLException e)
         {
-            System.err.printf("An error occurred inserting during updating the car space of occupying order: %s ", occupyingOrder, e.getMessage());
+            System.err.printf("An error occurred during updating the car space of occupying order: %s ", occupyingOrder, e.getMessage());
             return false;
         }
     }
@@ -1293,6 +1289,100 @@ public class DBController {
     {
         if (dateToCheck == null) return "N/A";
         return _simpleDateFormatForDb.format(dateToCheck);
+    }
+
+
+    /**
+     * REPORTS - DB Stuff
+     */
+    /**
+     * update or insert report for a specific date and parking lot
+     * @param day
+     * @param month
+     * @param year
+     * @param reportType
+     * @param parkingLotID
+     * @param count
+     * @return
+     */
+    private boolean updateDailyReportToDB(Integer day, Integer month, Integer year, Report.ReportType reportType, Integer parkingLotID, Integer count){
+
+        // set reportType column
+        String reportCol = parseReportTypeToColumnName(reportType);
+        if (reportCol == null) {
+            System.err.printf("An error occurred during updating the daily report of: %s%s%s ", day, month, year);
+            return false;
+        }
+
+        ResultSet rs;
+        try {
+           Statement stmt = db_conn.createStatement();
+           String condition = String.format(" WHERE day = %s AND month = %s AND year = %s AND parkingLotID = %s",
+                   day, month, year, parkingLotID);
+           String query = "SELECT * FROM DailyReports";
+           rs = stmt.executeQuery(query+condition);
+           if(rs.next()){ // entry available
+               query = String.format("UPDATE DailyReports SET %s VALUES %s", reportCol, count);
+               query += condition;
+           }else{ // new entry
+               query = String.format("INSERT INTO DailyReports (day, month, year, parkingLotId, $s) " +
+                       "VALUES (%s, %s, %s, %s, %s)",
+                       reportCol, day, month, year, parkingLotID, count);
+           }
+           int result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+           return result == 1;
+        }catch (SQLException e)
+        {
+            System.err.printf("An error occurred during updating the daily report of: %s%s%s\n%s", day, month, year, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param day
+     * @param month
+     * @param year
+     * @return
+     */
+    //TODO: thats just a starter func
+    private Map<Integer, Object> getDailyReportFromDbByDate(Integer day, Integer month, Integer year) {
+        Map<Integer, Object> map = new HashMap<>();
+        ResultSet rs;
+        try {
+            Statement stmt = db_conn.createStatement();
+            String condition = String.format(" WHERE day = %s AND month = %s AND year = %s",
+                    day, month, year);
+            String query = "SELECT * FROM DailyReports";
+            rs = stmt.executeQuery(query + condition);
+            while (rs.next()) { // entries available
+                map.put(rs.getInt("parkingLotID"), null);
+            }
+
+            return map;
+
+        }catch(SQLException e) {
+                System.err.printf("An error occurred during querying the daily report of: %s%s%s\n%s", day, month, year, e.getMessage());
+                return null;
+        }
+    }
+
+    /**
+     * translated ReportType enum to DB column name
+     * @param reportType ReportType to check
+     * @return db column name
+     */
+    private String parseReportTypeToColumnName (Report.ReportType reportType){
+        switch (reportType){
+            case DAILY_CANCELED_ORDERS:
+                return "numberOfDailyCancelledOrders";
+            case DAILY_FINISHED_ORDERS:
+                return "numberOfCompletedOrders";
+            case DAILY_LATED_ORDERS:
+                return "numberOfLateEntranceOrders";
+            default:
+                return null;
+        }
     }
 
 
