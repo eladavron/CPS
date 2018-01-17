@@ -1,5 +1,6 @@
 package controller;
 
+import java.sql.SQLException;
 import java.util.Date;
 
 
@@ -35,7 +36,10 @@ public class CustomerServiceController {
      * @param estimatedExitTime Order's estimated exit time.
      * @param estimatedEntryTime Order's estimated entry time.
      */
-    public void reserveParking(Integer parkingLotNumber, Integer orderID, Integer x, Integer y, Integer z, Integer customerID, Integer carID, Date estimatedExitTime, Date estimatedEntryTime){
+    public void reserveParking(Integer parkingLotNumber, Integer orderID, Integer x,
+                               Integer y, Integer z, Integer customerID,
+                               Integer carID, Date estimatedExitTime,
+                               Date estimatedEntryTime) throws SQLException {
         orderController.makeNewPreOrder(customerID,carID,estimatedExitTime,parkingLotNumber,estimatedEntryTime);
         parkingController.reserveParkingSpace(parkingLotNumber,orderID,x,y,z);
 

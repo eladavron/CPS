@@ -7,6 +7,7 @@ import entity.ParkingSpace;
 import entity.User;
 
 import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,13 +16,21 @@ import static controller.Controllers.*;
 
 public class EmployeeController {
     private Map<Integer, Employee> _employeeList = new HashMap<>();
-    private static EmployeeController ourInstance = new EmployeeController();
+    private static EmployeeController ourInstance;
+
+    static {
+        try {
+            ourInstance = new EmployeeController();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static EmployeeController getInstance() {
         return ourInstance;
     }
 
-    private EmployeeController() {
+    private EmployeeController()throws SQLException {
         getEmployeesFromDB();
     }
 
@@ -29,14 +38,14 @@ public class EmployeeController {
      * Initiate parking lot.
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
-    public void initiateParkingLot(Integer parkingLotNumber){
+    public void initiateParkingLot(Integer parkingLotNumber) throws SQLException {
         parkingController.initiateParkingLot(parkingLotNumber);
     }
 
     /**
      * Private function that retrieves the Employees list form the DB, on startup.
      */
-    private void getEmployeesFromDB() {
+    private void getEmployeesFromDB() throws SQLException{
         setEmployeesList(dbController.getEmployees());
     }
 
@@ -81,7 +90,7 @@ public class EmployeeController {
      * @param complaintID The complaintID to handle/manage.
      * @param representativeToHandleComplaint set representative to handle the complaint.
      */
-    public void manageComplaint(Integer complaintID, Integer representativeToHandleComplaint){
+    public void manageComplaint(Integer complaintID, Integer representativeToHandleComplaint) throws SQLException{
         CustomerServiceController.complaintController.fileComplaint(complaintID, representativeToHandleComplaint);
     }
 

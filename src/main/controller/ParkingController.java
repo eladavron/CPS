@@ -10,6 +10,7 @@ import entity.ParkingSpace;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class ParkingController {
      * @param parkingLotNumber The number of the parking lot to initiate.
      * @param parkingSpaces list of existing spaces on DB for this parking lot.
      */
-    private void initiateParkingLot(Integer parkingLotNumber, ArrayList<ParkingSpace> parkingSpaces)
+    private void initiateParkingLot(Integer parkingLotNumber, ArrayList<ParkingSpace> parkingSpaces) throws SQLException
     {
         System.out.println("Starting Init of parking lot number: " + parkingLotNumber );
         ParkingLot thisParkingLot = this._parkingLotList.get(parkingLotNumber);
@@ -91,12 +92,11 @@ public class ParkingController {
         System.out.println("Done.");
     }
 
-    public void initiateParkingLot(Integer parkingLotNumber){
+    public void initiateParkingLot(Integer parkingLotNumber) throws SQLException{
         initiateParkingLot(parkingLotNumber,dbController.getParkingSpaces(parkingLotNumber));
     }
 
-    public void initiateParkingLots()
-    {
+    public void initiateParkingLots() throws SQLException {
         for (Integer parkingLotID: _parkingLotList.keySet())
         {
             initiateParkingLot(parkingLotID, dbController.getParkingSpaces(parkingLotID));
@@ -109,7 +109,7 @@ public class ParkingController {
      * @param orderID The occupying ID of the parking space to be exited of.
      * @return true if successfully entered, false if the parking lot is full.
      */
-    public boolean enterParkingLot(Integer orderID){
+    public boolean enterParkingLot(Integer orderID)throws SQLException{
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
 
@@ -144,7 +144,7 @@ public class ParkingController {
      * @param orderID The occupying ID of the parking space to be exited of.
      * @return on failure false.
      */
-    public boolean exitParkingLot(Integer orderID)
+    public boolean exitParkingLot(Integer orderID) throws SQLException
     {
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
@@ -320,7 +320,7 @@ public class ParkingController {
     /**
      * Private function that retrieves the parkingLot list form the DB, on startup.
      */
-    public ArrayList<Object> getParkingLots() {
+    public ArrayList<Object> getParkingLots() throws SQLException{
         ArrayList<Object> parkingLots = dbController.getParkingLots();
         setParkingLotsList(parkingLots);
     //   TODO :to be used on parking lots for initing them until we have that button on employee.

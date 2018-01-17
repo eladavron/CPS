@@ -102,6 +102,7 @@ public class MessageTasker extends Task<Message> {
                     case QUEUED:
                         updateMessage(_sendingMessage);
                         break;
+                    case ERROR_OCCURRED:
                     case FAILED:
                         updateMessage("Operation failed!");
                         _onFailure.setMessage(incoming);

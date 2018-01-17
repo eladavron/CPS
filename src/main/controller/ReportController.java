@@ -9,6 +9,7 @@ import entity.Report;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -42,7 +43,10 @@ public class ReportController {
         return this._reportsList.get(reportID);
     }
 
-    public void printReport(Report.ReportType reportType, Integer reportManagerID) throws FileNotFoundException, DocumentException {
+    public void printReport(Report.ReportType reportType, Integer reportManagerID) throws FileNotFoundException,
+                                                                                          DocumentException,
+                                                                                          SQLException
+    {
         Document doc = new Document();
         //The pdf file will be created and stored in the same project folder.
         PdfWriter.getInstance(doc, new FileOutputStream("ReportPrint.pdf"));
@@ -53,7 +57,7 @@ public class ReportController {
 
     }
 
-    public String generateReport(Report.ReportType reportType, Integer reportManagerID){
+    public String generateReport(Report.ReportType reportType, Integer reportManagerID) throws SQLException{
         String generatedReport = dbController.makeReportFromDB(reportType,reportManagerID);
         return generatedReport;
     }

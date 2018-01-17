@@ -32,7 +32,8 @@ public class Message {
         PAYMENT, //The message of the customer paying through the GUI. Accompany with a double containing the amount.
         QUEUED,
         FINISHED,
-        FAILED
+        FAILED,
+        ERROR_OCCURRED,
     };
     public enum DataType {
         PRIMITIVE, //Any data type native to Java, such as String, Double, Integer, etc.
@@ -208,7 +209,7 @@ public class Message {
 
     public static Long getSidFromJson(String json)
     {
-        Pattern pattern = Pattern.compile("\\\"sid\\\"\\:(\\-?\\d*)");
+        Pattern pattern = Pattern.compile("\\\"transID\\\"\\:(\\-?\\d*)");
         Matcher matcher = pattern.matcher(json);
         if (matcher.find())
         {

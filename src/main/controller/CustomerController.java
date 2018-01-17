@@ -5,6 +5,7 @@ import Exceptions.LastCarRemovalException;
 import Exceptions.OrderNotFoundException;
 import entity.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import static controller.Controllers.*;
@@ -22,10 +23,14 @@ public class CustomerController {
     private static CustomerController instance;
 
     static {
-        instance = new CustomerController();
+        try {
+            instance = new CustomerController();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static CustomerController getInstance() {
+    public static CustomerController getInstance() throws SQLException{
         return instance;
     }
 
@@ -36,7 +41,7 @@ public class CustomerController {
         QUERY_RESPONSE
     }
 
-    private CustomerController(){
+    private CustomerController() throws SQLException{
         getCustomersFromDb();
     }
 
@@ -63,7 +68,7 @@ public class CustomerController {
     /**
      * Private function that retrieves the Customers list form the DB, on startup.
      */
-    private void getCustomersFromDb() {
+    private void getCustomersFromDb()throws SQLException {
         setCustomersList(dbController.getCustomers());
 
     }
@@ -96,14 +101,14 @@ public class CustomerController {
      * @param customer to add to the System.
      * @return the Customer.
      */
-    public Customer addNewCustomer(Customer customer) throws CustomerAlreadyExists {
+    public Customer addNewCustomer(Customer customer) throws CustomerAlreadyExists, SQLException {
         return addNewCustomer(customer.getUID(),
                               customer.getName(),
                               customer.getPassword(),
                               customer.getEmail(),
                               customer.getCarIDList());
     }
-    public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList) throws CustomerAlreadyExists {
+    public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList) throws CustomerAlreadyExists,SQLException {
         /**
          * First make sure there are no duplicates!
          */
@@ -118,7 +123,7 @@ public class CustomerController {
         return newCustomer;
     }
 
-    public ArrayList<Object> getCustomersPreOrders(int customerID){
+    public ArrayList<Object> getCustomersPreOrders(int customerID) throws SQLException{
         return new ArrayList<>(dbController.getOrdersByUserID(customerID).values());
     }
 
@@ -133,7 +138,7 @@ public class CustomerController {
      * @param estimatedExitTime
      * @param parkingLotNumber
      */
-    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
+    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) throws SQLException{
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewSimpleOrder(customerID, carID, estimatedExitTime,  parkingLotNumber);
         Map<Integer, Object> activeOrders = customer.getActiveOrders();
@@ -146,7 +151,7 @@ public class CustomerController {
      * OverLoading function for a given template of an Order.
      * @param newOrder
      */
-    public Order addNewOrder(Order newOrder){
+    public Order addNewOrder(Order newOrder) throws SQLException{
         return addNewOrder(newOrder.getCostumerID(), newOrder.getCarID(), newOrder.getEstimatedExitTime(), newOrder.getParkingLotNumber());
     }
 
@@ -159,7 +164,7 @@ public class CustomerController {
      * @param estimatedEntryTime
      * @return order
      */
-    public Order addNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
+    public Order addNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime)throws SQLException{
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewPreOrder(customerID, carID, estimatedExitTime,  parkingLotNumber, estimatedEntryTime);
         Map<Integer, Object> activeOrders = customer.getActiveOrders();
@@ -172,14 +177,14 @@ public class CustomerController {
      * OverLoading function for a given template of a PreOrder.
      * @param newPreOrder
      */
-    public Order addNewPreOrder(PreOrder newPreOrder){
+    public Order addNewPreOrder(PreOrder newPreOrder) throws SQLException{
         return addNewPreOrder(newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
     }
 
     /**
      *  Delete an un-wanted order.
      */
-    public Order removeOrder(Customer customer, Integer orderID){
+    public Order removeOrder(Customer customer, Integer orderID)throws SQLException{
         Order removedOrder = orderController.deleteOrder(orderID);
         return removedOrder;
     }
@@ -270,7 +275,7 @@ public class CustomerController {
      * @param customer
      * @param carID
      */
-    public void addCar(Customer customer, Integer carID)
+    public void addCar(Customer customer, Integer carID) throws SQLException
     {
         customer.getCarIDList().add(carID);
         dbController.addCarToCustomer(customer.getUID(), carID);
@@ -281,7 +286,7 @@ public class CustomerController {
      * @param customer
 
      */
-    public boolean removeCar(Customer customer, Integer carID) throws LastCarRemovalException {
+    public boolean removeCar(Customer customer, Integer carID) throws LastCarRemovalException, SQLException{
         ArrayList<Integer> carList = customer.getCarIDList();
         if (carList.contains(carID)) {
             if (carList.size() > 1) {
@@ -306,7 +311,7 @@ public class CustomerController {
      * @param subs - Regular Subscription
      * @return CustomerController.SubscriptionOperationReturnCodes Return Code
      */
-    public SubscriptionOperationReturnCodes addNewRegularSubscription(RegularSubscription subs)
+    public SubscriptionOperationReturnCodes addNewRegularSubscription(RegularSubscription subs) throws SQLException
     {
         Customer cust = customerController.getCustomer(subs.getUserID());
         Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
@@ -336,7 +341,7 @@ public class CustomerController {
      * @param fSubs - Full Subscription
      * @return CustomerController.SubscriptionOperationReturnCodes Return Code
      */
-    public SubscriptionOperationReturnCodes addNewFullSubscription(FullSubscription fSubs)
+    public SubscriptionOperationReturnCodes addNewFullSubscription(FullSubscription fSubs) throws SQLException
     {
         Customer cust = customerController.getCustomer(fSubs.getUserID());
         Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();

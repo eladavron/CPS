@@ -2,6 +2,7 @@ package scheduledTasks;
 
 import entity.PreOrder;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,7 +33,12 @@ public class PeriodicLateCheck extends scheduledTask{
                 }
                 else if(needToCancelOrderDueToEntryTimeBreached(thisPreOrder))
                 {
-                    orderController.deleteOrder(thisPreOrder.getOrderID());
+                    try {
+                        orderController.deleteOrder(thisPreOrder.getOrderID());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        System.err.println("An error occurred processing that command.");
+                    }
                     logScheduledTask("Order #" + thisPreOrder.getOrderID() + " was deleted due to late customer");
                 }
             }

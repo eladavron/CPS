@@ -5,12 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.CustomerController;
 import entity.*;
 import ocsf.server.ConnectionToClient;
-import utils.TimeUtils;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 
 import static controller.Controllers.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
@@ -44,6 +42,10 @@ public class MessageHandler {
             Message msg = new Message(json);
             MessageType msgType = msg.getMessageType();
 
+            if (SessionManager.doesSessionExist(clientConnection))
+            {
+                SessionManager.getSession(clientConnection).setLastTransID(msg.getTransID());
+            }
             if (msgType == MessageType.LOGOUT)
             {
                 handleLogout(msg,clientConnection);
@@ -83,7 +85,15 @@ public class MessageHandler {
             e.printStackTrace();
             return false;
         } catch (InvalidMessageException e) {
-            Message replyInvalid = new Message(MessageType.FAILED, PRIMITIVE, e.getMessage());
+            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "Invalid Message: " +e.getMessage());
+            Long SID = Message.getSidFromJson(json);
+            if (SID != null)
+                replyInvalid.setTransID(SID);
+            sendToClient(replyInvalid, clientConnection);
+            e.printStackTrace();
+            return false;
+        } catch (SQLException e) {
+            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "SQL: " + e.getMessage());
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
                 replyInvalid.setTransID(SID);
@@ -94,7 +104,7 @@ public class MessageHandler {
         return true;
     }
 
-    private static void handleEndParking(Message endParkingMsg, ConnectionToClient clientConnection) throws IOException {
+    private static void handleEndParking(Message endParkingMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
 
         Message endParkingResponse = new Message();
         endParkingResponse.setTransID(endParkingMsg.getTransID());
@@ -129,7 +139,7 @@ public class MessageHandler {
 
     }
 
-    private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws IOException {
+    private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
         Message response = new Message();
         response.setTransID(paymentNeededMsg.getTransID());
         Order orderInNeedOfPayment = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
@@ -142,7 +152,7 @@ public class MessageHandler {
         sendToClient(response, clientConnection);
     }
 
-    private static void handleLogout(Message msg, ConnectionToClient clientConnection) throws IOException {
+    private static void handleLogout(Message msg, ConnectionToClient clientConnection) throws IOException, SQLException {
         Message logoutResponse = new Message();
         ArrayList<Object> data = new ArrayList<Object>();
         logoutResponse.setMessageType(MessageType.LOGOUT);
@@ -152,7 +162,7 @@ public class MessageHandler {
         SessionManager.dropSession(clientConnection);
     }
 
-    private static void handleLogin(Message msg, ConnectionToClient clientConnection) throws IOException {
+    private static void handleLogin(Message msg, ConnectionToClient clientConnection) throws IOException, SQLException{
         Message loginResponse;
         String email =(String) msg.getData().get(0);
         String pwd =(String) msg.getData().get(1);
@@ -211,7 +221,7 @@ public class MessageHandler {
         return false;
     }
 
-    private static void handleUserQueries(Message queryMsg, Message response)
+    private static void handleUserQueries(Message queryMsg, Message response) throws SQLException
     {
         int userID = (int) queryMsg.getData().get(0);
         switch (queryMsg.getDataType())
@@ -252,7 +262,7 @@ public class MessageHandler {
         }
     }
 
-    private static boolean handleQueries(Message queryMsg, ConnectionToClient clientConnection) throws IOException {
+    private static boolean handleQueries(Message queryMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
 
         /**
          * Important!
@@ -291,7 +301,7 @@ public class MessageHandler {
         return true;
     }
 
-    private static void handleDeletion(Message deleteMsg, ConnectionToClient clientConnection) throws IOException {
+    private static void handleDeletion(Message deleteMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
 
         Message response = new Message();
         switch(deleteMsg.getDataType())
@@ -346,7 +356,7 @@ public class MessageHandler {
         sendToClient(response,clientConnection);
     }
 
-    private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws IOException {
+    private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
         Message createMsgResponse;
         switch(createMsg.getDataType())
         {

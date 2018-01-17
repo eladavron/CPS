@@ -50,7 +50,7 @@ public class DBController {
         try {
             db_conn = connect(url, username, password);
 
-            /**
+            /*
              * Get tables in database
              */
             DatabaseMetaData meta = db_conn.getMetaData();
@@ -94,7 +94,7 @@ public class DBController {
      * @param tableName name of the table to query
      * @return a printable table.
      */
-    public String GetData(String tableName)
+    public String GetData(String tableName) throws SQLException
     {
         try {
             if (!listTables.contains(tableName)) { //Check if the table exists in the database.
@@ -141,7 +141,7 @@ public class DBController {
             }
         } catch (SQLException e) {
             System.err.printf("Error occurred getting data from table \"%s\":\n%s", tableName, e.getMessage());
-            return "Error occurred!\nSee server output for details.";
+            throw e;
         }
     }
 
@@ -171,7 +171,7 @@ public class DBController {
      * @param tableName  name of the table to query.
      * @return The resultset.
      */
-    private ResultSet queryTable(String tableName)
+    private ResultSet queryTable(String tableName) throws SQLException
     {
         return queryTable(tableName, null, -1);
     }
@@ -182,7 +182,7 @@ public class DBController {
      * @param value value to find with
      * @return  The resultset.
      */
-    private ResultSet queryTable(String tableName, String field, int value) {
+    private ResultSet queryTable(String tableName, String field, int value) throws SQLException {
         String query = String.format("SELECT * FROM %s", tableName);
 
         if ((field != null) && (value != 0)) {
@@ -195,7 +195,7 @@ public class DBController {
     /*
         Overloading function of the function above with field of String type.
      */
-    private ResultSet queryTable(String tableName, String field, String value) {
+    private ResultSet queryTable(String tableName, String field, String value) throws SQLException{
         String query = String.format("SELECT * FROM %s", tableName);
 
         if ((field != null) && (!value.equals(""))) {
@@ -210,7 +210,7 @@ public class DBController {
      * @param query
      * @return
      */
-    private ResultSet callStatement(String query, String tableName)
+    private ResultSet callStatement(String query, String tableName) throws SQLException
     {
         ResultSet result;
         try {
@@ -219,7 +219,7 @@ public class DBController {
         } catch (SQLException e) {
             System.err.printf("An error occurred querying table %s:\n%s\n", tableName, e.getMessage());
             e.printStackTrace();
-            return null;
+            throw e;
         }
         return result;
     }
@@ -232,7 +232,7 @@ public class DBController {
      * @param employee Employee objects to insert
      * @return True if successful, False otherwise.
      */
-    public boolean InsertEmployee(Employee employee) {
+    public boolean InsertEmployee(Employee employee) throws SQLException{
         try {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
@@ -259,7 +259,7 @@ public class DBController {
             return true;
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", employee, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -268,7 +268,7 @@ public class DBController {
      * @param order order object to insert
      * @return True if successful, False otherwise.
      */
-    public boolean insertOrder(Order order){
+    public boolean insertOrder(Order order) throws SQLException{
         try {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
@@ -308,7 +308,7 @@ public class DBController {
             return true;
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", order, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -317,7 +317,7 @@ public class DBController {
      * @param orderId
      * @return True upon success, false otherwise
      */
-    public boolean deleteOrder (int orderId, double charged)
+    public boolean deleteOrder (int orderId, double charged) throws SQLException
     {
 
         try {
@@ -331,7 +331,7 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred deleting order with id: %s \n%s\n", orderId, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -342,13 +342,13 @@ public class DBController {
             return rs.getTimestamp(columnLabel);
         }
         catch (SQLException e)
-       {
+        {
             return null;
-       }
+        }
     }
 
 
-    public Map<Integer, Object> parseOrdersFromDBToMap(ResultSet rs){
+    public Map<Integer, Object> parseOrdersFromDBToMap(ResultSet rs) throws SQLException{
         Map<Integer, Object>  myOrders = new HashMap<>();
         if (rs == null){
             return null;
@@ -400,7 +400,7 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Orders", e.getMessage());
-                return null;
+                throw e;
             }
         }
         return myOrders;
@@ -410,7 +410,7 @@ public class DBController {
      * get orders from DB (all orders)
      * @return all orders in list
      */
-    public Map<Integer, Object> getAllOrders() {
+    public Map<Integer, Object> getAllOrders() throws SQLException {
         return getOrdersByID(-1);
     }
 
@@ -419,7 +419,7 @@ public class DBController {
      * @param orderId specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public Map<Integer, Object> getOrdersByID(int orderId) {
+    public Map<Integer, Object> getOrdersByID(int orderId) throws SQLException{
         ResultSet rs;
 
         if (orderId == -1) { // get all rows
@@ -437,7 +437,7 @@ public class DBController {
      * @param userID specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public Map<Integer, Object> getOrdersByUserID(int userID) {
+    public Map<Integer, Object> getOrdersByUserID(int userID) throws SQLException {
         ResultSet rs;
 
         if (userID == -1) { // get all rows
@@ -456,7 +456,7 @@ public class DBController {
      * Returns a list of available tables in the DB.
      * @return just that.
      */
-    public String listTables()
+    public String listTables() throws SQLException
     {
         String returnString = "Available tables:\n";
         for (String tableName : listTables) {
@@ -465,12 +465,12 @@ public class DBController {
         return returnString;
     }
 
-    public ArrayList<Object> getParkingLots() {
+    public ArrayList<Object> getParkingLots() throws SQLException{
         return  getParkingLotsByID(-1);
     }
 
 
-    public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) {
+    public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) throws SQLException{
         ResultSet rs;
 
         if (parkingLotID == -1) { // get all rows
@@ -484,7 +484,7 @@ public class DBController {
 
     }
 
-    private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) {
+    private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) throws SQLException{
         ArrayList<Object> myLots = new ArrayList<>();
         if (rs == null){
             return null;
@@ -504,7 +504,7 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Parking lots", e.getMessage());
-                return null;
+                throw e;
             }
         }
         return myLots;
@@ -515,12 +515,12 @@ public class DBController {
      * @param parkingLotNumber
      * @return empty if none found, null on exception.
      */
-    public ArrayList<ParkingSpace> getParkingSpaces(Integer parkingLotNumber){
+    public ArrayList<ParkingSpace> getParkingSpaces(Integer parkingLotNumber) throws SQLException{
         ResultSet rs = queryTable("ParkingSpace", "idParkingLot", parkingLotNumber);
         return parseParkingSpacesFromDB(rs);
     }
 
-    private ArrayList<ParkingSpace> parseParkingSpacesFromDB(ResultSet rs) {
+    private ArrayList<ParkingSpace> parseParkingSpacesFromDB(ResultSet rs) throws SQLException{
         ArrayList<ParkingSpace> myParkingSpaces = new ArrayList<>();
         if (rs == null){
             return null;
@@ -539,7 +539,7 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Parking lots", e.getMessage());
-                return null;
+                throw e;
             }
         }
         return myParkingSpaces;
@@ -552,7 +552,7 @@ public class DBController {
      * @param parkingSpace the parking space that got his status changed.
      * @return True if successful, False otherwise.
      */
-    public boolean updateParkingSpace(Integer parkingLotNumber, ParkingSpace parkingSpace){
+    public boolean updateParkingSpace(Integer parkingLotNumber, ParkingSpace parkingSpace) throws SQLException{
         ResultSet rs;
         String occupyingOrder = "";
         String query;
@@ -600,24 +600,24 @@ public class DBController {
         } catch (SQLException e)
         {
             System.err.printf("An error occurred during updating the car space of occupying order: %s ", occupyingOrder, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
 
 
-   public ArrayList<User> getCustomers()
+   public ArrayList<User> getCustomers() throws SQLException
    {
        return getUserByID(-1, User.UserType.CUSTOMER);
    }
 
-    public ArrayList<User> getEmployees()
+    public ArrayList<User> getEmployees() throws SQLException
     {
         return getUserByID(-1, User.UserType.EMPLOYEE);
     }
 
 
-    public ArrayList<User> getUserByID(Integer userID, User.UserType userType) {
+    public ArrayList<User> getUserByID(Integer userID, User.UserType userType) throws SQLException{
         ResultSet rs;
 
         switch (userType){
@@ -645,7 +645,7 @@ public class DBController {
         return null;
     }
 
-    private  ArrayList<User> parseEmployeeFromDB(ResultSet rs) {
+    private  ArrayList<User> parseEmployeeFromDB(ResultSet rs) throws SQLException {
         ArrayList<User> myEmployees = new ArrayList<>();
         if (rs == null){
             return null;
@@ -675,7 +675,7 @@ public class DBController {
      * @param userType
      * @return
      */
-    private ResultSet queryUserTable(User.UserType userType) {
+    private ResultSet queryUserTable(User.UserType userType) throws SQLException{
         String query = String.format("SELECT * FROM Users");
 
         if (userType != null) {
@@ -691,12 +691,12 @@ public class DBController {
                     "An error occurred querying table Users and getting userType: %s\n%s\n",
                     userType, e.getMessage());
             e.printStackTrace();
-            return null;
+            throw e;
         }
         return result;
     }
 
-    private ArrayList<User> parseCustomerFromDB(ResultSet rs) {
+    private ArrayList<User> parseCustomerFromDB(ResultSet rs) throws SQLException {
         ArrayList<User> myCustomers = new ArrayList<>();
         if (rs == null){
             return null;
@@ -749,7 +749,7 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting Customers data from 'Users' table:\n%s", e.getMessage());
-                return null;
+                throw e;
             }
         }
         return myCustomers;
@@ -760,7 +760,7 @@ public class DBController {
      * @param customer object to insert
      * @return True if successful, False otherwise.
      */
-    public boolean insertCustomer(Customer customer){
+    public boolean insertCustomer(Customer customer) throws SQLException{
         if (this.isTest){
             customer.setUID(1);
             return true;
@@ -795,7 +795,7 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", customer, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -805,7 +805,7 @@ public class DBController {
      * @param carID carId inserted
      * @return True if successful, False otherwise.
      */
-    public boolean addCarToCustomer(Integer customerID, Integer carID){
+    public boolean addCarToCustomer(Integer customerID, Integer carID) throws SQLException{
 
         //TODO: Check if user-car is already inserted and show msg / if not active Set to active.
         try {
@@ -820,7 +820,7 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -830,7 +830,7 @@ public class DBController {
      * @param carID carId removed
      * @return True if successful, False otherwise.
      */
-    public boolean removeCarFromCustomer(Integer customerID, Integer carID){
+    public boolean removeCarFromCustomer(Integer customerID, Integer carID) throws SQLException{
         try {
             Statement stmt = db_conn.createStatement();
             stmt.executeUpdate(String.format("UPDATE CarToUser SET isActive=0 WHERE  idCars=%s AND idUser=%s",
@@ -841,12 +841,12 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
 
-    public boolean insertSubscription(Subscription subs){
+    public boolean insertSubscription(Subscription subs) throws SQLException{
         String params = "idUser, idCar, endDate";
         Subscription.SubscriptionType subType = subs.getSubscriptionType();
         String values = String.format("%s, %s, '%s'", subs.getUserID(), subs.getCarID(), _simpleDateFormatForDb.format(subs.getExpiration()));
@@ -882,7 +882,7 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", subs, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -891,7 +891,7 @@ public class DBController {
      * Get all Subscriptions from DB
      * @return hash map of subscriptionId and subscriptions
      */
-    public Map<Integer, Subscription> getAllSubscriptions(){
+    public Map<Integer, Subscription> getAllSubscriptions() throws SQLException {
         ResultSet rs = queryTable("SubscriptionToUser");
         Map<Integer, Subscription> mySubscriptions = parseSubscriptions(rs);
         return mySubscriptions;
@@ -902,7 +902,7 @@ public class DBController {
      * @param rs Result set with Subscription DATA
      * @return hash map of subscriptionId and subscriptions
      */
-    public Map<Integer, Subscription> parseSubscriptions(ResultSet rs) {
+    public Map<Integer, Subscription> parseSubscriptions(ResultSet rs) throws SQLException {
         Map<Integer, Subscription> mySubscriptions = new HashMap<>();
         if (rs == null){
             return null;
@@ -936,7 +936,7 @@ public class DBController {
                 return  mySubscriptions;
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "SubscriptionToUser", e.getMessage());
-                return null;
+                throw e;
             }
         }
     }
@@ -948,7 +948,7 @@ public class DBController {
      * @param renewedSubs
      * @return True if successful, false otherwise.
      */
-    public boolean renewSubscription(Subscription renewedSubs){
+    public boolean renewSubscription(Subscription renewedSubs) throws SQLException{
         try {
             Statement stmt = db_conn.createStatement();
             String query;
@@ -963,11 +963,11 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred renewing subscription: %s\n", renewedSubs.getSubscriptionID(), e.getMessage());
-            return false;
+            throw e;
         }
     }
 
-    private Order.OrderStatus parseOrderStatus(String str){
+    private Order.OrderStatus parseOrderStatus(String str) throws SQLException{
         Order.OrderStatus ret;
         switch (str){
             case "PRE_ORDER":
@@ -997,7 +997,7 @@ public class DBController {
      * @param complaint object to insert
      * @return True if successful, False otherwise.
      */
-    public boolean insertComplaint(Complaint complaint){
+    public boolean insertComplaint(Complaint complaint) throws SQLException{
         try {
             Statement stmt = db_conn.createStatement();
             int complaintId;
@@ -1024,7 +1024,7 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", complaint, e.getMessage());
-            return false;
+            throw e;
         }
     }
     /**
@@ -1032,7 +1032,7 @@ public class DBController {
      * @param complaint object to insert
      * @return True if successful, False otherwise.
      */
-    public boolean updateComplaint(Complaint complaint){
+    public boolean updateComplaint(Complaint complaint) throws SQLException{
         if (complaint.getComplaintID() == -1){
             System.err.printf("Can't update complaint without complaintID.\nComplaint: %s\n", complaint);
             return false;
@@ -1051,7 +1051,7 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred inserting %s:\n%s\n", complaint, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
@@ -1059,7 +1059,7 @@ public class DBController {
      * get Complaints from DB (all Complaints)
      * @return all Complaints in map
      */
-    public Map<Integer, Object> getAllComplaints() {
+    public Map<Integer, Object> getAllComplaints() throws SQLException{
         return getComplaintsByID(-1);
     }
 
@@ -1068,7 +1068,7 @@ public class DBController {
      * @param complaintId specific order identifier, '-1' for all orders
      * @return specific / all orders , null if error
      */
-    public Map<Integer, Object> getComplaintsByID(int complaintId) {
+    public Map<Integer, Object> getComplaintsByID(int complaintId) throws SQLException{
         ResultSet rs;
 
         if (complaintId == -1) { // get all rows
@@ -1082,7 +1082,7 @@ public class DBController {
     }
 
 
-    public Map<Integer, Object> parseComplaintsFromDBToMap(ResultSet rs){
+    public Map<Integer, Object> parseComplaintsFromDBToMap(ResultSet rs) throws SQLException{
         Map<Integer, Object>  myComplaints = new HashMap<>();
         if (rs == null){
             return null;
@@ -1109,7 +1109,7 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Complaints", e.getMessage());
-                return null;
+                throw e;
             }
         }
         return myComplaints;
@@ -1120,7 +1120,7 @@ public class DBController {
      * @param complaintID
      * @return True for success, false otherwise.
      */
-    public boolean cancelComplaint(Integer complaintID){
+    public boolean cancelComplaint(Integer complaintID) throws SQLException{
         try {
             Statement stmt = db_conn.createStatement();
             stmt.executeUpdate(String.format("UPDATE Complaints SET status = '%s'" +
@@ -1131,11 +1131,11 @@ public class DBController {
 
         } catch (SQLException e) {
             System.err.printf("An error occurred cancelling complaint with id %s:\n%s\n", complaintID, e.getMessage());
-            return false;
+            throw e;
         }
     }
 
-    private Complaint.ComplaintStatus parseComplaintStatus(String status) {
+    private Complaint.ComplaintStatus parseComplaintStatus(String status) throws SQLException{
         Complaint.ComplaintStatus ret;
         switch (status) {
             case "NEW":
@@ -1166,7 +1166,7 @@ public class DBController {
      * @param reportType the type of report to be returned to the Manager/Tasker.
      * @return the report. (null if wrong type or not implementd yet.
      */
-    public String makeReportFromDB(Report.ReportType reportType, Integer managerID)
+    public String makeReportFromDB(Report.ReportType reportType, Integer managerID) throws SQLException
     {
         String manager = managerID == 999 ? "Created by CPS's Tasker:" : "Created by Manager:";
         String reportToReturn ="\n\n\t\t\t\t";
@@ -1201,7 +1201,7 @@ public class DBController {
      * @param dayToValidate - The amount of days from the actualy entry to today this report is valid.
      * @return the wanted report.
      */
-    private String makeOrdersReport(Order.OrderStatus orderType, Integer dayToValidate)
+    private String makeOrdersReport(Order.OrderStatus orderType, Integer dayToValidate) throws SQLException
     {
         ResultSet rs;
         String rowLine = "|___________________________________________________"
@@ -1259,7 +1259,7 @@ public class DBController {
         return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
     }
 
-    private String addOrderRow(Order order, String rowLine)
+    private String addOrderRow(Order order, String rowLine) throws SQLException
     {
         Order.OrderStatus status = order.getOrderStatus();
         StringBuilder orderRow = new StringBuilder();
@@ -1305,7 +1305,7 @@ public class DBController {
      * @param count
      * @return
      */
-    private boolean updateDailyReportToDB(Integer day, Integer month, Integer year, Report.ReportType reportType, Integer parkingLotID, Integer count){
+    private boolean updateDailyReportToDB(Integer day, Integer month, Integer year, Report.ReportType reportType, Integer parkingLotID, Integer count) throws SQLException{
 
         // set reportType column
         String reportCol = parseReportTypeToColumnName(reportType);
@@ -1346,7 +1346,7 @@ public class DBController {
      * @return
      */
     //TODO: thats just a starter func
-    private Map<Integer, Object> getDailyReportFromDbByDate(Integer day, Integer month, Integer year) {
+    private Map<Integer, Object> getDailyReportFromDbByDate(Integer day, Integer month, Integer year) throws SQLException{
         Map<Integer, Object> map = new HashMap<>();
         ResultSet rs;
         try {
@@ -1372,7 +1372,7 @@ public class DBController {
      * @param reportType ReportType to check
      * @return db column name
      */
-    private String parseReportTypeToColumnName (Report.ReportType reportType){
+    private String parseReportTypeToColumnName (Report.ReportType reportType)throws SQLException{
         switch (reportType){
             case DAILY_CANCELED_ORDERS:
                 return "numberOfDailyCancelledOrders";

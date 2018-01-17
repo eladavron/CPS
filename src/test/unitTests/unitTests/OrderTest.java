@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 
+import java.sql.SQLException;
 import java.util.Date;
 
 import static controller.Controllers.dbController;
@@ -26,8 +27,13 @@ class OrderTest extends ApplicationTest {
     }
 
     @Test
-    void make_simple_order_test(){
-        Order actual = OrderController.getInstance().makeNewSimpleOrder(0, 777, estimated, parkingTemp);
+    void makeSimpleOrderTest(){
+        Order actual = null;
+        try {
+            actual = OrderController.getInstance().makeNewSimpleOrder(0, 777, estimated, parkingTemp);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         Order expected = simpleOrder;
         expected.setActualEntryTime(actual.getActualEntryTime());
 
@@ -40,10 +46,15 @@ class OrderTest extends ApplicationTest {
     }
 
     @Test
-    void make_simple_pre_order_test(){
+    void makeSimplePreOrderTest(){
         Date estimatedEntry = new Date();
         Date estimatedExit = new Date(estimatedEntry.getTime()+5000000);
-        Order actual = OrderController.getInstance().makeNewPreOrder(1, 776, estimatedExit, parkingTemp, estimatedEntry);
+        Order actual = null;
+        try {
+            actual = OrderController.getInstance().makeNewPreOrder(1, 776, estimatedExit, parkingTemp, estimatedEntry);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         Order expected = new PreOrder(1, 776, estimatedExit, parkingTemp, 5.533333333333333 ,estimatedEntry);
 
         assertThat(actual).isInstanceOf(PreOrder.class);
@@ -54,7 +65,7 @@ class OrderTest extends ApplicationTest {
     }
 
     @Test
-    void finish_simple_order_test(){
+    void finishSimpleOrderTest(){
         //Setting entry time to be minus 500,000 in order for a charge to happen.
         Order expected;
         simpleOrder.setActualEntryTime(new Date(estimated.getTime() - 500000));

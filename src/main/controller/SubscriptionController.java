@@ -5,6 +5,7 @@ import entity.RegularSubscription;
 import entity.Subscription;
 import utils.TimeUtils;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class SubscriptionController {
      * @param rSubs
      * @return new Subscription id
      */
-    public Integer addRegularSubscription(RegularSubscription rSubs)
+    public Integer addRegularSubscription(RegularSubscription rSubs) throws SQLException
     {
         //RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
         //TODO: add into DB as well
@@ -101,7 +102,7 @@ public class SubscriptionController {
      * @param fSubs
      * @return new Subscription id
      */
-    public Integer addFullSubscription(FullSubscription fSubs)
+    public Integer addFullSubscription(FullSubscription fSubs) throws SQLException
     {
         //FullSubscription newSub = new FullSubscription(userID, carID);
         //TODO: add into DB as well. // ID from db
@@ -119,7 +120,7 @@ public class SubscriptionController {
      * @param subscriptionToRenew
      * @return True on success
      */
-    public boolean renewSubscription(Subscription subscriptionToRenew)
+    public boolean renewSubscription(Subscription subscriptionToRenew) throws SQLException
     {
         if (dbController.renewSubscription(subscriptionToRenew))
         {

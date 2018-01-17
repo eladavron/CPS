@@ -151,7 +151,7 @@ public class Complaint {
         "Complaint No. " + this.getComplaintID()
                 + (this.getRelatedOrderID().equals(-1) ? "" : "\nRegarding Order No. " + this.getRelatedOrderID())
                 + "\nComplaint Status: " + this.getStatus()
-                + "\nDetailes: " + this.getDescription()
+                + "\nDetails: " + this.getDescription()
                 + (this.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + this.getRefund() + " NIS (The cheque is in the mail)." : "")
                 + (this.getCustomerServiceRepresentativeID().equals(-1) ? "" : "\nAssigned Representative: " + this.getCustomerServiceRepresentativeID());
     }

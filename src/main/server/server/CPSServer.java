@@ -268,6 +268,9 @@ public class CPSServer extends AbstractServer {
             } catch (IOException e) {
                 System.err.println("An error occurred processing that command.");
                 e.printStackTrace();
+            } catch (SQLException e) {
+                System.err.println("An error occurred processing that command.");
+                e.printStackTrace();
             }
         }
     }

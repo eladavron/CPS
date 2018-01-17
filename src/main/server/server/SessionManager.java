@@ -54,4 +54,6 @@ public class SessionManager {
                 dropSession(connection);
         }
     }
+
+    public static boolean doesSessionExist(ConnectionToClient clientConnection){ return _sessionsMap.containsKey(clientConnection); }
 }

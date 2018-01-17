@@ -2,6 +2,7 @@ package controller;
 
 import entity.Complaint;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,11 @@ public class ComplaintController {
      * use an initializer)
      */
     static {
-        instance = new ComplaintController();
+        try {
+            instance = new ComplaintController();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static ComplaintController getInstance() {
@@ -33,7 +38,7 @@ public class ComplaintController {
      * instantiating.
      * we assume here there is a live connection to the DB.
      */
-    private ComplaintController() {
+    private ComplaintController()throws SQLException {
         this._complaintsList = new HashMap<>();
         getComplaintsFromDb();
     }
@@ -43,7 +48,7 @@ public class ComplaintController {
      * @param complaintID The complaint to handle.
      * @param representativeID
      */
-    public boolean fileComplaint(Integer complaintID, Integer representativeID) {
+    public boolean fileComplaint(Integer complaintID, Integer representativeID)throws SQLException {
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null)
             return false;
@@ -57,7 +62,7 @@ public class ComplaintController {
      * Accept complaint by setting a full refund.
      * @param complaintID The complaint to handle.
      */
-    public boolean acceptComplaint(Integer complaintID) {
+    public boolean acceptComplaint(Integer complaintID) throws SQLException{
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null)
             return false;
@@ -73,7 +78,7 @@ public class ComplaintController {
      * Reject complaint by setting its state to REJECTED
      * @param complaintID The complaint to handle.
      */
-    public boolean rejectComplaint(Integer complaintID) {
+    public boolean rejectComplaint(Integer complaintID) throws SQLException{
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null)
             return false;
@@ -87,7 +92,7 @@ public class ComplaintController {
      * Cancel complaint by setting its state to CANCELLED
      * @param complaintID The complaint to handle.
      */
-    public boolean cancelComplaint(Integer complaintID) {
+    public boolean cancelComplaint(Integer complaintID) throws SQLException{
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null) // complaint with that id no found;
             return false;
@@ -101,7 +106,7 @@ public class ComplaintController {
     /**
      * Create a customer complaint.
      */
-    public Complaint createComplaint(Integer customerID, Integer orderID, String Description){
+    public Complaint createComplaint(Integer customerID, Integer orderID, String Description) throws SQLException{
         Complaint complaint = new Complaint(customerID, orderID, Description);
         complaint.setStatus(Complaint.ComplaintStatus.NEW);
         if (dbController.insertComplaint(complaint)){
@@ -119,7 +124,7 @@ public class ComplaintController {
      * Create a customer complaint. also from obj
      * "HACHANA LEMAZGAN"
      */
-    public Complaint createComplaint(Complaint complaint){
+    public Complaint createComplaint(Complaint complaint)throws SQLException{
         return createComplaint(complaint.getCustomerID(),complaint.getRelatedOrderID(), complaint.getDescription());
 
     }
@@ -163,7 +168,7 @@ public class ComplaintController {
     /**
      * get all complaints from db (occurs on init)
      */
-    public void getComplaintsFromDb() {
+    public void getComplaintsFromDb() throws SQLException {
 
         putAllComplaints(dbController.getAllComplaints());
     }

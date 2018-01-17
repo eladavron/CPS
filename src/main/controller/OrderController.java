@@ -5,6 +5,7 @@ import entity.Customer;
 import entity.Order;
 import entity.PreOrder;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,7 +82,7 @@ public class OrderController {
     }
 
     // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
-    public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber){
+    public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber)throws SQLException {
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         newOrder.setEstimatedEntryTime(newOrder.getActualEntryTime());
         //UID is select within the dbController and then set in it as well.
@@ -97,7 +98,7 @@ public class OrderController {
      * @param preOrder preorder object which includes needed params
      * @return A new order
      */
-    public Order makeNewPreOrder(PreOrder preOrder) {
+    public Order makeNewPreOrder(PreOrder preOrder) throws SQLException {
         return makeNewPreOrder(preOrder.getCostumerID(),
                 preOrder.getCarID(),
                 preOrder.getEstimatedExitTime(),
@@ -115,7 +116,7 @@ public class OrderController {
      * @return A new order
      */
     //TODO : After entering with the car into the parking lot the entry time of Order (super) should be set!)
-    public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime){
+    public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime)throws SQLException{
         PreOrder newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, 0, estimatedEntryTime);
         //First we check with the CustomerController if this customer has some special price for this parking.
         priceList priceType = customerController.getHourlyParkingCost(customerID, newPreOrder);
@@ -135,7 +136,7 @@ public class OrderController {
         return orderFromDb;
     }
 
-    public void getOrdersFromDb() {
+    public void getOrdersFromDb() throws SQLException {
         this._ordersList.putAll(dbController.getAllOrders());
     }
 
@@ -168,7 +169,7 @@ public class OrderController {
      * @param orderID Order ID
      * @return Order that was deleted, or null if failed.
      */
-    public Order deleteOrder(Integer orderID)
+    public Order deleteOrder(Integer orderID) throws SQLException
     {
         final Integer THREE_HOURS = 10800000;
         final Integer ONE_HOUR = 3600000;

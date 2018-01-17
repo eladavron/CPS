@@ -2,6 +2,8 @@ package entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.net.InetAddress;
+
 /**
  * Represents a session between the server and a single client.
  */
@@ -12,6 +14,8 @@ public class Session {
     private String _email; // user email
     private ParkingLot _parkingLot;
     private Order _orderInNeedOfPayment = null;
+    private long lastTransID = 0;
+
 
     public Order getOrderInNeedOfPayment() {
         return _orderInNeedOfPayment;
@@ -91,6 +95,10 @@ public class Session {
     public void setParkingLot(ParkingLot parkingLot) {
         this._parkingLot = parkingLot;
     }
+
+    public long getLastTransID() { return lastTransID; }
+
+    public void setLastTransID(long lastTransID) { this.lastTransID = lastTransID; }
 
     @Override
     public String toString() {
