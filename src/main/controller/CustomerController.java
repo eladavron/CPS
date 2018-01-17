@@ -70,7 +70,6 @@ public class CustomerController {
      */
     private void getCustomersFromDb()throws SQLException {
         setCustomersList(dbController.getCustomers());
-
     }
 
     /**

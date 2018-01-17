@@ -1,7 +1,9 @@
 package unitTests;
 
 import controller.CustomerController;
+import controller.DBController;
 import entity.Customer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
@@ -9,6 +11,7 @@ import org.testfx.framework.junit5.ApplicationTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import static controller.Controllers.dbController;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -16,8 +19,15 @@ class CustomerControllerTest extends ApplicationTest {
     private Customer _testCustomer;
     private ArrayList<Integer> carList;
 
+    @BeforeAll
+    static void setTestInitDB(){
+        dbController = DBController.getInstance();
+        dbController.isTest = true;
+    }
+
     @BeforeEach
-    private void beforeEach(){
+    private void beforeEach()
+    {
         carList = new ArrayList<>();
         carList.add(6677788);
         _testCustomer = new Customer(777, "Bob","666" , "FakeMail@.com",carList);

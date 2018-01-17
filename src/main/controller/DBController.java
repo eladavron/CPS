@@ -269,6 +269,10 @@ public class DBController {
      * @return True if successful, False otherwise.
      */
     public boolean insertOrder(Order order) throws SQLException{
+        if (isTest) {
+            order.setOrderID(1);
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             Date creationDate;
@@ -1166,7 +1170,7 @@ public class DBController {
      * @param reportType the type of report to be returned to the Manager/Tasker.
      * @return the report. (null if wrong type or not implementd yet.
      */
-    public String makeReportFromDB(Report.ReportType reportType, Integer managerID) throws SQLException
+    public String makeReportFromDB(Report.ReportType reportType, Integer managerID, Integer parkingLotID) throws SQLException
     {
         String manager = managerID == 999 ? "Created by CPS's Tasker:" : "Created by Manager:";
         String reportToReturn ="\n\n\t\t\t\t";
@@ -1174,20 +1178,20 @@ public class DBController {
         {
             case DAILY_FINISHED_ORDERS:
             {
-                reportToReturn += "Daily finished orders report, "
-                        + manager + ":\n" + makeOrdersReport(Order.OrderStatus.FINISHED, 1);
+                reportToReturn += "Daily finished orders report of parking lot number: " + parkingLotID + ", "
+                        + manager + ":\n" + makeOrdersReport(reportType, Order.OrderStatus.FINISHED, 1, parkingLotID);
                 return reportToReturn;
             }
             case DAILY_CANCELED_ORDERS:
             {
-                reportToReturn += "Daily canceled orders report,  "
-                        + manager + "\n" + makeOrdersReport(Order.OrderStatus.DELETED, 1);
+                reportToReturn += "Daily canceled orders report of parking lot number: " + parkingLotID + ", "
+                        + manager + "\n" + makeOrdersReport(reportType, Order.OrderStatus.DELETED, 1, parkingLotID);
                 return reportToReturn;
             }
             case DAILY_LATED_ORDERS:
             {
-                reportToReturn += "Daily late customer's orders report, "
-                        + manager + "\n" + makeOrdersReport(null, 1);
+                reportToReturn += "Daily late customer's orders report of parking lot number: " + parkingLotID + ", "
+                        + manager + "\n" + makeOrdersReport(reportType, null, 1, parkingLotID);
                 return reportToReturn;
             }
 
@@ -1198,10 +1202,13 @@ public class DBController {
 
     /**
      * Generic Report maker from Order's table.
+     *
+     * @param reportType
      * @param dayToValidate - The amount of days from the actualy entry to today this report is valid.
+     * @param parkingLotID
      * @return the wanted report.
      */
-    private String makeOrdersReport(Order.OrderStatus orderType, Integer dayToValidate) throws SQLException
+    private String makeOrdersReport(Report.ReportType reportType, Order.OrderStatus orderType, Integer dayToValidate, Integer parkingLotID) throws SQLException
     {
         ResultSet rs;
         String rowLine = "|___________________________________________________"
@@ -1255,6 +1262,14 @@ public class DBController {
         report.append("\n")
                .append(rowLine)
         ;
+        //Adding this report count to the general count table on the DB
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH) + 1 ;
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        updateDailyReportToDB(day, month, year, reportType, parkingLotID, countRows);
+
         // Adding another flair!
         return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
     }
@@ -1322,10 +1337,10 @@ public class DBController {
            String query = "SELECT * FROM DailyReports";
            rs = stmt.executeQuery(query+condition);
            if(rs.next()){ // entry available
-               query = String.format("UPDATE DailyReports SET %s VALUES %s", reportCol, count);
+               query = String.format("UPDATE DailyReports SET %s = %s", reportCol, count);
                query += condition;
            }else{ // new entry
-               query = String.format("INSERT INTO DailyReports (day, month, year, parkingLotId, $s) " +
+               query = String.format("INSERT INTO DailyReports (day, month, year, parkingLotId, %s) " +
                        "VALUES (%s, %s, %s, %s, %s)",
                        reportCol, day, month, year, parkingLotID, count);
            }
@@ -1333,8 +1348,8 @@ public class DBController {
            return result == 1;
         }catch (SQLException e)
         {
-            System.err.printf("An error occurred during updating the daily report of: %s%s%s\n%s", day, month, year, e.getMessage());
-            return false;
+            System.err.printf("An error occurred during updating the daily report of: %s/%s/%s/\n%s", day, month, year, e.getMessage());
+            throw e;
         }
     }
 
@@ -1346,7 +1361,7 @@ public class DBController {
      * @return
      */
     //TODO: thats just a starter func
-    private Map<Integer, Object> getDailyReportFromDbByDate(Integer day, Integer month, Integer year) throws SQLException{
+    private Map<Integer, Object> getDailyReportFromDbByDate(Integer day, Integer month, Integer year) throws SQLException {
         Map<Integer, Object> map = new HashMap<>();
         ResultSet rs;
         try {
@@ -1363,7 +1378,7 @@ public class DBController {
 
         }catch(SQLException e) {
                 System.err.printf("An error occurred during querying the daily report of: %s%s%s\n%s", day, month, year, e.getMessage());
-                return null;
+                throw e;
         }
     }
 
@@ -1372,7 +1387,7 @@ public class DBController {
      * @param reportType ReportType to check
      * @return db column name
      */
-    private String parseReportTypeToColumnName (Report.ReportType reportType)throws SQLException{
+    private String parseReportTypeToColumnName (Report.ReportType reportType){
         switch (reportType){
             case DAILY_CANCELED_ORDERS:
                 return "numberOfDailyCancelledOrders";

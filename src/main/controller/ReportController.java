@@ -43,22 +43,21 @@ public class ReportController {
         return this._reportsList.get(reportID);
     }
 
-    public void printReport(Report.ReportType reportType, Integer reportManagerID) throws FileNotFoundException,
+    public void printReport(Report.ReportType reportType, Integer reportManagerID, Integer parkingLotID) throws FileNotFoundException,
                                                                                           DocumentException,
                                                                                           SQLException
     {
         Document doc = new Document();
         //The pdf file will be created and stored in the same project folder.
         PdfWriter.getInstance(doc, new FileOutputStream("ReportPrint.pdf"));
-        String reportString = generateReport(reportType,reportManagerID);
+        String reportString = generateReport(reportType,reportManagerID, parkingLotID);
         doc.open();
         doc.add(new Paragraph(reportString));
         doc.close();
 
     }
 
-    public String generateReport(Report.ReportType reportType, Integer reportManagerID) throws SQLException{
-        String generatedReport = dbController.makeReportFromDB(reportType,reportManagerID);
-        return generatedReport;
+    public String generateReport(Report.ReportType reportType, Integer reportManagerID, Integer parkingLotID) throws SQLException{
+        return dbController.makeReportFromDB(reportType,reportManagerID, parkingLotID);
     }
 }
