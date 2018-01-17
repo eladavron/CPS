@@ -6,16 +6,18 @@ import controller.CustomerController;
 import entity.*;
 import ocsf.server.ConnectionToClient;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import static controller.Controllers.*;
-import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
+import static controller.CustomerController.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
 import static entity.Message.DataType.*;
 import static entity.Message.MessageType;
 import static entity.Message.MessageType.FINISHED;
+import static entity.Message.MessageType.NEED_PAYMENT;
 
 /**
  * Handles messages from client GUI:
@@ -41,9 +43,9 @@ public class MessageHandler {
             Message msg = new Message(json);
             MessageType msgType = msg.getMessageType();
 
-            if (SessionManager.doesSessionExist(clientConnection))
+            if (SessionManager.doesSessionExists(clientConnection))
             {
-                SessionManager.getSession(clientConnection).setLastTransID(msg.getTransID());
+                SessionManager.getSession(clientConnection).getTransMap().putIfAbsent(msg.getTransID(), msg.getDataType());
             }
             if (msgType == MessageType.LOGOUT)
             {
@@ -51,7 +53,7 @@ public class MessageHandler {
                 return true;
             }
 
-            Message replyOnReceiveMsg = new Message(MessageType.QUEUED, PRIMITIVE, "tempString");
+            Message replyOnReceiveMsg = new Message(MessageType.QUEUED, PRIMITIVE, "Yes sir! will do!");
             replyOnReceiveMsg.setTransID(msg.getTransID());
             sendToClient(replyOnReceiveMsg, clientConnection);
 
@@ -82,19 +84,8 @@ public class MessageHandler {
                 default:
                     throw new InvalidMessageException("Unknown message type: " + msgType);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } catch (InvalidMessageException e) {
-            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "Invalid Message: " +e.getMessage());
-            Long SID = Message.getSidFromJson(json);
-            if (SID != null)
-                replyInvalid.setTransID(SID);
-            sendToClient(replyInvalid, clientConnection);
-            e.printStackTrace();
-            return false;
-        } catch (SQLException e) {
-            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "SQL: " + e.getMessage());
+        } catch (Exception e) {
+            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "Exception: " + e.getMessage());
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
                 replyInvalid.setTransID(SID);
@@ -123,8 +114,8 @@ public class MessageHandler {
             else
             {
                 SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(order);
-                endParkingResponse.setMessageType(MessageType.NEED_PAYMENT);
-                endParkingResponse.setMessageType(MessageType.NEED_PAYMENT);
+                endParkingResponse.setMessageType(NEED_PAYMENT);
+                endParkingResponse.setMessageType(NEED_PAYMENT);
                 endParkingResponse.setDataType(PRIMITIVE);
                 endParkingResponse.addData(neededPayment);
             }
@@ -142,14 +133,51 @@ public class MessageHandler {
 
     private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
         Message response = new Message();
-        response.setTransID(paymentNeededMsg.getTransID());
-        Order orderInNeedOfPayment = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
-        Customer payingCustomer = SessionManager.getSession(clientConnection).getCustomer();
-        if (orderInNeedOfPayment != null){
-            customerController.finishOrder(payingCustomer,orderInNeedOfPayment.getOrderID());
-            SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(null);
+        switch(SessionManager.getSession(clientConnection).getTransMap().get(paymentNeededMsg.getTransID())) {
+            case PREORDER:
+                Order orderInNeedOfPayment = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
+                Customer payingCustomer = SessionManager.getSession(clientConnection).getCustomer();
+                if (orderInNeedOfPayment != null) {
+                    customerController.finishOrder(payingCustomer, orderInNeedOfPayment.getOrderID());
+                    SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(null);
+                    response.setMessageType(FINISHED);
+                    response.setDataType(PREORDER);
+                    response.addData(orderInNeedOfPayment);
+                } else {
+                    response.setMessageType(MessageType.FAILED);
+                    response.setDataType(PRIMITIVE);
+                    response.addData("Are we feeling generous today?");
+                }
+                break;
+            case SUBSCRIPTION:
+                Subscription subscription = SessionManager.getSession(clientConnection).getSubscriptionInNeedOfPayment();
+
+                CustomerController.SubscriptionOperationReturnCodes rc = SubscriptionOperationReturnCodes.FAILED;
+                if (subscription instanceof  RegularSubscription)
+                {
+                    rc = customerController.addNewRegularSubscription((RegularSubscription) subscription);
+                }
+                else if (subscription instanceof FullSubscription)
+                {
+                    rc = customerController.addNewFullSubscription((FullSubscription) subscription);
+                }
+                else
+                {
+                    throw new NotImplementedException("Subscription type does not exists: " + subscription.getSubscriptionType().toString());
+                }
+
+                if (rc != CustomerController.SubscriptionOperationReturnCodes.FAILED)
+                {
+                    response = new Message(FINISHED, SUBSCRIPTION, rc, subscription);
+                    SessionManager.getSession(clientConnection).setSubscriptionInNeedOfPayment(null);
+
+                }
+                else
+                {
+                    response = new Message(MessageType.FAILED, SUBSCRIPTION);
+                }
         }
-        response.setMessageType(FINISHED);
+        response.setTransID(paymentNeededMsg.getTransID());
         sendToClient(response, clientConnection);
     }
 
@@ -228,7 +256,7 @@ public class MessageHandler {
         switch (queryMsg.getDataType())
         {
             case PREORDER:
-                response.setDataType(Message.DataType.PREORDER);
+                response.setDataType(PREORDER);
                 response.setData(customerController.getCustomersPreOrders(userID));
                 break;
             case ORDER:
@@ -242,7 +270,7 @@ public class MessageHandler {
                 }
                 break;
             case SUBSCRIPTION:
-                response.setDataType(Message.DataType.SUBSCRIPTION);
+                response.setDataType(SUBSCRIPTION);
                 response.addData(QUERY_RESPONSE);
                 for (Object sub : customerController.getCustomer(userID).getSubscriptionList())
                 {
@@ -344,7 +372,7 @@ public class MessageHandler {
                 }
                 else
                 {
-                    response = new Message(FINISHED, Message.DataType.PREORDER, removedOrder);
+                    response = new Message(FINISHED, PREORDER, removedOrder);
                 }
                 break;
             case COMPLAINT:
@@ -378,7 +406,16 @@ public class MessageHandler {
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
                 Order newPreOrder = customerController.addNewPreOrder(preorder);
-                createMsgResponse = new Message(FINISHED, Message.DataType.PREORDER, newPreOrder);
+                double estimatedCharge = newPreOrder.getPrice();
+                if (estimatedCharge > 0)
+                {
+                    SessionManager.getSession(clientConnection).setOrderInNeedOfPayment((Order) newPreOrder);
+                    createMsgResponse = new Message(NEED_PAYMENT, PRIMITIVE, estimatedCharge);
+                }
+                else
+                {
+                    createMsgResponse = new Message(FINISHED, PREORDER, newPreOrder);
+                }
                 break;
             case CARS:
                 Integer uID = (Integer)createMsg.getData().get(0);
@@ -391,34 +428,18 @@ public class MessageHandler {
                 createMsgResponse = new Message(FINISHED, Message.DataType.CARS, carToAdd);
                 break;
             case SUBSCRIPTION:
-                Subscription subscription = (Subscription) createMsg.getData().get(0);
-                Subscription.SubscriptionType subType = subscription.getSubscriptionType();
-                CustomerController.SubscriptionOperationReturnCodes rc = FAILED;
-                switch(subType)
+                Subscription subscription;
+                if (createMsg.getData().get(0) instanceof RegularSubscription)
                 {
-                    case REGULAR:
-                    case REGULAR_MULTIPLE:
-                        rc = customerController.addNewRegularSubscription((RegularSubscription) subscription);
-                        break;
-                    case FULL:
-                        rc = customerController.addNewFullSubscription((FullSubscription) subscription);
-                        break;
-                    default:
-                        throw new NotImplementedException("Subscription type does not exists: " + subType.toString());
-                }
-
-                if (rc != FAILED)
-                {
-                    createMsgResponse = new Message(FINISHED,
-                            Message.DataType.SUBSCRIPTION,
-                            rc,
-                            subscription);
+                    subscription = (RegularSubscription)createMsg.getData().get(0);
                 }
                 else
                 {
-                    createMsgResponse = new Message(MessageType.FAILED,
-                            Message.DataType.SUBSCRIPTION);
+                    subscription = (FullSubscription)createMsg.getData().get(0);
                 }
+                double subscriptionCharge = billingController.calculateChargeForSubscription(subscription);
+                SessionManager.getSession(clientConnection).setSubscriptionInNeedOfPayment(subscription);
+                createMsgResponse = new Message(NEED_PAYMENT, PRIMITIVE, subscriptionCharge);
                 break;
             case COMPLAINT:
                 Complaint incomingComplaint = (Complaint) createMsg.getData().get(0);

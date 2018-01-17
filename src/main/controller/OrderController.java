@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static controller.Controllers.*;
 import static entity.Order.OrderStatus.PRE_ORDER;
+import static utils.TimeUtils.HOURS_IN_MS;
 
 public class OrderController {
 
@@ -121,7 +122,7 @@ public class OrderController {
         priceList priceType = customerController.getHourlyParkingCost(customerID, newPreOrder);
         // Then we calculate the amount to be payed using the billingController and add it to the order.
         Double charge = billingController.calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceType);
-        newPreOrder.setPrice(charge);
+        newPreOrder.setCharge(charge);
         //UID is select within the dbController and then set in it as well.
         dbController.insertOrder(newPreOrder, priceType);
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
@@ -151,10 +152,14 @@ public class OrderController {
         Order order = getOrder(orderID);
         order.setActualExitTime(new Date());
         double finalPrice = billingController.calculateParkingCharge(order.getActualEntryTime(), order.getActualExitTime(), priceType);
-        if(order.getEstimatedEntryTime().compareTo(order.getActualEntryTime()) < 0 ){
+        if(order.getEstimatedEntryTime().compareTo(order.getActualEntryTime()) < 0 )
+        {
             finalPrice = finalPrice*1.2;
         }
-        order.setPrice(finalPrice - order.getPrice());
+        if (order instanceof PreOrder)
+        {
+            order.setPrice(finalPrice - ((PreOrder) order).getCharge());
+        }
 
 
         order.setOrderStatus(Order.OrderStatus.FINISHED);
@@ -170,10 +175,10 @@ public class OrderController {
      */
     public Order deleteOrder(Integer orderID) throws SQLException
     {
-        final Integer THREE_HOURS = 10800000;
-        final Integer ONE_HOUR = 3600000;
-        PreOrder orderToDelete = getPreorder(orderID);
-        final Integer REMAINING_TIME = orderToDelete.getEstimatedEntryTime().compareTo(new Date()) ;
+        final long THREE_HOURS      = 3*HOURS_IN_MS;
+        final long ONE_HOUR         = 1*HOURS_IN_MS;
+        PreOrder orderToDelete      = getPreorder(orderID);
+        final long REMAINING_TIME   = orderToDelete.getEstimatedEntryTime().getTime() - new Date().getTime() ;
         double refund;
         double actualPayment;
         //First we will check how long until the order is set to be used.
@@ -198,13 +203,15 @@ public class OrderController {
                 actualPayment = orderToDelete.getCharge();
             }
         }
-        orderToDelete.setCharge(refund);
+        orderToDelete.setCharge(refund); // charge here is the ammount inially charged for.
+        orderToDelete.setPrice(actualPayment); //price is Order's param of the finished cost of the order.
         orderToDelete.setOrderStatus(Order.OrderStatus.DELETED);
-        if (dbController.deleteOrder(orderToDelete.getOrderID(), actualPayment)) { //If deletion successful
+        if (dbController.deleteOrder(orderToDelete.getOrderID(), actualPayment))
+        { //If deletion successful
             _ordersList.remove(orderID);
             return orderToDelete;
         }
-       return null;
+        return null;
     }
 
     public void putAll(Map<Integer, Object> activeOrders)

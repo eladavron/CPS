@@ -80,8 +80,18 @@ public class PreorderCell extends ListCell<PreOrder>{
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        _parent.queryPreorders();
-                        waitScreen.hide();
+                        double refund = ((PreOrder)getMessage().getData().get(0)).getCharge();
+                        if (refund > 0)
+                        {
+                            waitScreen.setOnClose(() -> _parent.queryPreorders());
+                            waitScreen.showSuccess("You've been refunded!",
+                                                "A refund by sum of " + refund + " will be sent by cheque!");
+                        }
+                        else
+                        {
+                            _parent.queryPreorders();
+                            waitScreen.hide();
+                        }
                     }
                 });
             }

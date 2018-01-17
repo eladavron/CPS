@@ -55,5 +55,5 @@ public class SessionManager {
         }
     }
 
-    public static boolean doesSessionExist(ConnectionToClient clientConnection){ return _sessionsMap.containsKey(clientConnection); }
+    public static boolean doesSessionExists(ConnectionToClient clientConnection){ return _sessionsMap.containsKey(clientConnection); }
 }

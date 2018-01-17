@@ -23,8 +23,8 @@ public class RegularSubscription extends Subscription {
      */
     public RegularSubscription(Integer userID, ArrayList<Integer> carsIDList, String regularExitTime, Integer parkingLotNumber) {
         super(userID, carsIDList, (carsIDList.size()>1) ? REGULAR_MULTIPLE : REGULAR);
-        this._parkingLotNumber = parkingLotNumber;
-        this._regularExitTime = regularExitTime;
+        this._parkingLotNumber  = parkingLotNumber;
+        this._regularExitTime   = regularExitTime;
     }
 
     /**

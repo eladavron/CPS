@@ -1,9 +1,17 @@
 package controller;
 
 import entity.Billing;
+import entity.FullSubscription;
+import entity.RegularSubscription;
+import entity.Subscription;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+
+import static controller.Controllers.billingController;
+import static entity.Billing.priceList.MONTHLY_FULL_SUBSCRIPTION;
+import static entity.Billing.priceList.MONTHLY_REGULAR_MULTIPLE_CARS_PER_SUBSCRIPTION;
+import static entity.Billing.priceList.MONTHLY_REGULAR_SUBSCRIPTION;
 
 /**
  *  A controller Class to handle all of the Billings.
@@ -53,5 +61,26 @@ public class BillingController {
      */
     public Boolean payCharge(String creditCardType, Date expDate, Integer creditNumber,Integer NumberOfPayments, Integer ID){
         return true;
+    }
+
+    public double calculateChargeForSubscription(Subscription subscription)
+    {
+        if (subscription instanceof FullSubscription)
+        {
+            subscription.setCharge(billingController.getSubscriptionCost(MONTHLY_FULL_SUBSCRIPTION));
+        }
+        else if (subscription instanceof RegularSubscription)
+        {
+            int numCars = subscription.getCarsID().size();
+            if (numCars == 1)
+            {
+                subscription.setCharge(billingController.getSubscriptionCost(MONTHLY_REGULAR_SUBSCRIPTION));
+            }
+            else
+            {
+                subscription.setCharge(numCars * billingController.getSubscriptionCost(MONTHLY_REGULAR_MULTIPLE_CARS_PER_SUBSCRIPTION));
+            }
+        }
+        return subscription.getCharge();
     }
 }

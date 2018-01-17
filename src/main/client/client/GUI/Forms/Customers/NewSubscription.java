@@ -205,6 +205,7 @@ public class NewSubscription implements Initializable{
         };
 
         MessageTasker taskCreation = new MessageTasker(newSubMessage, onSuccess, onFailed, "Requestion Subscription...");
+
         waitScreen.run(taskCreation);
     }
 

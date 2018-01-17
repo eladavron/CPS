@@ -2,6 +2,7 @@ package client.GUI.Controls;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Helpers.ErrorHandlers;
+import client.GUI.Helpers.MessageTasker;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.concurrent.Task;
@@ -90,6 +91,11 @@ public class WaitScreen extends AnchorPane implements Initializable {
      */
     public void run(Task<?> task, int timeout)
     {
+        if (task instanceof MessageTasker)
+        {
+            ((MessageTasker) task).setWaitScreen(this);
+        }
+
         _task = task;
         this.bindMessageProperty(task.messageProperty());
 

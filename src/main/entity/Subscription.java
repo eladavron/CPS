@@ -22,10 +22,12 @@ public class Subscription {
 
     private SubscriptionType _subscriptionType;
     private Integer _subscriptionID;
-    //	private Integer _carID;
 	private ArrayList<Integer> _carsIDList;
 	private Date _expiration;
 	private Integer _userID;
+
+	protected double _charge;
+
 	public enum SubscriptionType{FULL, REGULAR, REGULAR_MULTIPLE}
 
     /**
@@ -146,4 +148,8 @@ public class Subscription {
                 Objects.equals(_expiration, that._expiration) &&
                 Objects.equals(_userID, that._userID);
     }
+
+	public double getCharge() { return _charge; }
+
+	public void setCharge(double _charge) { this._charge = _charge; }
 }

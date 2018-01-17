@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static controller.Controllers.billingController;
 import static controller.Controllers.dbController;
 import static utils.TimeUtils.addTime;
 
@@ -74,7 +75,7 @@ public class SubscriptionController {
      */
     public Integer addRegularSubscription(RegularSubscription rSubs) throws SQLException
     {
-//        RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
+        assignChargeBySubscriptionType(rSubs);
         if (dbController.insertSubscription(rSubs)) {
             this._subscriptionsList.put(rSubs.getSubscriptionID() ,rSubs);
             return rSubs.getSubscriptionID();
@@ -91,6 +92,7 @@ public class SubscriptionController {
     public Subscription addFullSubscription(Integer userID, ArrayList<Integer> carsIDList)
     {
         FullSubscription newSub = new FullSubscription(userID, carsIDList);
+        assignChargeBySubscriptionType(newSub);
         //TODO: add into DB as well. // ID from db
         this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
         return newSub;
@@ -105,6 +107,7 @@ public class SubscriptionController {
     {
         //FullSubscription newSub = new FullSubscription(userID, carID);
         //TODO: add into DB as well. // ID from db
+        assignChargeBySubscriptionType(fSubs);
         if (dbController.insertSubscription(fSubs)) {
             this._subscriptionsList.put(fSubs.getSubscriptionID(), fSubs);
             return fSubs.getSubscriptionID();
@@ -154,7 +157,11 @@ public class SubscriptionController {
             else
                 subs = (FullSubscription) obj;
             this._subscriptionsList.put(subs.getSubscriptionID(), subs);
-
         }
+    }
+
+    public void assignChargeBySubscriptionType(Subscription subscription)
+    {
+        subscription.setCharge(billingController.calculateChargeForSubscription(subscription));
     }
 }

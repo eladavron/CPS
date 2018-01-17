@@ -10,7 +10,4 @@ public abstract class scheduledTask {
     {
         System.out.println(new Timestamp(System.currentTimeMillis()) + "  [SCHEDULED TASK] " + string);
     }
-
-
-
 }

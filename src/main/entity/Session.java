@@ -2,7 +2,7 @@ package entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.net.InetAddress;
+import java.util.HashMap;
 
 /**
  * Represents a session between the server and a single client.
@@ -14,8 +14,10 @@ public class Session {
     private String _email; // user email
     private ParkingLot _parkingLot;
     private Order _orderInNeedOfPayment = null;
-    private long lastTransID = 0;
+    private Subscription _subscriptionInNeedOfPayment = null;
+    private HashMap<Long, Message.DataType> _lastTransID = new HashMap<>();
 
+    public HashMap<Long, Message.DataType> getTransMap() { return _lastTransID; }
 
     public Order getOrderInNeedOfPayment() {
         return _orderInNeedOfPayment;
@@ -96,12 +98,15 @@ public class Session {
         this._parkingLot = parkingLot;
     }
 
-    public long getLastTransID() { return lastTransID; }
-
-    public void setLastTransID(long lastTransID) { this.lastTransID = lastTransID; }
 
     @Override
     public String toString() {
         return "Session #" + _sid + ": " + _user.getName() + "(" + _user.getUserType() + "), Parking Lot: " + _parkingLot;
     }
+
+    public void setSubscriptionInNeedOfPayment(Subscription subscriptionInNeedOfPayment) {
+        this._subscriptionInNeedOfPayment = subscriptionInNeedOfPayment;
+    }
+
+    public Subscription getSubscriptionInNeedOfPayment() { return this._subscriptionInNeedOfPayment; }
 }
