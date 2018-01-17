@@ -54,14 +54,14 @@ public class SubscriptionController {
     /**
      *  A new Regular Subscription
      * @param userID
-     * @param carID
+     * @param carsIDList
      * @param regularExitTime
      * @param parkingLotNumber
      * @return new Subscription obj
      */
-    public Subscription addRegularSubscription(Integer userID, Integer carID, String regularExitTime, Integer parkingLotNumber)
+    public Subscription addRegularSubscription(Integer userID, ArrayList<Integer> carsIDList, String regularExitTime, Integer parkingLotNumber)
     {
-        RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
+        RegularSubscription newSub = new RegularSubscription(userID, carsIDList, regularExitTime, parkingLotNumber);
         //TODO: add into DB as well
         this._subscriptionsList.put(newSub.getSubscriptionID() ,newSub);
         return newSub;
@@ -74,8 +74,7 @@ public class SubscriptionController {
      */
     public Integer addRegularSubscription(RegularSubscription rSubs) throws SQLException
     {
-        //RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
-        //TODO: add into DB as well
+//        RegularSubscription newSub = new RegularSubscription(userID, carID, regularExitTime, parkingLotNumber);
         if (dbController.insertSubscription(rSubs)) {
             this._subscriptionsList.put(rSubs.getSubscriptionID() ,rSubs);
             return rSubs.getSubscriptionID();
@@ -86,12 +85,12 @@ public class SubscriptionController {
     /**
      *  A new Full Subscriptiong
      * @param userID
-     * @param carID
+     * @param carsIDList
      * @return new Subscription obj
      */
-    public Subscription addFullSubscription(Integer userID, Integer carID)
+    public Subscription addFullSubscription(Integer userID, ArrayList<Integer> carsIDList)
     {
-        FullSubscription newSub = new FullSubscription(userID, carID);
+        FullSubscription newSub = new FullSubscription(userID, carsIDList);
         //TODO: add into DB as well. // ID from db
         this._subscriptionsList.put(newSub.getSubscriptionID(), newSub);
         return newSub;
@@ -139,7 +138,7 @@ public class SubscriptionController {
     public ArrayList<Integer> findSubscriptionsByCarID(Map<Integer, Subscription> subscriptionList, Integer carID) {
         ArrayList<Integer> subscriptionsIDs = new ArrayList<>();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getCarID() == carID)
+            if (subscription.getCarsID().contains(carID))
                 subscriptionsIDs.add(subscription.getSubscriptionID());
         }
         return subscriptionsIDs;

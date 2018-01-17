@@ -15,6 +15,7 @@ import javafx.scene.layout.BorderPane;
 import utils.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class SubscriptionCell extends ListCell<Subscription> {
@@ -55,11 +56,11 @@ public class SubscriptionCell extends ListCell<Subscription> {
             if (item != null)
             {
                 Subscription.SubscriptionType type = item.getSubscriptionType();
-                Integer carID = item.getCarID();
+                ArrayList<Integer> carsID = item.getCarsID();
                 Date expiration = item.getExpiration();
                 String subType = StringUtils.SubscriptionTypeName(type);
-                lblText.setText(subType + " subscription:\n"
-                        + "Registered car: " + item.getCarID() + "\n"
+                lblText.setText(subType + " subscription No. " + item.getSubscriptionID() + ":\n"
+                        + "Registered car: " + carsID + "\n"
                         + "Expiration date: " + item.getExpiration().toString());
                 btnDelete.setOnAction(new EventHandler<ActionEvent>() {
                     @Override

@@ -26,7 +26,7 @@ public class ParkingController {
 
     private Map<Integer, ParkingLot> _parkingLotList;
     private Integer _numberOfSlotsOccupied;
-
+    private static boolean _initOnce = false; //TODO: REMOVE WHEN POSSIBLE
 
     private static ParkingController parkingInstance = new ParkingController();
     private Integer _heightNumOccupied;
@@ -323,8 +323,10 @@ public class ParkingController {
     public ArrayList<Object> getParkingLots() throws SQLException{
         ArrayList<Object> parkingLots = dbController.getParkingLots();
         setParkingLotsList(parkingLots);
-    //   TODO :to be used on parking lots for initing them until we have that button on employee.
-        initiateParkingLots();
+        if (!_initOnce) { //TODO: REMOVE WHEN POSSIBLE באמאשך
+            initiateParkingLots();
+            _initOnce = true;
+        }
         return parkingLots;
     }
 

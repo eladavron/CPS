@@ -1,8 +1,8 @@
 package entity;
 
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 
 import static entity.Subscription.SubscriptionType.FULL;
 
@@ -16,33 +16,27 @@ public class FullSubscription extends Subscription {
     /**
      * ctor From DB entry
      * @param subsId
-     * @param carId
+     * @param carsIDList
      * @param userId
      * @param endDate
      */
-    public FullSubscription (int subsId, int carId, int userId, Date endDate){
-        super( subsId,  carId,  userId, endDate, FULL);
+    public FullSubscription (int subsId, ArrayList<Integer> carsIDList, int userId, Date endDate){
+        super( subsId,  carsIDList,  userId, endDate, FULL);
     }
 
     /**
-     * A custom constructor for manual JSON Deserialization.
-     * @param deserialize
+     * Empty constructor for Ms. Jackson (I'm sorry, whoooo)
      */
-    public FullSubscription(LinkedHashMap deserialize)
-    {
-        super((Integer) deserialize.get("subscriptionID"),
-                (Integer) deserialize.get("carID"),
-                (Integer) deserialize.get("userID"),
-                new Date((Long) deserialize.get("expiration")), FULL);
+    public FullSubscription() {
     }
 
     /**
      * ctor to DB entry
-     * @param carId
+     * @param carsIDList
      * @param userId
      */
-    public FullSubscription (int userId, int carId){
-        super(userId, carId, FULL);
+    public FullSubscription (int userId, ArrayList<Integer> carsIDList){
+        super(userId, carsIDList, FULL);
     }
 
     @Override

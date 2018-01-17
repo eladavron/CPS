@@ -1,27 +1,28 @@
 package entity;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 
 import static entity.Subscription.SubscriptionType.REGULAR;
+import static entity.Subscription.SubscriptionType.REGULAR_MULTIPLE;
 
 /**
  * This Class represents a regular subscription of a customer's car.
  */
 public class RegularSubscription extends Subscription {
     private String _regularExitTime; // if applicable. else "00:00". now as *String* for simplicity
-    private final Integer _parkingLotNumber;
+    private Integer _parkingLotNumber;
 
     /**
      * Class Constructor.(toDb)
      *
      * @param userID    user id
-     * @param carID      The subscription's car id.
+     * @param carsIDList      The subscription's cars id list
      * @param parkingLotNumber the Subscription is only valid for that parking lot
      * @param regularExitTime   the car can only stay until it's regular exit time
      */
-    public RegularSubscription(Integer userID, Integer carID, String regularExitTime, Integer parkingLotNumber) {
-        super(userID, carID, SubscriptionType.REGULAR);
+    public RegularSubscription(Integer userID, ArrayList<Integer> carsIDList, String regularExitTime, Integer parkingLotNumber) {
+        super(userID, carsIDList, (carsIDList.size()>1) ? REGULAR_MULTIPLE : REGULAR);
         this._parkingLotNumber = parkingLotNumber;
         this._regularExitTime = regularExitTime;
     }
@@ -29,28 +30,26 @@ public class RegularSubscription extends Subscription {
     /**
      * Db c'tor (from Db)
      * @param subsId
-     * @param carId
      * @param userId
      * @param parkingLotNumber
      * @param endDate
      * @param regularExitTime
      */
-    public RegularSubscription(Integer subsId, Integer carId, Integer userId, Integer parkingLotNumber, Date endDate,
+    public RegularSubscription(Integer subsId, ArrayList<Integer> carsIDList, Integer userId, Integer parkingLotNumber, Date endDate,
                                String regularExitTime) {
-        super(subsId,  carId,  userId, endDate, SubscriptionType.REGULAR);
+        super(subsId,  carsIDList,  userId, endDate, (carsIDList.size()>1) ? REGULAR_MULTIPLE : REGULAR);
         this._parkingLotNumber = parkingLotNumber;
         this._regularExitTime = (regularExitTime == null) ? "00:00" : regularExitTime; // default when not presented
     }
 
     /**
-     * A custom constructor for manual JSON Deserialization.
-     * @param deserialize Json deserialized LinkedHashMap
+     * Empty constructor for Jackson
      */
-    public RegularSubscription(LinkedHashMap deserialize)
-    {
-        super((Integer) deserialize.get("userID"), (Integer) deserialize.get("carID"), REGULAR);
-        this._parkingLotNumber = (Integer) deserialize.get("parkingLotNumber");
-        this._regularExitTime = deserialize.containsKey("regularExitTime") ? (String) deserialize.get("regularExitTime") : "00:00";
+    public RegularSubscription() {
+    }
+
+    public void setParkingLotNumber(Integer parkingLotNumber) {
+        this._parkingLotNumber = parkingLotNumber;
     }
 
     public String getRegularExitTime() {

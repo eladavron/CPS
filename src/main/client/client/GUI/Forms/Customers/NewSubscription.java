@@ -27,6 +27,7 @@ import javafx.scene.layout.VBox;
 import utils.StringUtils;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 public class NewSubscription implements Initializable{
@@ -92,13 +93,13 @@ public class NewSubscription implements Initializable{
             Inits.initCars(cmbSingleCar);
             Inits.initParkingLots(cmbParkingLot);
             Inits.initTimeSelection(cmbExitHour,cmbExitMinute);
+            for (Integer carNum : cmbSingleCar.getItems())
+            {
+                CheckBox newCar = new CheckBox();
+                newCar.setText(carNum.toString());
+                flowCarSelection.getChildren().add(newCar);
+            }
         });
-        for (Integer carNum : cmbSingleCar.getItems())
-        {
-            CheckBox newCar = new CheckBox();
-            newCar.setText(carNum.toString());
-            flowCarSelection.getChildren().add(newCar);
-        }
         contentArea.getChildren().clear();
         paneParkingLot.getChildren().clear();
         cmbSubType.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -144,22 +145,33 @@ public class NewSubscription implements Initializable{
         Message newSubMessage = new Message(Message.MessageType.CREATE, Message.DataType.SUBSCRIPTION);
         Subscription newSubscription;
         Integer userID = CPSClientGUI.getLoggedInUserID();
+        ArrayList<Integer> carsIDsList = new ArrayList<>();
         switch (cmbSubType.getSelectionModel().getSelectedIndex()) {
             case REGULAR:
                 newSubMessage.addData(SubscriptionType.REGULAR);
-                newSubscription = new RegularSubscription(userID, cmbSingleCar.getValue(),
+                carsIDsList.add(cmbSingleCar.getValue());
+                newSubscription = new RegularSubscription(userID, carsIDsList,
                         cmbExitHour.getValue() + ":" + cmbExitMinute.getValue(),
                         cmbParkingLot.getValue().getParkingLotID());
+
                 break;
             case REGULAR_MULTICAR:
                 newSubMessage.addData(SubscriptionType.REGULAR_MULTIPLE);
-                newSubscription = new RegularSubscription(userID, cmbSingleCar.getValue(),
+                for (Node node : flowCarSelection.getChildren())
+                {
+                    if (node instanceof CheckBox && ((CheckBox) node).isSelected())
+                    {
+                        carsIDsList.add(Integer.valueOf(((CheckBox) node).getText()));
+                    }
+                }
+                newSubscription = new RegularSubscription(userID, carsIDsList,
                         cmbExitHour.getValue() + ":" + cmbExitMinute.getValue(),
                         cmbParkingLot.getValue().getParkingLotID());
                 break;
             case FULL:
+                carsIDsList.add(cmbSingleCar.getValue());
                 newSubMessage.addData(SubscriptionType.FULL);
-                newSubscription = new FullSubscription(userID, cmbSingleCar.getValue());
+                newSubscription = new FullSubscription(userID, carsIDsList);
                 break;
             default:
                 throw new NotImplementedException("Unexpected subscription type: " + cmbSubType.getValue());
@@ -177,7 +189,7 @@ public class NewSubscription implements Initializable{
                         : String.format("Your %s subscription has been renewed!", subName);
 
                 message += "\nSubscription ID: " + newSub.getSubscriptionID() + "\n"
-                        + "For car: " + newSub.getCarID() + "\n"
+                        + "For car/s: " + newSub.getCarsID() + "\n"
                         + "Now Expires on: " + newSub.getExpiration();
                 waitScreen.setGoBackOnClose(true);
                 waitScreen.showSuccess("Congratulations!", message);
@@ -210,7 +222,7 @@ public class NewSubscription implements Initializable{
                 return Validation.notEmpty(cmbSingleCar, cmbParkingLot);
             case REGULAR_MULTICAR:
                 boolean anyChecked = false;
-                validate = Validation.notEmpty(cmbSingleCar, cmbParkingLot);
+                validate = Validation.notEmpty(cmbParkingLot);
                 for (Node control : flowCarSelection.getChildren())
                 {
                     if (control instanceof CheckBox && ((CheckBox) control).isSelected())

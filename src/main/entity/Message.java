@@ -157,10 +157,10 @@ public class Message {
                                 switch (subType) {
                                     case REGULAR:
                                     case REGULAR_MULTIPLE:
-                                        sub = new RegularSubscription(myData);
+                                        sub = mapper.convertValue(myData, RegularSubscription.class);
                                         break;
                                     case FULL:
-                                        sub = new FullSubscription(myData);
+                                        sub = mapper.convertValue(myData, FullSubscription.class);
                                         break;
                                     default:
                                         throw new NotImplementedException("Unimplemented subscription type: " + subType);

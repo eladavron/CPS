@@ -279,7 +279,7 @@ public class MessageHandler {
             response.setDataType(Message.DataType.PARKING_LOT_LIST);
             response.setData(parkingLots);
         }
-        if (queryMsg.getDataType().equals(PARKING_LOT)) //Parking lot queries are user independent
+        else if (queryMsg.getDataType().equals(PARKING_LOT)) //Parking lot queries are user independent
         {
             response.setDataType(PARKING_LOT);
             response.addData(parkingController.getParkingLotByID((Integer) queryMsg.getData().get(0)));
@@ -413,7 +413,8 @@ public class MessageHandler {
                             Message.DataType.SUBSCRIPTION,
                             rc,
                             subscription);
-                }else
+                }
+                else
                 {
                     createMsgResponse = new Message(MessageType.FAILED,
                             Message.DataType.SUBSCRIPTION);

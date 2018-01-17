@@ -1,5 +1,6 @@
 package controller;
 
+
 import entity.*;
 import utils.StringUtils;
 import utils.TimeUtils;
@@ -200,6 +201,22 @@ public class DBController {
 
         if ((field != null) && (!value.equals(""))) {
             query += String.format(" WHERE %s = '%s'", field, value);
+        }
+
+        return  callStatement(query, tableName);
+    }
+
+    /*
+        Overloading function of the function above with field of String type.
+     */
+    private ResultSet queryTable(String tableName, String field, String value, String field2, String value2) throws SQLException{
+        String query = String.format("SELECT * FROM %s", tableName);
+
+        if ((field != null) && (!value.equals(""))) {
+            query += String.format(" WHERE %s = '%s'", field, value);
+        }
+        if ((field2 != null) && (!value2.equals(-1))) {
+            query += String.format(" AND %s = %s", field2, value2);
         }
 
         return  callStatement(query, tableName);
@@ -849,17 +866,23 @@ public class DBController {
 
 
     public boolean insertSubscription(Subscription subs) throws SQLException{
-        String params = "idUser, idCar, endDate";
+        String params = "idUser, endDate";
         Subscription.SubscriptionType subType = subs.getSubscriptionType();
-        String values = String.format("%s, %s, '%s'", subs.getUserID(), subs.getCarID(), _simpleDateFormatForDb.format(subs.getExpiration()));
+        String values = String.format("%s, '%s'", subs.getUserID(), _simpleDateFormatForDb.format(subs.getExpiration()));
         switch (subType){
             case FULL:
+                params += ", idCar";
+                values += String.format(", %s", subs.getCarsID().get(0));
                 break;
             case REGULAR_MULTIPLE:
+                RegularSubscription rMultSubs = (RegularSubscription) subs;
+                params += ", idParkingLot, regularExitTime, subscriptionType";
+                values += String.format(", %s, '%s', '%s'" , rMultSubs.getParkingLotNumber(), rMultSubs.getRegularExitTime(), subType);
+                break;
             case REGULAR:
                 RegularSubscription rSubs = (RegularSubscription) subs;
-                params += ", idParkingLot, regularExitTime, subscriptionType";
-                values += String.format(", %s, '%s', '%s'" ,rSubs.getParkingLotNumber(), rSubs.getRegularExitTime(), subType);
+                params += ", idParkingLot, regularExitTime, subscriptionType, idCar";
+                values += String.format(", %s, '%s', '%s', '%s'" ,rSubs.getParkingLotNumber(), rSubs.getRegularExitTime(), subType, subs.getCarsID().get(0));
                 break;
 
             default:
@@ -869,7 +892,6 @@ public class DBController {
         try {
             Statement stmt = db_conn.createStatement();
             int subsId;
-            //stmt.executeQuery(query);
             stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -877,6 +899,11 @@ public class DBController {
                 subsId = rs.getInt(1); //Get the UID from the DB.
             else
                 throw new SQLException("Couldn't get auto-generated UID");
+            if (subType == Subscription.SubscriptionType.REGULAR_MULTIPLE)
+                if (!insertSubscriptionCarsToDB(subsId, subs.getCarsID())) {
+                    System.err.printf("An error occurred inserting car list to subscription %s:\n", subs);
+                    return false;
+                }
 
             subs.setSubscriptionID(subsId);
             return true;
@@ -886,6 +913,25 @@ public class DBController {
             System.err.printf("An error occurred inserting %s:\n%s\n", subs, e.getMessage());
             throw e;
         }
+    }
+
+    private boolean insertSubscriptionCarsToDB(Integer idSubscription, ArrayList<Integer> carsID) throws SQLException{
+        String query;
+        int results;
+        try {
+            Statement stmt = db_conn.createStatement();
+            for (Integer carID : carsID) {
+                query = String.format("INSERT INTO CarToSubscription (idSubscription, idCar) VALUES (%s, %s)", idSubscription, carID);
+                results = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+                if (results != 1)
+                    return false;
+            }
+        }catch (SQLException e){
+            System.err.printf("An error occurred inserting carList for subscription %s\n%s", idSubscription, e.getMessage());
+            throw e;
+        }
+
+        return true;
     }
 
 
@@ -912,26 +958,36 @@ public class DBController {
         else {
             try {
                 while (rs.next()) {
+                    ArrayList<Integer> myCarList = new ArrayList<>();
                     Subscription rowSubscription;
                     switch (rs.getString("subscriptionType")){
                         case "REGULAR":
+                            myCarList.add(rs.getInt("idCar"));
                             rowSubscription = new RegularSubscription(rs.getInt("idSubscription"),
-                                    rs.getInt("idCar"),
+                                    myCarList,
                                     rs.getInt("idUser"),
                                     rs.getInt("idParkingLot"),
                                     rs.getDate("endDate"),
                                     rs.getString("regularExitTime"));
                             break;
-
+                        case "REGULAR_MULTIPLE":
+                            myCarList.addAll(getCarsForSubscriptionFromDB(rs.getInt("idSubscription")));
+                            rowSubscription = new RegularSubscription(rs.getInt("idSubscription"),
+                                    myCarList,
+                                    rs.getInt("idUser"),
+                                    rs.getInt("idParkingLot"),
+                                    rs.getDate("endDate"),
+                                    rs.getString("regularExitTime"));
+                            break;
                         case "FULL":
+                            myCarList.add(rs.getInt("idCar"));
                             rowSubscription = new FullSubscription(rs.getInt("idSubscription"),
-                                    rs.getInt("idCar"),
+                                    myCarList,
                                     rs.getInt("idUser"),
                                     rs.getDate("endDate"));
                             break;
                         default:
                             return null;
-
                     }
                     mySubscriptions.put(rowSubscription.getSubscriptionID(), rowSubscription);
                 }
@@ -943,6 +999,15 @@ public class DBController {
         }
     }
 
+    private ArrayList<Integer> getCarsForSubscriptionFromDB(Integer idSubscription) throws SQLException{
+        ResultSet rs;
+        ArrayList<Integer> carList = new ArrayList<>();
+        rs = queryTable("CarToSubscription", "idSubscription", idSubscription.toString(), "isActiveInSubscription", "1");
+        while (rs.next()){
+                carList.add(rs.getInt("idCar"));
+        }
+        return carList;
+    }
 
 
     /**

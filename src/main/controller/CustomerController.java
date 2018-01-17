@@ -315,7 +315,9 @@ public class CustomerController {
         Customer cust = customerController.getCustomer(subs.getUserID());
         Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getSubscriptionType().equals(REGULAR)&& subscription.getCarID() == subs.getCarID()){
+            if (subscription.getSubscriptionType().equals(REGULAR)
+                    && subscription.getCarsID().get(0).equals(subs.getCarsID().get(0)))
+            {
                 RegularSubscription regularSub = (RegularSubscription) subscription;
                 if (regularSub.getParkingLotNumber().equals(subs.getParkingLotNumber())) //then this is just a renewal of an existing subscription!
                 {
@@ -345,7 +347,8 @@ public class CustomerController {
         Customer cust = customerController.getCustomer(fSubs.getUserID());
         Map<Integer, Subscription> subscriptionList = cust.getSubscriptionMap();
         for (Subscription subscription : subscriptionList.values()) {
-            if (subscription.getSubscriptionType().equals(FULL) && subscription.getCarID() == fSubs.getCarID()){
+            if (subscription.getSubscriptionType().equals(FULL)
+                    && subscription.getCarsID().get(0).equals(fSubs.getCarsID().get(0))){
                 subscriptionController.renewSubscription(subscription); //just renewing it's expiration date does the job.
             }
         }

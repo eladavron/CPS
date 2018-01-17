@@ -461,7 +461,7 @@ public class CPSClientGUI extends Application{
             ArrayList subs = ((Customer)_session.getUser()).getSubscriptionList();
             for (Object sub : subs)
             {
-                if (sub instanceof Subscription && ((Subscription) sub).getCarID() == carID) //Found sub for this car type.
+                if (sub instanceof Subscription && ((Subscription) sub).getCarsID().contains(carID)) //Found sub for this car type.
                 {
                     if (type != null && ((Subscription) sub).getSubscriptionType().equals(type)) //Subscription is of the requested type.
                         returnList.add((Subscription)sub);

@@ -2,7 +2,9 @@ package entity;
 
 import utils.TimeUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 
 import static utils.TimeUtils.addTime;
 
@@ -18,39 +20,43 @@ public class Subscription {
 
 
 
-    private final SubscriptionType _subscriptionType;
+    private SubscriptionType _subscriptionType;
     private Integer _subscriptionID;
-	private Integer _carID;
+    //	private Integer _carID;
+	private ArrayList<Integer> _carsIDList;
 	private Date _expiration;
 	private Integer _userID;
-
 	public enum SubscriptionType{FULL, REGULAR, REGULAR_MULTIPLE}
 
-	/**
-	 * Class Constructor.
-	 * @param carID The subscription's car id.
-	 *
-	 */
-	public Subscription(Integer userID, Integer carID, SubscriptionType subscriptionType) {
+    /**
+     * Class constructor
+     * @param userID User's ID
+     * @param carsIDList User's cars ids list.
+     * @param subscriptionType The type of the subscription.
+     */
+	public Subscription(Integer userID, ArrayList<Integer> carsIDList, SubscriptionType subscriptionType) {
 	    this._userID =userID;
-		this._carID = carID;
+	    this._carsIDList = carsIDList;
 		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 28);
 		this._subscriptionType = subscriptionType;
 	}
 
 	/**
 	 * Ctor from DB for FULL
-	 * @param subscriptionId
-	 * @param carID
+	 * @param subscriptionID
+	 * @param carsIDList
 	 * @param subscriptionType
 	 */
-	public Subscription(Integer subscriptionId, Integer carID,Integer userID, Date expiration, SubscriptionType subscriptionType)
+	public Subscription(Integer subscriptionID, ArrayList<Integer> carsIDList,Integer userID, Date expiration, SubscriptionType subscriptionType)
 	{
-		this._subscriptionID = subscriptionId;
-		this._carID = carID;
+		this._subscriptionID = subscriptionID;
+		this._carsIDList = carsIDList;
 		this._userID = userID;
 		this._expiration = expiration;
 		this._subscriptionType = subscriptionType;
+	}
+
+	public Subscription() {
 	}
 
 	/**
@@ -71,17 +77,17 @@ public class Subscription {
 	 * Get the subscription's car id
 	 * @return The subscription's car id
 	 */
-	public int getCarID() {
-		return _carID;
-	}
+    public ArrayList<Integer> getCarsID() {
+        return _carsIDList;
+    }
 
 	/**
-	 * Set the subscription's car id
-	 * @param carID Car ID to set the subscription's car id
+	 * Set the subscription's cars ids list
+	 * @param carsID Car ID to set the subscription's car id
 	 */
-	public void setCarID(int carID) {
-		this._carID = carID;
-	}
+    public void setCarsID(ArrayList<Integer> carsID) {
+        this._carsIDList = carsID;
+    }
 
 	/**
 	 * Get the expiration of the subscription.
@@ -99,7 +105,11 @@ public class Subscription {
 		this._expiration = expiration;
 	}
 
-    public SubscriptionType getSubscriptionType() {
+	public void setSubscriptionType(SubscriptionType subscriptionType) {
+		this._subscriptionType = subscriptionType;
+	}
+
+	public SubscriptionType getSubscriptionType() {
         return _subscriptionType;
     }
 
@@ -111,21 +121,29 @@ public class Subscription {
 		this._userID = userID;
 	}
 
-	@Override
-	public String toString() {
-		return "Subscription " +
-				"car ID=" + _carID +
-				", expiration=" + _expiration +
-                ", subscription Type=" + _subscriptionType;
-	}
+    @Override
+    public String toString() {
+        String str =  "Subscription info: \n" +
+                "subscription type=" + _subscriptionType +
+                ", subscription ID=" + _subscriptionID +
+                ", cars ids list: \n" ;
+        for(Integer carID : this._carsIDList){
+            str += carID + ", ";
+        }
+        str += ", expiration=" + _expiration +
+        ", user ID=" + _userID;
+        return str;
+    }
 
-	@Override
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Subscription)) return false;
-        Subscription subscription = (Subscription) o;
-        return (_subscriptionUIDCounter == subscription._subscriptionID) &&
-        		(_carID.equals(subscription._carID)) &&
-        		(_expiration == subscription._expiration);
+        if (o == null || getClass() != o.getClass()) return false;
+        Subscription that = (Subscription) o;
+        return _subscriptionType == that._subscriptionType &&
+                Objects.equals(_subscriptionID, that._subscriptionID) &&
+                Objects.equals(_carsIDList, that._carsIDList) &&
+                Objects.equals(_expiration, that._expiration) &&
+                Objects.equals(_userID, that._userID);
     }
 }
