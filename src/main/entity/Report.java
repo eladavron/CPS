@@ -15,6 +15,7 @@ public class Report {
     private Integer _managerID; // will be 999 if made by Tasker.
     private Date _generationDate;
     private ReportType _type;
+    private Integer _reportID; //to be generated from the DB...
 
     /**
      * Report different types.
@@ -64,6 +65,15 @@ public class Report {
     public void setType(ReportType type) {
         this._type = type;
     }
+
+    public Integer getReportID() {
+        return _reportID;
+    }
+
+    public void setReportID(Integer reportID) {
+        this._reportID = reportID;
+    }
+
 
     @Override
     public boolean equals(Object o) {

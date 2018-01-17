@@ -11,6 +11,7 @@ public class Controllers {
     public static ParkingController         parkingController;
     public static EmployeeController        employeeController;
     public static CustomerServiceController customerServiceController;
+    public static ReportController          reportController;
     public static ComplaintController       complaintController;
 
     /**
@@ -35,6 +36,7 @@ public class Controllers {
         orderController           = OrderController.getInstance();
         subscriptionController    = SubscriptionController.getInstance();
         customerController        = CustomerController.getInstance();
+        reportController          = ReportController.getInstance();
         complaintController       = ComplaintController.getInstance();
     }
 }
