@@ -111,7 +111,7 @@ public class DBController {
                                 rs.getInt("UID"),
                                 rs.getString("name"),
                                 rs.getString("email"),
-                                rs.getTimestamp("create_time"));
+                                returnTimeStampFromDB(rs, "create_time"));
                         rowsEmployees.add(row);
                     }
                     return tableFormatter(columnNamesEmployees, rowsEmployees);
@@ -243,7 +243,10 @@ public class DBController {
 
             rs = stmt.executeQuery(String.format("SELECT * FROM employees WHERE UID=%d", uid)); //Get the creation time from the DB.
             if (rs.next())
-                creationDate = new Date(rs.getTimestamp("create_time").getTime());
+                if (returnTimeStampFromDB(rs,"create_time") != null)
+                    creationDate = new Date(returnTimeStampFromDB(rs, "create_time").getTime());
+                else
+                    creationDate = null;
             else
                 throw new SQLException("Something went wrong retrieving the employee just inserted!");
 
@@ -294,7 +297,10 @@ public class DBController {
 
             rs = stmt.executeQuery(String.format("SELECT * FROM Orders WHERE idOrders=%d", uid)); //Get the creation time from the DB.
             if (rs.next())
-                creationDate = new Date(rs.getTimestamp("orderCreationTime").getTime());
+                if (returnTimeStampFromDB(rs,"create_time") != null)
+                    creationDate = new Date(returnTimeStampFromDB(rs, "create_time").getTime());
+                else
+                    creationDate = null;
             else
                 throw new SQLException("Something went wrong retrieving the order just inserted!");
 
@@ -330,6 +336,19 @@ public class DBController {
         }
     }
 
+    private Timestamp returnTimeStampFromDB(ResultSet rs, String columnLabel)
+    {
+        try
+        {
+            return rs.getTimestamp(columnLabel);
+        }
+        catch (SQLException e)
+       {
+            return null;
+       }
+    }
+
+
     public Map<Integer, Object> parseOrdersFromDBToMap(ResultSet rs){
         Map<Integer, Object>  myOrders = new HashMap<>();
         if (rs == null){
@@ -353,10 +372,10 @@ public class DBController {
                             PreOrder rowOrder = new PreOrder(
                                     rs.getInt("idCustomer"),
                                     rs.getInt("idCar"),
-                                    rs.getTimestamp("exitTimeEstimated"),
+                                    returnTimeStampFromDB(rs, "exitTimeEstimated"),
                                     rs.getInt("idParkingLot"),
                                     rs.getDouble("price"),
-                                    rs.getTimestamp("entryTimeEstimated")
+                                    returnTimeStampFromDB(rs, "entryTimeEstimated")
                             );
                             rowOrder.setOrderID(rs.getInt("idOrders"));
                             myOrders.put(rowOrder.getOrderID(), rowOrder);
@@ -369,12 +388,12 @@ public class DBController {
                                     rs.getInt("idCar"),
                                     rs.getInt("idParkingLot"),
                                     _orderStatus,
-                                    rs.getTimestamp("entryTimeEstimated"),
-                                    rs.getTimestamp("entryTimeActual"),
-                                    rs.getTimestamp("exitTimeEstimated"),
-                                    rs.getTimestamp("exitTimeActual"),
+                                    returnTimeStampFromDB(rs, "entryTimeEstimated"),
+                                    returnTimeStampFromDB(rs, "entryTimeActual"),
+                                    returnTimeStampFromDB(rs, "exitTimeEstimated"),
+                                    returnTimeStampFromDB(rs, "exitTimeActual"),
                                     rs.getDouble("price"),
-                                    rs.getTimestamp("orderCreationTime")
+                                    returnTimeStampFromDB(rs, "orderCreationTime")
                             );
                             myOrders.put(activeOrder.getOrderID(), activeOrder);
                             break;
