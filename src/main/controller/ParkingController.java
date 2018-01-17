@@ -57,6 +57,7 @@ public class ParkingController {
      */
     private void initiateParkingLot(Integer parkingLotNumber, ArrayList<ParkingSpace> parkingSpaces)
     {
+        System.out.println("Starting Init of parking lot number: " + parkingLotNumber );
         ParkingLot thisParkingLot = this._parkingLotList.get(parkingLotNumber);
         for (ParkingSpace parkingSpace : parkingSpaces)
         {
@@ -67,7 +68,6 @@ public class ParkingController {
                     = parkingSpace
             ;
         }
-
         for(int i = 1; i <= thisParkingLot.getDepth(); i++)
         {
             for(int j = 1; j <= thisParkingLot.getWidth(); j++)
@@ -75,16 +75,32 @@ public class ParkingController {
                 for(int k=1; k <= thisParkingLot.getHeight(); k++)
                 {
                    ParkingSpace currentParkingSpace = thisParkingLot.getParkingSpaceMatrix()[i][j][k];
-                   if (currentParkingSpace.getOccupyingOrderID() == null)
+                    if (currentParkingSpace ==  null)
+                   {
                        // Meaning this is a new parkingSpace unknown to DB
-                        dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
+                       currentParkingSpace = new ParkingSpace();
+                       currentParkingSpace.setDepth(i);
+                       currentParkingSpace.setWidth(j);
+                       currentParkingSpace.setHeight(k);
+                       dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
+                       thisParkingLot.getParkingSpaceMatrix()[i][j][k] = currentParkingSpace;
+                   }
                 }
             }
         }
+        System.out.println("Done.");
     }
 
     public void initiateParkingLot(Integer parkingLotNumber){
         initiateParkingLot(parkingLotNumber,dbController.getParkingSpaces(parkingLotNumber));
+    }
+
+    public void initiateParkingLots()
+    {
+        for (Integer parkingLotID: _parkingLotList.keySet())
+        {
+            initiateParkingLot(parkingLotID, dbController.getParkingSpaces(parkingLotID));
+        }
     }
 
     /**
@@ -307,6 +323,8 @@ public class ParkingController {
     public ArrayList<Object> getParkingLots() {
         ArrayList<Object> parkingLots = dbController.getParkingLots();
         setParkingLotsList(parkingLots);
+    //   TODO :to be used on parking lots for initing them until we have that button on employee.
+        initiateParkingLots();
         return parkingLots;
     }
 

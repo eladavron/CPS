@@ -729,7 +729,7 @@ public class DBController {
                     // Now we will pull the list of active orders by using the DBs get order by id of user.
                     Map<Integer, Object> myOrders = new HashMap<>();
                     String orderListQuery = String.format("SELECT * FROM Orders WHERE idCustomer = %s AND" +
-                                    " orderType != '%s' AND orderType != '$s' ", userID,
+                                    " orderType != '%s' AND orderType != '%s' ", userID,
                             Order.OrderStatus.DELETED, Order.OrderStatus.FINISHED);
                     ResultSet orderList = stmt.executeQuery(orderListQuery);
                     myOrders = parseOrdersFromDBToMap(orderList);

@@ -66,7 +66,7 @@ public class ParkingLot {
         this._height = rows;
         this._width = columns;
         this._depth = depth;
-        this._parkingSpaceMatrix = new ParkingSpace[depth][columns][rows];
+        this._parkingSpaceMatrix = new ParkingSpace[depth+1][columns+1][rows+1];
         this._parkingLotID = parkingLotID;
     }
 	/**
