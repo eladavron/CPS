@@ -72,7 +72,7 @@ public class EnterParking implements Initializable {
             @Override
             public void run() {
                 Inits.initCars(cmbCar);
-                Inits.initOrders(cmbOrder);
+                Inits.initPreorders(cmbOrder);
             }
         });
         cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());

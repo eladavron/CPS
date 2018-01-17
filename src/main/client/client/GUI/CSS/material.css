@@ -435,6 +435,7 @@
 
 .label:show-mnemonics>.mnemonic-underline {
     -fx-stroke: -fx-text-base-color;
+    -fx-stroke: -fx-text-base-color;
 }
 
 /*******************************************************************************
@@ -727,6 +728,8 @@
 
 .text-area {
     -fx-padding: 0.15em;
+    -fx-border-width: 1 1 2 1;
+    -fx-background-color: WHITE;
 }
 
 .text-area .content {

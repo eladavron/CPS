@@ -983,13 +983,15 @@ public class DBController {
         try {
             Statement stmt = db_conn.createStatement();
             int complaintId;
-            String representativeID = (complaint.getCustomerServiceRepresentativeID() == -1) ? "NULL" :
-                    complaint.getCustomerServiceRepresentativeID().toString();
+            String representativeID = (complaint.getCustomerServiceRepresentativeID().equals(-1) ? "NULL" :
+                    complaint.getCustomerServiceRepresentativeID().toString());
+            String orderID = (complaint.getRelatedOrderID().equals(-1) ? "NULL" :
+                    "'" + complaint.getRelatedOrderID().toString() + "'");
             stmt.executeUpdate(String.format("INSERT INTO Complaints (idUser, idOrder, idRepresentative," +
                             " status, description, refund)" +
-                            " VALUES ('%s', '%s', %s," +
+                            " VALUES ('%s', %s, %s," +
                             "'%s', '%s', '%s')",
-                    complaint.getCustomerID(), complaint.getRelatedOrderID(), representativeID,
+                    complaint.getCustomerID(), orderID, representativeID,
                     complaint.getStatus(), complaint.getDescription(), complaint.getRefund()),
                     Statement.RETURN_GENERATED_KEYS);
 

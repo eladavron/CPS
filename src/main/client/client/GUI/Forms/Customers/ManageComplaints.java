@@ -66,15 +66,18 @@ public class ManageComplaints implements Initializable {
             @Override
             public void run() {
                 _complaintList.clear();
-                ArrayList subs = getMessage().getData();
-                if (subs.size() != 0) //Empty list
+                ArrayList complaints = getMessage().getData();
+                if (complaints.size() != 0) //Empty list
                 {
-                    for (Object sub : subs)
+                    for (Object complaint : complaints)
                     {
-                        _complaintList.add((Complaint) sub);
+                        if (!((Complaint)complaint).getStatus().equals(Complaint.ComplaintStatus.CANCELLED))
+                        {
+                            _complaintList.add((Complaint) complaint);
+                        }
                     }
-                    waitScreen.hide();
                 }
+                waitScreen.hide();
             }
         };
 
@@ -95,6 +98,6 @@ public class ManageComplaints implements Initializable {
 
     @FXML
     void returnToMain(ActionEvent event) {
-        CPSClientGUI.goBack(true);
+        CPSClientGUI.goBack(false);
     }
 }

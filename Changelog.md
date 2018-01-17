@@ -1,4 +1,7 @@
 # 16.01.2018
+## Complaint Flow - COMPLETE!
+Customers can now create and cancel complains.
+
 ## Generic Client Side Improvements
 * Vastly improved the `MessageTasker` class to not be so cumbersome to construct.
 
@@ -13,6 +16,7 @@
  * Improved entire login and validation flow.
  * Simplified the "Session" object to no longer hold a private field for `UserType` (it was only used in creation
   anyway, and after that you can just pull it from the user).
+  * Improved erorr-handling immensely
 
 ## Employee Screen
 * Logging in as an employee now display the newly implemented Employee screen.

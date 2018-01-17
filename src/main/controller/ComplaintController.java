@@ -2,6 +2,7 @@ package controller;
 
 import entity.Complaint;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class ComplaintController {
      * Accept complaint by setting a full refund.
      * @param complaintID The complaint to handle.
      */
-    public boolean AcceptComplaint(Integer complaintID) {
+    public boolean acceptComplaint(Integer complaintID) {
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null)
             return false;
@@ -100,14 +101,16 @@ public class ComplaintController {
     /**
      * Create a customer complaint.
      */
-    public Integer createComplaint(Integer customerID, Integer orderID, String Description){
+    public Complaint createComplaint(Integer customerID, Integer orderID, String Description){
         Complaint complaint = new Complaint(customerID, orderID, Description);
+        complaint.setStatus(Complaint.ComplaintStatus.NEW);
         if (dbController.insertComplaint(complaint)){
             _complaintsList.put(complaint.getComplaintID(), complaint);
-            return complaint.getComplaintID();
+            return complaint;
         }
-        else{
-            return -1;
+        else
+        {
+            return null;
         }
 
     }
@@ -116,7 +119,7 @@ public class ComplaintController {
      * Create a customer complaint. also from obj
      * "HACHANA LEMAZGAN"
      */
-    public Integer createComplaint(Complaint complaint){
+    public Complaint createComplaint(Complaint complaint){
         return createComplaint(complaint.getCustomerID(),complaint.getRelatedOrderID(), complaint.getDescription());
 
     }
@@ -128,6 +131,24 @@ public class ComplaintController {
      */
     public Complaint getComplaintByID(Integer complaintID){
         return _complaintsList.get(complaintID);
+    }
+
+    /**
+     * Return a list of complaints opened by a user.
+     * @param uID User ID
+     * @return The list. Can be empty, can't be null.
+     */
+    public ArrayList<Complaint> getComplaintsByUserID(Integer uID)
+    {
+        ArrayList<Complaint> returnList = new ArrayList<>();
+        for (Complaint complaint : _complaintsList.values())
+        {
+            if (complaint.getCustomerID().equals(uID))
+            {
+                returnList.add(complaint);
+            }
+        }
+        return returnList;
     }
 
     /**

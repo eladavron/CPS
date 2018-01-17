@@ -15,8 +15,10 @@ import java.util.HashMap;
 import static controller.Controllers.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.FAILED;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
+import static entity.Message.DataType.COMPLAINT;
 import static entity.Message.DataType.PRIMITIVE;
 import static entity.Message.MessageType;
+import static entity.Message.MessageType.FINISHED;
 
 /**
  * Handles messages from client GUI:
@@ -40,7 +42,7 @@ public class MessageHandler {
     public static boolean handleMessage(String json, ConnectionToClient clientConnection) throws IOException {
         try {
             Message msg = new Message(json);
-            MessageType msgType = msg.getType();
+            MessageType msgType = msg.getMessageType();
 
             if (msgType == MessageType.LOGOUT)
             {
@@ -75,7 +77,7 @@ public class MessageHandler {
                 case UPDATE:
                     break;
                 default:
-                    return false;
+                    throw new InvalidMessageException("Unknown message type: " + msgType);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,13 +106,14 @@ public class MessageHandler {
             Double neededPayment = customerController.finishOrder(departingCustomer,order.getOrderID());
             if (neededPayment.equals((double)0))
             {
-                endParkingResponse.setType(MessageType.FINISHED);
+                endParkingResponse.setMessageType(FINISHED);
                 endParkingResponse.setDataType(PRIMITIVE);
             }
             else
             {
                 SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(order);
-                endParkingResponse.setType(MessageType.NEED_PAYMENT);
+                endParkingResponse.setMessageType(MessageType.NEED_PAYMENT);
+                endParkingResponse.setMessageType(MessageType.NEED_PAYMENT);
                 endParkingResponse.setDataType(PRIMITIVE);
                 endParkingResponse.addData(neededPayment);
             }
@@ -118,7 +121,7 @@ public class MessageHandler {
             sendToClient(endParkingResponse, clientConnection);
 
         }catch (OrderNotFoundException e){
-            endParkingResponse.setType(MessageType.FAILED);
+            endParkingResponse.setMessageType(MessageType.FAILED);
             endParkingResponse.setDataType(PRIMITIVE);
             endParkingResponse.addData("Order ID " + order.getOrderID() + " was not found, please contact CPS personnel");
             sendToClient(endParkingResponse, clientConnection);
@@ -135,14 +138,14 @@ public class MessageHandler {
             customerController.finishOrder(payingCustomer,orderInNeedOfPayment.getOrderID());
             SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(null);
         }
-        response.setType(MessageType.FINISHED);
+        response.setMessageType(FINISHED);
         sendToClient(response, clientConnection);
     }
 
     private static void handleLogout(Message msg, ConnectionToClient clientConnection) throws IOException {
         Message logoutResponse = new Message();
         ArrayList<Object> data = new ArrayList<Object>();
-        logoutResponse.setType(MessageType.LOGOUT);
+        logoutResponse.setMessageType(MessageType.LOGOUT);
         logoutResponse.setTransID(msg.getTransID());
         logoutResponse.setDataType(PRIMITIVE);
         logoutResponse.addData("So long, and thanks for all the fish");
@@ -235,10 +238,17 @@ public class MessageHandler {
                     response.addData(sub);
                 }
                 break;
+            case COMPLAINT:
+                response.setDataType(COMPLAINT);
+                for (Complaint complaint : complaintController.getComplaintsByUserID(userID))
+                {
+                    response.addData(complaint);
+                }
+                break;
             case SESSION:
                 break;
             default:
-                throw new NotImplementedException("Unknown data type: " + queryMsg.getDataType().toString());
+                response = new Message(MessageType.FAILED, PRIMITIVE, "Unknown query type " + queryMsg.getDataType());
         }
     }
 
@@ -275,7 +285,7 @@ public class MessageHandler {
             handleUserQueries(queryMsg, response);
         }
 
-        response.setType(MessageType.FINISHED);
+        response.setMessageType(FINISHED);
         response.setTransID(queryMsg.getTransID());
         sendToClient(response, clientConnection);
         return true;
@@ -293,17 +303,17 @@ public class MessageHandler {
                 try{
                     if (customerController.removeCar(customerController.getCustomer(uID),carToDelete))
                     {//success
-                        response.setType(MessageType.FINISHED);
+                        response.setMessageType(FINISHED);
                     }
                     else
                     {
-                        response.setType(MessageType.FAILED);
+                        response.setMessageType(MessageType.FAILED);
                         response.setDataType(PRIMITIVE);
                         response.addData("Car removal from DB failed");
                     }
                 }catch(LastCarRemovalException e)
                 {
-                    response.setType(MessageType.FAILED);
+                    response.setMessageType(MessageType.FAILED);
                     response.setDataType(PRIMITIVE);
                     response.addData("It is required to have at least 1 registered car");
                 }
@@ -315,13 +325,22 @@ public class MessageHandler {
                 Order removedOrder = customerController.removeOrder(customer, preOrderToDelete.getOrderID());
                 if (removedOrder == null)
                 { //TODO: Add support for payment required && order not found exception
-                    response.setType(MessageType.FAILED);
+                    response.setMessageType(MessageType.FAILED);
                 }
                 else
                 {
-                    response = new Message(MessageType.FINISHED, Message.DataType.PREORDER, removedOrder);
+                    response = new Message(FINISHED, Message.DataType.PREORDER, removedOrder);
                 }
                 break;
+            case COMPLAINT:
+                Complaint complaint = (Complaint) deleteMsg.getData().get(0);
+                if (complaintController.cancelComplaint(complaint.getComplaintID()))
+                    response = new Message(FINISHED, COMPLAINT);
+                else
+                    response = new Message(MessageType.FAILED, PRIMITIVE, "Something went wrong!");
+                break;
+            default:
+                response = new Message(MessageType.FAILED, PRIMITIVE, "Unsupported creation type: " + deleteMsg.getMessageType());
         }
         response.setTransID(deleteMsg.getTransID());
         sendToClient(response,clientConnection);
@@ -334,17 +353,17 @@ public class MessageHandler {
             case CUSTOMER:
                 Customer customer = mapper.convertValue(createMsg.getData().get(0),Customer.class);
                 Customer newCustomer = customerController.addNewCustomer(customer);
-                createMsgResponse = new Message(MessageType.FINISHED, Message.DataType.CUSTOMER, newCustomer);
+                createMsgResponse = new Message(FINISHED, Message.DataType.CUSTOMER, newCustomer);
                 break;
             case ORDER:
                 Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
                 Order newOrder = customerController.addNewOrder(order);
-                createMsgResponse = new Message(MessageType.FINISHED, Message.DataType.ORDER, newOrder);
+                createMsgResponse = new Message(FINISHED, Message.DataType.ORDER, newOrder);
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
                 Order newPreOrder = customerController.addNewPreOrder(preorder);
-                createMsgResponse = new Message(MessageType.FINISHED, Message.DataType.PREORDER, newPreOrder);
+                createMsgResponse = new Message(FINISHED, Message.DataType.PREORDER, newPreOrder);
                 break;
             case CARS:
                 Integer uID = (Integer)createMsg.getData().get(0);
@@ -354,7 +373,7 @@ public class MessageHandler {
                 {
                     customerController.addCar(customerToAddTo, carToAdd);
                 }
-                createMsgResponse = new Message(MessageType.FINISHED, Message.DataType.CARS, carToAdd);
+                createMsgResponse = new Message(FINISHED, Message.DataType.CARS, carToAdd);
                 break;
             case SUBSCRIPTION:
                 Subscription subscription = (Subscription) createMsg.getData().get(0);
@@ -375,7 +394,7 @@ public class MessageHandler {
 
                 if (rc != FAILED)
                 {
-                    createMsgResponse = new Message(MessageType.FINISHED,
+                    createMsgResponse = new Message(FINISHED,
                             Message.DataType.SUBSCRIPTION,
                             rc,
                             subscription);
@@ -385,8 +404,18 @@ public class MessageHandler {
                             Message.DataType.SUBSCRIPTION);
                 }
                 break;
+            case COMPLAINT:
+                Complaint incomingComplaint = (Complaint) createMsg.getData().get(0);
+                Complaint returnComplaint = complaintController.createComplaint(incomingComplaint);
+                if (returnComplaint != null)
+                    createMsgResponse = new Message(FINISHED, COMPLAINT, returnComplaint);
+                else
+                    createMsgResponse = new Message(MessageType.FAILED, PRIMITIVE, "Ironically, something went wrong with your request.");
+                break;
             default:
                 createMsgResponse = new Message(MessageType.FAILED, PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());
+                createMsgResponse.setTransID(createMsg.getTransID());
+                sendToClient(createMsgResponse, clientConnection);
                 return false;
         }
         createMsgResponse.setTransID(createMsg.getTransID());

@@ -140,4 +140,19 @@ public class Complaint {
                 "No.: " + this._complaintID +
                 ", handled by: " + this._customerServiceRepresentativeID;
     }
+
+    /**
+     * A "To String" friendly for GUI purposes.
+     * @return a usable string
+     */
+    public String getGUIString()
+    {
+        return
+        "Complaint No. " + this.getComplaintID()
+                + (this.getRelatedOrderID().equals(-1) ? "" : "\nRegarding Order No. " + this.getRelatedOrderID())
+                + "\nComplaint Status: " + this.getStatus()
+                + "\nDetailes: " + this.getDescription()
+                + (this.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + this.getRefund() + " NIS (The cheque is in the mail)." : "")
+                + (this.getCustomerServiceRepresentativeID().equals(-1) ? "" : "\nAssigned Representative: " + this.getCustomerServiceRepresentativeID());
+    }
 }

@@ -12,21 +12,24 @@ import javafx.util.StringConverter;
 
 import java.util.ArrayList;
 
+import static entity.Message.DataType.*;
+import static entity.Order.OrderStatus.PRE_ORDER;
+
 /**
  * A class for common inits along with those who require to the server.
   */
 public class Inits {
 
     /**
-     * Populates a combo box with open orders.
+     * Populates a combo box with open (pre)orders.
      * @param comboBox The combo box to populate.
      */
-    public static void initOrders(ComboBox<PreOrder> comboBox)
+    public static void initPreorders(ComboBox<PreOrder> comboBox)
     {
         comboBox.setConverter(new StringConverter<PreOrder>() {
             @Override
             public String toString(PreOrder object) {
-                return String.format("%d. %s - %s", object.getOrderID(), object.getEstimatedEntryTime().toString(), object.getEstimatedExitTime().toString());
+                return String.format("Order No. %d", object.getOrderID());
             }
 
             @Override
@@ -34,7 +37,86 @@ public class Inits {
                 return null;
             }
         });
-        queryServer(Message.DataType.PREORDER, comboBox);
+
+        WaitScreen waitScreen = new WaitScreen();
+        MessageRunnable onSuccess = new MessageRunnable() {
+            @Override
+            public void run() {
+                comboBox.getItems().clear();
+                comboBox.setItems(null);
+                comboBox.setItems(FXCollections.observableArrayList());
+                for (Object object : getMessage().getData())
+                {
+                    if (object instanceof PreOrder && ((PreOrder) object).getOrderStatus().equals(PRE_ORDER))
+                    {
+                        comboBox.getItems().add((PreOrder) object);
+                    }
+                }
+                waitScreen.hide();
+            }
+        };
+
+        MessageRunnable onFailure = new MessageRunnable() {
+            @Override
+            public void run() {
+                waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
+            }
+        };
+        User user = new User();
+        if (CPSClientGUI.getSession() != null) {
+            user = CPSClientGUI.getSession().getUser();
+        }
+
+        Message query = new Message(Message.MessageType.QUERY, PREORDER, user.getUID(), user.getUserType());
+        MessageTasker queryPreorders = new MessageTasker(query, onSuccess, onFailure);
+        waitScreen.run(queryPreorders);
+    }
+
+    public static void initOrders(ComboBox<Order> comboBox)
+    {
+        comboBox.setConverter(new StringConverter<Order>() {
+            @Override
+            public String toString(Order object) {
+                if (object != null)
+                    return "Order No. " + object.getOrderID();
+                else
+                    return null;
+            }
+
+            @Override
+            public Order fromString(String string) {
+                return null;
+            }
+        });
+        WaitScreen waitScreen = new WaitScreen();
+        MessageRunnable onSuccess = new MessageRunnable() {
+            @Override
+            public void run() {
+                comboBox.getItems().clear();
+                comboBox.setItems(null);
+                comboBox.setItems(FXCollections.observableArrayList());
+                for (Object obj : getMessage().getData())
+                {
+                    comboBox.getItems().add((Order) obj);
+                }
+                waitScreen.hide();
+            }
+        };
+
+        MessageRunnable onFailure = new MessageRunnable() {
+            @Override
+            public void run() {
+                waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
+            }
+        };
+        User user = new User();
+        if (CPSClientGUI.getSession() != null) {
+            user = CPSClientGUI.getSession().getUser();
+        }
+
+        Message query = new Message(Message.MessageType.QUERY, ORDER, user.getUID(), user.getUserType());
+        MessageTasker queryOrders = new MessageTasker(query, onSuccess, onFailure);
+        waitScreen.run(queryOrders);
     }
 
 
@@ -98,11 +180,6 @@ public class Inits {
      */
     public static void initParkingLots(ComboBox<ParkingLot> comboBox)
     {
-        queryServer(Message.DataType.PARKING_LOT, comboBox);
-    }
-
-    private static void queryServer(Message.DataType type, ComboBox comboBox)
-    {
         WaitScreen waitScreen = new WaitScreen();
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
@@ -110,7 +187,10 @@ public class Inits {
                 comboBox.getItems().clear();
                 comboBox.setItems(null);
                 comboBox.setItems(FXCollections.observableArrayList());
-                comboBox.getItems().addAll(getMessage().getData());
+                for (Object obj : getMessage().getData())
+                {
+                    comboBox.getItems().add((ParkingLot) obj);
+                }
                 waitScreen.hide();
             }
         };
@@ -126,8 +206,8 @@ public class Inits {
             user = CPSClientGUI.getSession().getUser();
         }
 
-        Message query = new Message(Message.MessageType.QUERY, type, user.getUID(), user.getUserType());
-        MessageTasker queryParkingLots = new MessageTasker(query, onSuccess, onFailure);
-        waitScreen.run(queryParkingLots);
+        Message query = new Message(Message.MessageType.QUERY, PARKING_LOT, user.getUID(), user.getUserType());
+        MessageTasker queryParkinglots = new MessageTasker(query, onSuccess, onFailure);
+        waitScreen.run(queryParkinglots);
     }
 }

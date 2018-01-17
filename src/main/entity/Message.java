@@ -75,9 +75,10 @@ public class Message {
     public Message(String json) throws InvalidMessageException {
         try {
             ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             Message msg = mapper.readValue(json, Message.class);
             _transactionID =  msg.getTransID();
-            _type = msg.getType();
+            _type = msg.getMessageType();
             _dataType = msg.getDataType();
             _data = new ArrayList<Object>();
             switch (_type)
@@ -158,12 +159,10 @@ public class Message {
                                         _data.add(dataObject);
                                         break;
                                     case PREORDER:
-                                        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                                         PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
                                         _data.add(preOrder);
                                         break;
                                     case ORDER:
-                                        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                                         Order order = mapper.convertValue(dataObject, Order.class);
                                         _data.add(order);
                                         break;
@@ -184,6 +183,10 @@ public class Message {
                                     case PARKING_LOT:
                                         ParkingLot parkingLotQuery = mapper.convertValue(dataObject, ParkingLot.class);
                                         _data.add(parkingLotQuery);
+                                        break;
+                                    case COMPLAINT:
+                                        Complaint complaint = mapper.convertValue(dataObject, Complaint.class);
+                                        _data.add(complaint);
                                         break;
                                     default:
                                         throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());
@@ -231,11 +234,11 @@ public class Message {
         Collections.addAll(this._data, data);
     }
 
-    public MessageType getType() {
+    public MessageType getMessageType() {
         return _type;
     }
 
-    public void setType(MessageType _type) {
+    public void setMessageType(MessageType _type) {
         this._type = _type;
     }
 

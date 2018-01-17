@@ -97,7 +97,7 @@ public class MessageTasker extends Task<Message> {
             Message incoming = CPSClientGUI.popMessageQueue(sid);
             if (incoming != null)
             {
-                switch (incoming.getType())
+                switch (incoming.getMessageType())
                 {
                     case QUEUED:
                         updateMessage(_sendingMessage);
@@ -124,7 +124,7 @@ public class MessageTasker extends Task<Message> {
                         _onSuccess.setMessage(incoming);
                         return null;
                     default:
-                        throw new InvalidMessageException("Unexpected response type: " + incoming.getType().toString());
+                        throw new InvalidMessageException("Unexpected response type: " + incoming.getMessageType().toString());
                 }
             }
             else

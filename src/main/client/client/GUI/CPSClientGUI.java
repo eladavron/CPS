@@ -246,9 +246,9 @@ public class CPSClientGUI extends Application{
         }
         _pageRoot.getChildren().clear();
         Node guiRoot = _history.pop(); //Pop history.
-        if (guiRoot.getId() != null)
+        if (guiRoot.getId() != null) //These cases are to force refresh in list views.
         {
-            if (guiRoot.getId().equals("rootOrders")) //TODO: Maybe find a safer way to do this, it's a dirty cheat.
+            if (guiRoot.getId().equals("rootOrders"))
             {
                 changeGUI(MANAGE_PREORDERS, false);
                 return;
@@ -257,7 +257,11 @@ public class CPSClientGUI extends Application{
             {
                 changeGUI(MANAGE_SUBSCRIPTIONS, false);
                 return;
-                //TODO: if we make sub for sub view then go back without making it. and try to go back again...fails.
+            }
+            else if (guiRoot.getId().equals("complaintRoot"))
+            {
+                changeGUI(MANAGE_COMPLAINTS, false);
+                return;
             }
         }
         _pageRoot.getChildren().add(guiRoot);
@@ -367,7 +371,7 @@ public class CPSClientGUI extends Application{
     {
         try {
             Message logoutMessage = new Message();
-            logoutMessage.setType(Message.MessageType.LOGOUT);
+            logoutMessage.setMessageType(Message.MessageType.LOGOUT);
             logoutMessage.setDataType(Message.DataType.PRIMITIVE);
             logoutMessage.addData("So long, and thanks for all the fish");
             sendToServer(logoutMessage);
