@@ -109,7 +109,8 @@ public class ParkingController {
      * @param orderID The occupying ID of the parking space to be exited of.
      * @return true if successfully entered, false if the parking lot is full.
      */
-    public boolean enterParkingLot(Integer orderID)throws SQLException{
+    public boolean enterParkingLot(Integer orderID)throws SQLException
+    {
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
 
@@ -122,7 +123,7 @@ public class ParkingController {
 
         if(status.equals("FULL")){
             return false;
-        }
+    }
         else{
             this._numberOfSlotsOccupied += 1;
             this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(++_heightNumOccupied);

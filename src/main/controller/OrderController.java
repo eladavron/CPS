@@ -1,7 +1,6 @@
 package controller;
 
 import entity.Billing.priceList;
-import entity.Customer;
 import entity.Order;
 import entity.PreOrder;
 
@@ -87,7 +86,7 @@ public class OrderController {
         newOrder.setEstimatedEntryTime(newOrder.getActualEntryTime());
         //UID is select within the dbController and then set in it as well.
         newOrder.setOrderStatus(Order.OrderStatus.IN_PROGRESS);
-        dbController.insertOrder(newOrder);
+        dbController.insertOrder(newOrder, priceList.ONE_TIME_PARKING);
         _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
     }
@@ -124,7 +123,7 @@ public class OrderController {
         Double charge = billingController.calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceType);
         newPreOrder.setPrice(charge);
         //UID is select within the dbController and then set in it as well.
-        dbController.insertOrder(newPreOrder);
+        dbController.insertOrder(newPreOrder, priceType);
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
         return newPreOrder;
     }

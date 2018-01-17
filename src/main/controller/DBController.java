@@ -1,6 +1,5 @@
 package controller;
 
-
 import entity.*;
 import utils.StringUtils;
 import utils.TimeUtils;
@@ -283,14 +282,16 @@ public class DBController {
     /**
      * Insert new order / preOrder to DB
      * @param order order object to insert
+     * @param priceType - the type of user for this order.
      * @return True if successful, False otherwise.
      */
-    public boolean insertOrder(Order order) throws SQLException{
+    public boolean insertOrder(Order order, Billing.priceList priceType) throws SQLException{
         if (isTest) {
             order.setOrderID(1);
             return true;
         }
         try {
+            String clientType = parsePriceTypeToColumnName(priceType);
             Statement stmt = db_conn.createStatement();
             Date creationDate;
             int uid;
@@ -298,14 +299,14 @@ public class DBController {
                     ? "NULL"
                     :  "'" + _simpleDateFormatForDb.format(order.getActualExitTime()) + "'";
             stmt.executeUpdate(String.format("INSERT INTO Orders (idCar, idCustomer, idParkingLot, orderType," +
-                            " entryTimeEstimated, entryTimeActual, exitTimeEstimated, exitTimeActual, price)" +
-                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, '%s')",
+                            " entryTimeEstimated, entryTimeActual, exitTimeEstimated, exitTimeActual, price, clientType)" +
+                            " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, '%s', '%s')",
                     order.getCarID(), order.getCostumerID(), order.getParkingLotNumber(),
                     order.getOrderStatus(),
                     _simpleDateFormatForDb.format(order.getEstimatedEntryTime()),
                     _simpleDateFormatForDb.format(order.getActualEntryTime()),
                     _simpleDateFormatForDb.format(order.getEstimatedExitTime()),
-                    _actualExitTime, order.getPrice()),
+                    _actualExitTime, order.getPrice(), clientType),
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -1258,9 +1259,88 @@ public class DBController {
                 return reportToReturn;
             }
 
+            case QUARTERLY_ORDERS:
+            {
+                reportToReturn += "Quarterly orders report of parking lot number: " + parkingLotID + ", "
+                        + manager + "\n" + makeQuarterlyOrdersReport(parkingLotID);
+                return reportToReturn;
+            }
             default:
                 return null;
         }
+    }
+
+    private String makeQuarterlyOrdersReport(Integer parkingLotID) throws SQLException {
+        Integer countRows = 0;
+        String rowLine = "|___________________________________________________"
+                + "___________________________________________________"
+                + "____________________________________________________|";;
+        String columns = "|OrderID | customer ID | status | car ID | price | parking lot number |"
+                + " | actual entry time | actual exit time | estimated entry time | estimated exit time|";
+                StringBuilder report = new StringBuilder(
+                " _________________________________________________________________________________________________________"
+                +"_________________________________________________"
+                +"\n").append(columns)
+        ;
+
+        double daysInOneQuarter = 91.25;
+        ResultSet rs;
+
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Orders WHERE idParkingLot=").append(parkingLotID)
+                .append(" AND clientType='");
+        //First we grab the list of the relevant price type.
+        //Then we check if it validates with this Quarter if so we add it to the report.
+        //Adding one-time-parking.
+        report.append("\n").append(rowLine).append("\n")
+                .append("|\t\t\t\tOne Time Parking Clients:\n")
+                .append(columns);
+        rs = callStatement(String.valueOf(queryBuilder
+                        + parsePriceTypeToColumnName(Billing.priceList.ONE_TIME_PARKING) + "'")
+                , "Orders"
+        );
+        Collection<Object> objArray = parseOrdersFromDBToMap(rs).values();
+        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, objArray);
+        //Adding pre-orders:
+
+        report.append("\n").append(rowLine).append("\n")
+                .append("|\t\t\t\tPre Order One Time Parking Clients:\n").append(columns);
+        rs = callStatement(String.valueOf(queryBuilder
+                        + parsePriceTypeToColumnName(Billing.priceList.PRE_ORDER_ONE_TIME_PARKING) + "'")
+                , "Orders"
+        );
+        objArray = parseOrdersFromDBToMap(rs).values();
+        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, objArray);
+
+        //Adding Subscriptions:
+        report.append("\n").append(rowLine).append("\n")
+                .append("|\t\t\t\tSubscriptions Parking Clients:\n")
+                .append(columns);
+        rs = callStatement(String.valueOf(queryBuilder
+                + parsePriceTypeToColumnName(Billing.priceList.NO_CHARGE_DUE_TO_SUBSCRIPTION) + "'")
+                , "Orders"
+        );
+        objArray = parseOrdersFromDBToMap(rs).values();
+        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, objArray);
+
+        report.append("\n").append(rowLine);
+
+        return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
+    }
+
+    private Integer addRowsToQuarterlyReport(Integer countRows, String rowLine, StringBuilder report, double daysInOneQuarter, Collection<Object> objArray) throws SQLException {
+        for (Object orderObj : objArray)
+        {
+            Order order = (Order) orderObj;
+            if (TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
+                    TimeUtils.Units.DAYS) <= daysInOneQuarter)
+
+            {
+                countRows++;
+                report.append(addOrderRow(order, rowLine));
+            }
+
+        }
+        return countRows;
     }
 
     /**
@@ -1271,7 +1351,8 @@ public class DBController {
      * @param parkingLotID
      * @return the wanted report.
      */
-    private String makeOrdersReport(Report.ReportType reportType, Order.OrderStatus orderType, Integer dayToValidate, Integer parkingLotID) throws SQLException
+    private String makeOrdersReport(Report.ReportType reportType, Order.OrderStatus orderType,
+                                    Integer dayToValidate, Integer parkingLotID) throws SQLException
     {
         ResultSet rs;
         String rowLine = "|___________________________________________________"
@@ -1475,6 +1556,28 @@ public class DBController {
         if (rs.wasNull())
             resultInt = null;
         return resultInt;
+    }
+
+
+
+    /**
+     * translated PriceList of inserted orders to DB clientType value
+     * @param priceType priceType to check
+     * @return clientType column's value
+     */
+    private String parsePriceTypeToColumnName (Billing.priceList priceType)
+    {
+        switch (priceType)
+        {
+            case ONE_TIME_PARKING:
+                return "OneTimeParking";
+            case PRE_ORDER_ONE_TIME_PARKING:
+                return "PreOrderOneTimeParking";
+            case NO_CHARGE_DUE_TO_SUBSCRIPTION:
+                return "SubscriptionParking";
+            default:
+                return null;
+        }
     }
 
 }
