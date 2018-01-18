@@ -10,6 +10,7 @@ public class Complaint {
     private double _refund = 0.0;
     private ComplaintStatus _status;
     private String _description;
+    private Integer _parkingLotNumber;
 
     public enum ComplaintStatus{
         NEW,
@@ -33,11 +34,12 @@ public class Complaint {
      * @param relatedOrderID
      * @param description
      */
-    public Complaint(Integer customerID, Integer relatedOrderID, String description) {
+    public Complaint(Integer customerID, Integer relatedOrderID, String description, Integer parkingLotNumber) {
         this._status = ComplaintStatus.NEW;
         this._customerID = customerID;
         this._relatedOrderID = relatedOrderID;
         this._description = description;
+        this._parkingLotNumber = parkingLotNumber;
     }
 
     /**
@@ -50,7 +52,9 @@ public class Complaint {
      * @param description
      * @param refund
      */
-    public Complaint(Integer complaintID, Integer customerID, Integer relatedOrderID, Integer customerServiceRepresentativeID, ComplaintStatus status, String description, Double refund) {
+    public Complaint(Integer complaintID, Integer customerID, Integer relatedOrderID, Integer customerServiceRepresentativeID,
+                     ComplaintStatus status, String description, Double refund, Integer parkingLotNumber)
+    {
         this._complaintID = complaintID;
         this._customerID = customerID;
         this._relatedOrderID = relatedOrderID;
@@ -58,6 +62,7 @@ public class Complaint {
         this._status = status;
         this._description = description;
         this._refund = refund;
+        this._parkingLotNumber = parkingLotNumber;
     }
 
 
@@ -122,6 +127,14 @@ public class Complaint {
         this._description = description;
     }
 
+    public Integer getParkingLotNumber() {
+        return _parkingLotNumber;
+    }
+
+    public void setParkingLotNumber(Integer parkingLotNumber) {
+        this._parkingLotNumber = parkingLotNumber;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -152,6 +165,7 @@ public class Complaint {
                 + (this.getRelatedOrderID().equals(-1) ? "" : "\nRegarding Order No. " + this.getRelatedOrderID())
                 + "\nComplaint Status: " + this.getStatus()
                 + "\nDetails: " + this.getDescription()
+                + (this.getParkingLotNumber() == null || this.getParkingLotNumber().equals(-1) ? "" : "\nRelated Parking Lot: " + this.getParkingLotNumber())
                 + (this.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + this.getRefund() + " NIS (The cheque is in the mail)." : "")
                 + (this.getCustomerServiceRepresentativeID().equals(-1) ? "" : "\nAssigned Representative: " + this.getCustomerServiceRepresentativeID());
     }

@@ -87,7 +87,7 @@ public class DBController {
         }
     }
 
-     /* Query Parsers */
+    /* Query Parsers */
 
     /**
      * Returns a string representing the table
@@ -155,8 +155,8 @@ public class DBController {
     {
         String returnString =
                 String.join("", Collections.nCopies(columnsString.length(),"-"))
-                + "\n" + columnsString + "\n"
-                + String.join("", Collections.nCopies(columnsString.length(),"-")) + "\n";
+                        + "\n" + columnsString + "\n"
+                        + String.join("", Collections.nCopies(columnsString.length(),"-")) + "\n";
         for(String row : rows){
             returnString += row + "\n";
         }
@@ -688,10 +688,10 @@ public class DBController {
 
 
 
-   public ArrayList<User> getCustomers() throws SQLException
-   {
-       return getUserByID(-1, User.UserType.CUSTOMER);
-   }
+    public ArrayList<User> getCustomers() throws SQLException
+    {
+        return getUserByID(-1, User.UserType.CUSTOMER);
+    }
 
     public ArrayList<User> getEmployees() throws SQLException
     {
@@ -851,10 +851,10 @@ public class DBController {
             Statement stmt = db_conn.createStatement();
             int uid;
             stmt.executeUpdate(String.format("INSERT INTO Users (userName, userEmail, password, userType)"
-                + " VALUES ('%s', '%s', '%s', '%s')",
-                sanitizeForSQL(customer.getName()), sanitizeForSQL(customer.getEmail()),
-                sanitizeForSQL(customer.getPassword()), customer.getUserType()),
-            Statement.RETURN_GENERATED_KEYS);
+                            + " VALUES ('%s', '%s', '%s', '%s')",
+                    sanitizeForSQL(customer.getName()), sanitizeForSQL(customer.getEmail()),
+                    sanitizeForSQL(customer.getPassword()), customer.getUserType()),
+                    Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next())
@@ -868,8 +868,8 @@ public class DBController {
             { // For each car in Customer put into it's table.
                 stmt.executeUpdate(String.format("INSERT INTO CarToUser (idCars, idUser)"
                                 + " VALUES ('%s', '%s')",
-                    carID, customer.getUID(),
-                    Statement.RETURN_GENERATED_KEYS
+                        carID, customer.getUID(),
+                        Statement.RETURN_GENERATED_KEYS
                 ));
             }
             return true;
@@ -1071,7 +1071,7 @@ public class DBController {
         ArrayList<Integer> carList = new ArrayList<>();
         rs = queryTable("CarToSubscription", "idSubscription", idSubscription.toString(), "isActiveInSubscription", "1");
         while (rs.next()){
-                carList.add(rs.getInt("idCar"));
+            carList.add(rs.getInt("idCar"));
         }
         return carList;
     }
@@ -1094,7 +1094,7 @@ public class DBController {
                         ((RegularSubscription)renewedSubs).getRegularExitTime(), renewedSubs.getSubscriptionID());
             else
                 query = String.format("UPDATE SubscriptionToUser SET endDate=ADDDATE(endDate, 28) WHERE  idSubscription = %s",
-                    renewedSubs.getSubscriptionID());
+                        renewedSubs.getSubscriptionID());
             stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             return true;
 
@@ -1139,16 +1139,15 @@ public class DBController {
         try {
             Statement stmt = db_conn.createStatement();
             int complaintId;
-            String representativeID = (complaint.getCustomerServiceRepresentativeID().equals(-1) ? "NULL" :
-                    complaint.getCustomerServiceRepresentativeID().toString());
-            String orderID = (complaint.getRelatedOrderID().equals(-1) ? "NULL" :
-                    "'" + complaint.getRelatedOrderID().toString() + "'");
+            String representativeID = valueOrNull(complaint.getCustomerServiceRepresentativeID());
+            String orderID = valueOrNull(complaint.getRelatedOrderID());
+            String parkingLotID = valueOrNull(complaint.getParkingLotNumber());
             stmt.executeUpdate(String.format("INSERT INTO Complaints (idUser, idOrder, idRepresentative," +
-                            " status, description, refund)" +
+                            " status, description, refund, idParkingLot)" +
                             " VALUES ('%s', %s, %s," +
-                            "'%s', '%s', '%s')",
+                            "'%s', '%s', '%s', %s)",
                     complaint.getCustomerID(), orderID, representativeID,
-                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund()),
+                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund(), complaint.getParkingLotNumber()),
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -1241,7 +1240,8 @@ public class DBController {
                             rep,
                             _complaintStatus,
                             desanitizeFromSQL(rs.getString("description")),
-                            rs.getDouble("refund")
+                            rs.getDouble("refund"),
+                            rs.getInt("idParkingLot")
                     );
                     myComplaints.put(rs.getInt("idComplaints"), rowComplaint);
                 }
@@ -1350,11 +1350,11 @@ public class DBController {
                 + "____________________________________________________|";;
         String columns = "|OrderID | customer ID | status | car ID | price | parking lot number |"
                 + " | actual entry time | actual exit time | estimated entry time | estimated exit time|";
-                StringBuilder report = new StringBuilder(
+        StringBuilder report = new StringBuilder(
                 " _________________________________________________________________________________________________________"
-                +"_________________________________________________"
-                +"\n").append(columns)
-        ;
+                        +"_________________________________________________"
+                        +"\n").append(columns)
+                ;
 
         double daysInOneQuarter = 91.25;
         ResultSet rs;
@@ -1389,7 +1389,7 @@ public class DBController {
                 .append("|\t\t\t\tSubscriptions Parking Clients:\n")
                 .append(columns);
         rs = callStatement(String.valueOf(queryBuilder
-                + parsePriceTypeToColumnName(Billing.priceList.NO_CHARGE_DUE_TO_SUBSCRIPTION) + "'")
+                        + parsePriceTypeToColumnName(Billing.priceList.NO_CHARGE_DUE_TO_SUBSCRIPTION) + "'")
                 , "Orders"
         );
         objArray = parseOrdersFromDBToMap(rs).values();
@@ -1433,10 +1433,10 @@ public class DBController {
                 + "____________________________________________________|";;
         StringBuilder report = new StringBuilder(
                 " _________________________________________________________________________________________________________"
-                +"_________________________________________________"
-                +"\n"
-                +"|OrderID | customer ID | status | car ID | price | parking lot number |"
-                + " | actual entry time | actual exit time | estimated entry time | estimated exit time|");
+                        +"_________________________________________________"
+                        +"\n"
+                        +"|OrderID | customer ID | status | car ID | price | parking lot number |"
+                        + " | actual entry time | actual exit time | estimated entry time | estimated exit time|");
         ;
 
         //First we get the Orders OF TYPE ORDER-TYPE from the DB.
@@ -1460,7 +1460,7 @@ public class DBController {
                 if ((TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
                         TimeUtils.Units.DAYS) <= dayToValidate) &&
                         (TimeUtils.timeDifference(order.getActualEntryTime(), order.getEstimatedEntryTime(),
-                        TimeUtils.Units.MINUTES) >= 30))
+                                TimeUtils.Units.MINUTES) >= 30))
                 {
                     countRows++;
                     report.append(addOrderRow(order, rowLine));
@@ -1477,7 +1477,7 @@ public class DBController {
             }
         }
         report.append("\n")
-               .append(rowLine)
+                .append(rowLine)
         ;
         //Adding this report count to the general count table on the DB
         Calendar cal = Calendar.getInstance();
@@ -1496,19 +1496,19 @@ public class DBController {
         Order.OrderStatus status = order.getOrderStatus();
         StringBuilder orderRow = new StringBuilder();
         return String.valueOf(orderRow
-            .append("\n")
-            .append(rowLine)
-            .append(" \n| ").append(order.getOrderID())
-            .append(" | ").append(order.getCostumerID())
-            .append(" | ").append(status.toString())
-            .append(" | ").append(order.getCarID().toString())
-            .append(" | ").append(order.getPrice())
-            .append(" | ").append(order.getParkingLotNumber())
-            .append(" | ").append(makeSimpleDateOrNull(order.getActualEntryTime()))
-            .append(" | ").append(makeSimpleDateOrNull(order.getActualExitTime()))
-            .append(" | ").append(makeSimpleDateOrNull(order.getEstimatedEntryTime()))
-            .append(" | ").append(makeSimpleDateOrNull(order.getEstimatedExitTime()))
-            .append(" | ")
+                .append("\n")
+                .append(rowLine)
+                .append(" \n| ").append(order.getOrderID())
+                .append(" | ").append(order.getCostumerID())
+                .append(" | ").append(status.toString())
+                .append(" | ").append(order.getCarID().toString())
+                .append(" | ").append(order.getPrice())
+                .append(" | ").append(order.getParkingLotNumber())
+                .append(" | ").append(makeSimpleDateOrNull(order.getActualEntryTime()))
+                .append(" | ").append(makeSimpleDateOrNull(order.getActualExitTime()))
+                .append(" | ").append(makeSimpleDateOrNull(order.getEstimatedEntryTime()))
+                .append(" | ").append(makeSimpleDateOrNull(order.getEstimatedExitTime()))
+                .append(" | ")
         );
     }
 
@@ -1548,21 +1548,21 @@ public class DBController {
 
         ResultSet rs;
         try {
-           Statement stmt = db_conn.createStatement();
-           String condition = String.format(" WHERE day = %s AND month = %s AND year = %s AND parkingLotID = %s",
-                   day, month, year, parkingLotID);
-           String query = "SELECT * FROM DailyReports";
-           rs = stmt.executeQuery(query+condition);
-           if(rs.next()){ // entry available
-               query = String.format("UPDATE DailyReports SET %s = %s", reportCol, count);
-               query += condition;
-           }else{ // new entry
-               query = String.format("INSERT INTO DailyReports (day, month, year, parkingLotId, %s) " +
-                       "VALUES (%s, %s, %s, %s, %s)",
-                       reportCol, day, month, year, parkingLotID, count);
-           }
-           int result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
-           return result == 1;
+            Statement stmt = db_conn.createStatement();
+            String condition = String.format(" WHERE day = %s AND month = %s AND year = %s AND parkingLotID = %s",
+                    day, month, year, parkingLotID);
+            String query = "SELECT * FROM DailyReports";
+            rs = stmt.executeQuery(query+condition);
+            if(rs.next()){ // entry available
+                query = String.format("UPDATE DailyReports SET %s = %s", reportCol, count);
+                query += condition;
+            }else{ // new entry
+                query = String.format("INSERT INTO DailyReports (day, month, year, parkingLotId, %s) " +
+                                "VALUES (%s, %s, %s, %s, %s)",
+                        reportCol, day, month, year, parkingLotID, count);
+            }
+            int result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            return result == 1;
         }catch (SQLException e)
         {
             System.err.printf("An error occurred during updating the daily report of: %s/%s/%s/\n%s", day, month, year, e.getMessage());
@@ -1594,8 +1594,8 @@ public class DBController {
             return map;
 
         }catch(SQLException e) {
-                System.err.printf("An error occurred during querying the daily report of: %s%s%s\n%s", day, month, year, e.getMessage());
-                throw e;
+            System.err.printf("An error occurred during querying the daily report of: %s%s%s\n%s", day, month, year, e.getMessage());
+            throw e;
         }
     }
 
@@ -1631,6 +1631,22 @@ public class DBController {
         return resultInt;
     }
 
+    /**
+     * Checks if the value of an Integer is null (or -1) and sets it to "NULL" for SQL injections
+     * @param wrap whether or not to wrap the value in single quotes
+     * @return "NULL" if null, string of value otherwise
+     */
+    private String valueOrNull(Integer number)
+    {
+        if (number == null || number.equals(-1))
+        {
+            return "NULL";
+        }
+        else
+        {
+            return "'" + number.toString() + "'";
+        }
+    }
 
 
     /**

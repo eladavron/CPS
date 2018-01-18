@@ -55,8 +55,7 @@ public class ComplaintController {
             return false;
         myComplaint.setStatus(Complaint.ComplaintStatus.OPEN);
         myComplaint.setCustomerServiceRepresentativeID(representativeID);
-        boolean ret = dbController.updateComplaint(myComplaint);
-        return ret;
+        return dbController.updateComplaint(myComplaint);
     }
 
     /**
@@ -70,8 +69,7 @@ public class ComplaintController {
         Integer orderID = myComplaint.getRelatedOrderID();
         myComplaint.setRefund(orderController.getOrder(orderID).getPrice());
         myComplaint.setStatus(Complaint.ComplaintStatus.ACCEPTED);
-        boolean ret = dbController.updateComplaint(myComplaint);
-        return ret;
+        return dbController.updateComplaint(myComplaint);
 
     }
 
@@ -107,8 +105,8 @@ public class ComplaintController {
     /**
      * Create a customer complaint.
      */
-    public Complaint createComplaint(Integer customerID, Integer orderID, String Description) throws SQLException{
-        Complaint complaint = new Complaint(customerID, orderID, Description);
+    public Complaint createComplaint(Integer customerID, Integer orderID, String Description, Integer parkingLotNumber) throws SQLException{
+        Complaint complaint = new Complaint(customerID, orderID, Description, parkingLotNumber);
         complaint.setStatus(Complaint.ComplaintStatus.NEW);
         if (dbController.insertComplaint(complaint)){
             _complaintsList.put(complaint.getComplaintID(), complaint);
@@ -125,9 +123,9 @@ public class ComplaintController {
      * Create a customer complaint. also from obj
      * "HACHANA LEMAZGAN"
      */
-    public Complaint createComplaint(Complaint complaint)throws SQLException{
-        return createComplaint(complaint.getCustomerID(),complaint.getRelatedOrderID(), complaint.getDescription());
-
+    public Complaint createComplaint(Complaint complaint) throws SQLException{
+        return createComplaint(complaint.getCustomerID(), complaint.getRelatedOrderID(),
+                complaint.getDescription(), complaint.getParkingLotNumber());
     }
 
     /**

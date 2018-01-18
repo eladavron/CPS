@@ -5,9 +5,11 @@ import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.Inits;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Validation;
 import entity.Complaint;
 import entity.Message;
 import entity.Order;
+import entity.ParkingLot;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -36,17 +38,46 @@ public class NewComplaint implements Initializable {
     @FXML
     private TextArea txtDetails;
 
+
+    @FXML
+    private Button btnClear;
+
+
+    @FXML
+    private ComboBox<ParkingLot> cmbParkingLot;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Platform.runLater(()-> Inits.initOrders(cmbOrder));
+        Platform.runLater(()-> {
+            Inits.initOrders(cmbOrder);
+            Inits.initParkingLots(cmbParkingLot);
+            cmbParkingLot.disableProperty().bind(cmbOrder.valueProperty().isNotNull());
+            cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != oldValue)
+                {
+                    for (ParkingLot lot : cmbParkingLot.getItems())
+                    {
+                        if (lot.getParkingLotID().equals(newValue.getParkingLotNumber()))
+                        {
+                            cmbParkingLot.setValue(lot);
+                            return;
+                        }
+                    }
+                }
+            });
+        });
     }
 
     @FXML
     void submitComplaint(ActionEvent event) {
+        if (!Validation.notEmpty(txtDetails))
+            return;
         WaitScreen waitScreen = new WaitScreen();
+        Integer parkingLotID = cmbOrder.getValue() != null ? cmbOrder.getValue().getParkingLotNumber() : cmbParkingLot.getValue().getParkingLotID();
         Complaint newComplaint = new Complaint(CPSClientGUI.getSession().getUserId(),
                 cmbOrder.getValue() != null ? cmbOrder.getValue().getOrderID() : -1,
-                txtDetails.getText());
+                txtDetails.getText(),
+                parkingLotID);
         Message newComplaintMsg = new Message(CREATE, COMPLAINT, newComplaint);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
@@ -65,6 +96,12 @@ public class NewComplaint implements Initializable {
         };
         MessageTasker submitComplaintTask = new MessageTasker(newComplaintMsg, onSuccess, onFailure, "Complaining...");
         waitScreen.run(submitComplaintTask);
+    }
+
+    @FXML
+    void clearOrder(ActionEvent event) {
+        cmbParkingLot.getSelectionModel().select(-1);
+        cmbParkingLot.setValue(null);
     }
 
     @FXML
