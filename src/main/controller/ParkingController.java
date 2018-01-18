@@ -170,7 +170,7 @@ public class ParkingController {
         ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
         currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.FREE);
         currentParkingSpace.setOccupyingOrderID(null);
-        this._numberOfSlotsOccupied -= 1;
+
         if (!unsetCarAsParked(order.getCarID()))
             return false;
         updateAfterExit(parkingLotNumber);

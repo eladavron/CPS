@@ -29,7 +29,8 @@ public class ComplaintController {
         }
     }
 
-    public static ComplaintController getInstance() {
+    public static ComplaintController getInstance()
+    {
         return instance;
     }
 
@@ -95,10 +96,13 @@ public class ComplaintController {
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null) // complaint with that id no found;
             return false;
-        boolean ret = dbController.cancelComplaint(complaintID);
-        // remove complaint from active list (after DB just as a precaution.
-        removeComplaintFromListByID(complaintID);
-        return ret;
+        if(dbController.cancelComplaint(complaintID))
+        {
+            // remove complaint from active list (after DB just as a precaution.
+            removeComplaintFromListByID(complaintID);
+            return true;
+        };
+        return false;
 
     }
 
@@ -160,7 +164,8 @@ public class ComplaintController {
      * @param complaintID
      * @return
      */
-    private void removeComplaintFromListByID(Integer complaintID){
+    private void removeComplaintFromListByID(Integer complaintID)
+    {
         _complaintsList.remove(complaintID);
     }
 
@@ -181,5 +186,14 @@ public class ComplaintController {
             this._complaintsList.put(comp.getComplaintID(), comp);
 
         }
+    }
+
+    /**
+     * Returns the current list of Complaints.
+     * @return
+     */
+    private Map<Integer, Complaint> getAllComplaints()
+    {
+        return _complaintsList;
     }
 }
