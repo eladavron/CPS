@@ -29,10 +29,10 @@ public class SubscriptionControllerTest extends ApplicationTest{
     private FullSubscription _testFullSubscription;
     private static SubscriptionController subscriptionController;
     private Subscription _testSubscription2nd;
-    ArrayList<Integer> _carsIDList1;
-    ArrayList<Integer> _carsIDList2;
-    ArrayList<Integer> _carsIDList3;
-    ArrayList<Integer> _carsIDList4;
+    ArrayList<Integer> _carsIDList1 = new ArrayList<>();
+    ArrayList<Integer> _carsIDList2 = new ArrayList<>();
+    ArrayList<Integer> _carsIDList3 = new ArrayList<>();
+    ArrayList<Integer> _carsIDList4 = new ArrayList<>();
     @BeforeAll
     static void setTestInitDB(){
         dbController = DBController.getInstance();
