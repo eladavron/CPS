@@ -22,6 +22,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,6 +49,15 @@ public class EnterParking implements Initializable {
 
     @FXML
     private ComboBox<Subscription> cmbSubscription;
+
+
+    @FXML
+    private Button btnReset;
+
+
+    @FXML
+    private VBox paneOrderDetails;
+
 
     @FXML
     private ComboBox<String> cmbExitHour;
@@ -82,6 +92,8 @@ public class EnterParking implements Initializable {
           _subList.addAll(subs);
           flowSubscription.setVisible(!_subList.isEmpty());
         });
+        btnReset.disableProperty().bind(cmbOrder.valueProperty().isNull());
+        paneOrderDetails.disableProperty().bind(cmbOrder.valueProperty().isNotNull());
         flowSubscription.setVisible(false);
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
     }
@@ -100,8 +112,6 @@ public class EnterParking implements Initializable {
         }
         return Validation.validateTimes(null, _exitDateTime) && validate;
     }
-
-
 
     /**
      * A new parking session is created by creating an "Order".
@@ -145,6 +155,15 @@ public class EnterParking implements Initializable {
         cmbCar.getSelectionModel().select(selectedOrder.getCarID());
         _exitDateTime.setDateTime(selectedOrder.getEstimatedExitTime());
         validateForm();
+    }
+
+
+    @FXML
+    void resetForm(ActionEvent event) {
+        cmbOrder.getSelectionModel().select(-1);
+        cmbOrder.setValue(null);
+        cmbCar.getSelectionModel().select(-1);
+        exitDate.setValue(null);
     }
 
     @FXML
