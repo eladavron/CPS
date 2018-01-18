@@ -6,7 +6,6 @@ import controller.CustomerController;
 import entity.*;
 import ocsf.server.ConnectionToClient;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -85,6 +84,19 @@ public class MessageHandler {
                 default:
                     throw new InvalidMessageException("Unknown message type: " + msgType);
             }
+        } catch (EmployeeNotificationFailureException e) {
+            Message employeeNotification = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE,"AN ERROR HAS OCCURRED )-:\n" + e.getMessage());
+            Long SID = Message.getSidFromJson(json);
+            if (SID != null)
+                employeeNotification.setTransID(SID);
+            sendToClient(employeeNotification, clientConnection);
+        } catch (CustomerNotificationFailureException e) {
+            Message customerNotification = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE,"Dear valued customer:\n\n" + e.getMessage());
+            Long SID = Message.getSidFromJson(json);
+            if (SID != null)
+                customerNotification.setTransID(SID);
+            sendToClient(customerNotification, clientConnection);
+            return false;
         } catch (Exception e) {
             Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "Exception: " + e.getMessage());
             Long SID = Message.getSidFromJson(json);
@@ -97,11 +109,12 @@ public class MessageHandler {
         return true;
     }
 
-    private static void handleEndParking(Message endParkingMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
+    private static void handleEndParking(Message endParkingMsg, ConnectionToClient clientConnection) throws Exception {
 
         Message endParkingResponse = new Message();
         endParkingResponse.setTransID(endParkingMsg.getTransID());
         Order order = (Order)endParkingMsg.getData().get(0);
+        parkingController.exitParkingLot(order.getOrderID());
         Customer departingCustomer = customerController.getCustomer(order.getCostumerID());
 
         try{
@@ -402,7 +415,7 @@ public class MessageHandler {
         sendToClient(response,clientConnection);
     }
 
-    private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
+    private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws Exception {
         Message createMsgResponse;
         switch(createMsg.getDataType())
         {
@@ -414,6 +427,7 @@ public class MessageHandler {
             case ORDER:
                 Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
                 Order newOrder = customerController.addNewOrder(order);
+                parkingController.enterParkingLot(newOrder.getOrderID());
                 createMsgResponse = new Message(FINISHED, Message.DataType.ORDER, newOrder);
                 break;
             case PREORDER:

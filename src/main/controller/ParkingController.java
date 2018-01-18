@@ -1,5 +1,6 @@
 package controller;
 
+import Exceptions.CustomerNotificationFailureException;
 import Exceptions.NotImplementedException;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -19,7 +20,7 @@ import java.util.Map;
 import static controller.Controllers.dbController;
 import static controller.Controllers.orderController;
 import static controller.Controllers.robotController;
-
+import static entity.ParkingSpace.ParkingStatus.FREE;
 
 /**
  * Parking controller is responsible of managing and functioning the parking lot.
@@ -27,8 +28,7 @@ import static controller.Controllers.robotController;
 public class ParkingController {
 
     private Map<Integer, ParkingLot> _parkingLotList;
-    private ArrayList<Integer> _parkedCarList; // TODO: decide if needed, and if here's the place. OrB.
-    private Integer _numberOfSlotsOccupied; // TODO: what for? that's a static controller.. total of slots occupied in all parking lots?
+    private ArrayList<Integer> _parkedCarList;
     private static boolean _initOnce = false; //TODO: REMOVE WHEN POSSIBLE
 
     private static ParkingController parkingInstance = new ParkingController();
@@ -45,7 +45,6 @@ public class ParkingController {
         // get all parked car on init.
         addAllParkedCars();
     }
-
 
     /** Static 'instance' method */
     public static ParkingController getInstance() {
@@ -82,17 +81,17 @@ public class ParkingController {
             {
                 for(int k=1; k <= thisParkingLot.getHeight(); k++)
                 {
-                   ParkingSpace currentParkingSpace = thisParkingLot.getParkingSpaceMatrix()[i][j][k];
+                    ParkingSpace currentParkingSpace = thisParkingLot.getParkingSpaceMatrix()[i][j][k];
                     if (currentParkingSpace ==  null)
-                   {
-                       // Meaning this is a new parkingSpace unknown to DB
-                       currentParkingSpace = new ParkingSpace();
-                       currentParkingSpace.setDepth(i);
-                       currentParkingSpace.setWidth(j);
-                       currentParkingSpace.setHeight(k);
-                       dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
-                       thisParkingLot.getParkingSpaceMatrix()[i][j][k] = currentParkingSpace;
-                   }
+                    {
+                        // Meaning this is a new parkingSpace unknown to DB
+                        currentParkingSpace = new ParkingSpace();
+                        currentParkingSpace.setDepth(i);
+                        currentParkingSpace.setWidth(j);
+                        currentParkingSpace.setHeight(k);
+                        dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
+                        thisParkingLot.getParkingSpaceMatrix()[i][j][k] = currentParkingSpace;
+                    }
                 }
             }
         }
@@ -116,15 +115,16 @@ public class ParkingController {
      * @param orderID The occupying ID of the parking space to be exited of.
      * @return true if successfully entered, false if the parking lot is full.
      */
-    public boolean enterParkingLot(Integer orderID)throws SQLException
+    public boolean enterParkingLot(Integer orderID)throws Exception
     {
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
 
         // first check if car already parked.
         if (checkCarAlreadyParked(order.getCarID()))
-            return false;
-
+        {
+            throw new CustomerNotificationFailureException("Your car is already parking in this parking lot!");
+        }
 
         if(this._parkingLotList.get(parkingLotNumber).getIsFullState()){
             return false;
@@ -133,25 +133,25 @@ public class ParkingController {
         initCurrentParkingValues(parkingLotNumber);
         String status = checkAndUpdateBoundaries(parkingLotNumber);
 
-        if(status.equals("FULL")){
-            return false;
-        } else{
-            if (!addCarAsParked(order.getCarID(), orderID, parkingLotNumber))
-                return false;
-            this._numberOfSlotsOccupied += 1;
-            this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(++_heightNumOccupied);
-            _heightNumOccupied = this._parkingLotList.get(parkingLotNumber).getHeightNumOccupied();
+        if(status.equals("FULL"))
+        {
+            throw new CustomerNotificationFailureException("Parking lot is full, redirect yourself to another parking lot!");
+        }
+        else if (!addCarAsParked(order.getCarID(), orderID, parkingLotNumber))
+        {
+            throw new CustomerNotificationFailureException("Your request cannot be currently processed, please contact customer service at Oops@iDidItAgain.com!");
+        }
+        else
+        {
             //Car is inserted onto the ParkingLot in position :(depth,width,height)
             ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
             currentParkingSpace.setOccupyingOrderID(orderID);
             currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
-            //TODO: make sure BY ref works here! (and also in the rest of the code ofc)..
-            orderController.setOrderHeightWidthDepth(orderID, -1, -1, -1); // TODO: fill in actual values. here or in other place.
+            this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(_heightNumOccupied + 1);
+            orderController.setOrderHeightWidthDepth(orderID, _heightNumOccupied, _widthNumOccupied, _depthNumOccupied); // TODO: fill in actual values. here or in other place.
             robotController.insertCarToParkingLot(order.getCarID(), order.getParkingLotNumber(),null, null);
             return dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
         }
-
-
     }
 
     /**
@@ -160,60 +160,81 @@ public class ParkingController {
      * @param orderID The occupying ID of the parking space to be exited of.
      * @return on failure false.
      */
-    public boolean exitParkingLot(Integer orderID) throws SQLException
+    public boolean exitParkingLot(Integer orderID) throws Exception
     {
         Order order = orderController.getOrder(orderID);
+        if (!checkCarAlreadyParked(order.getCarID()))
+        {
+            throw new CustomerNotificationFailureException("\nYour car is not parked in our parking lots." +
+                                                           "\nLocate it elsewhere or you can call the cops!");
+        }
         Integer parkingLotNumber = order.getParkingLotNumber();
 
         initCurrentParkingValues(parkingLotNumber);
 
+        _heightNumOccupied--;
         ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
-        currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.FREE);
+        currentParkingSpace.setStatus(FREE);
         currentParkingSpace.setOccupyingOrderID(null);
-        this._numberOfSlotsOccupied -= 1;
         if (!unsetCarAsParked(order.getCarID()))
-            return false;
+        {
+            throw new CustomerNotificationFailureException("Your request cannot be currently processed, please contact customer service at Oops@iDidItAgain.com!");
+        }
         updateAfterExit(parkingLotNumber);
         robotController.extractCarFromParkingLot(order.getCarID(), order.getParkingLotNumber(), null, null);
         return dbController.updateParkingSpace(parkingLotNumber,currentParkingSpace);
     }
 
 
-        /**
-         * This methods checks whether our current occupied slots indicators are valid and whether we have an empty
-         * slot to park on.
-         * @return FULL if the parking lot is full and we can't park or VALID if we still have space and we can park.
-         */
-    public String checkAndUpdateBoundaries(Integer parkingLotNumber){
-
+    /**
+     * This methods checks whether our current occupied slots indicators are valid and whether we have an empty
+     * slot to park on.
+     * @return FULL if the parking lot is full and we can't park or VALID if we still have space and we can park.
+     */
+    private String checkAndUpdateBoundaries(Integer parkingLotNumber){
 
         initCurrentParkingValues(parkingLotNumber);
 
-        if(this._heightNumOccupied.equals(this._parkingLotList.get(parkingLotNumber).getHeight())){
-            if(this._widthNumOccupied.equals(this._parkingLotList.get(parkingLotNumber).getWidth())){
-                if(this._depthNumOccupied.equals(this._parkingLotList.get(parkingLotNumber).getDepth())){
+        if (_heightNumOccupied == 1 && _widthNumOccupied == 1 && _depthNumOccupied == 1)
+        {
+            this._parkingLotList.get(parkingLotNumber)
+                    .setHeightNumOccupied(2);
+            return "VALID";
+        }
+
+        if(this._heightNumOccupied > this._parkingLotList.get(parkingLotNumber).getHeight())
+        {
+            if(this._widthNumOccupied.equals(this._parkingLotList.get(parkingLotNumber).getWidth()))
+            {
+                if(this._depthNumOccupied.equals(this._parkingLotList.get(parkingLotNumber).getDepth()))
+                {
                     return "FULL";
                 }
-                else{
+                else
+                { //Then we didnt reach max depth yet.
                     this._parkingLotList.get(parkingLotNumber)
-                            .setDepthNumOccupied(_depthNumOccupied +1);
+                            .setDepthNumOccupied(_depthNumOccupied+1);
                     this._parkingLotList.get(parkingLotNumber)
                             .setWidthNumOccupied(1);
                     this._parkingLotList.get(parkingLotNumber)
                             .setHeightNumOccupied(1);
                 }
             }
-            else{
+            else
+            { //Then we didnt reach max width yet.
                 this._parkingLotList.get(parkingLotNumber)
                         .setWidthNumOccupied(_widthNumOccupied + 1);
                 this._parkingLotList.get(parkingLotNumber)
                         .setHeightNumOccupied(1);
             }
         }
-        else{
-            this._parkingLotList.get(parkingLotNumber)
-                    .setHeightNumOccupied(_heightNumOccupied + 1);
-        }
+//        else
+//        { //Then we didnt reach max height yet.
+//            this._parkingLotList.get(parkingLotNumber)
+//                    .setHeightNumOccupied(_heightNumOccupied + 1);
+//        }
+        //After updating the occupied spaces we want to continue with the new values so we call init again!
+        initCurrentParkingValues(parkingLotNumber);
         return "VALID";
     }
 
@@ -223,26 +244,39 @@ public class ParkingController {
      */
     public void updateAfterExit(Integer parkingLotNumber){
         initCurrentParkingValues(parkingLotNumber);
-        if (this._heightNumOccupied == 1){
-            if(this._widthNumOccupied == 1){
-                this._parkingLotList.get(parkingLotNumber)
-                        .setDepthNumOccupied(_depthNumOccupied - 1);
-                this._parkingLotList.get(parkingLotNumber)
-                        .setHeightNumOccupied(this._parkingLotList.get(parkingLotNumber).getHeight());
-                this._parkingLotList.get(parkingLotNumber)
-                        .setWidthNumOccupied(this._parkingLotList.get(parkingLotNumber).getWidth());
+        if (this._heightNumOccupied == 1)
+        { //Then we need to revert  Width.
+            if(this._widthNumOccupied == 1)
+            { //Then we need to revert Depth
+                if (this._depthNumOccupied == 1)
+                { //Then all is set to 1...parking lot is empty.
+
+                }
+                else
+                { //We revert to the former depth which is a full width&height parking lot.
+                    this._parkingLotList.get(parkingLotNumber)
+                            .setDepthNumOccupied(_depthNumOccupied - 1);
+                    this._parkingLotList.get(parkingLotNumber)
+                            .setHeightNumOccupied(this._parkingLotList.get(parkingLotNumber).getHeight());
+                    this._parkingLotList.get(parkingLotNumber)
+                            .setWidthNumOccupied(this._parkingLotList.get(parkingLotNumber).getWidth());
+                }
             }
-            else{
+            else
+            { //We revert to the former width which is a full height parking lot.
                 this._parkingLotList.get(parkingLotNumber)
                         .setWidthNumOccupied(_widthNumOccupied -1);
                 this._parkingLotList.get(parkingLotNumber)
                         .setHeightNumOccupied(this._parkingLotList.get(parkingLotNumber).getHeight());
             }
         }
-        else{
+        else
+        {  //We revert to the former height.
             this._parkingLotList.get(parkingLotNumber)
                     .setHeightNumOccupied(_heightNumOccupied -1 );
         }
+        //After updating the occupied spaces we want to continue with the new values so we call init again!
+        initCurrentParkingValues(parkingLotNumber);
     }
 
     /**
@@ -255,7 +289,7 @@ public class ParkingController {
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
     // TODO: should also go to client !
-    public void createPDF(Integer parkingLotNumber) throws FileNotFoundException, DocumentException {
+    public void generateParkingStatusReport(Integer parkingLotNumber) throws FileNotFoundException, DocumentException {
         String str = "";
         String newline = System.getProperty("line.separator");
         Integer depthNum = this._parkingLotList.get(parkingLotNumber).getDepth();
@@ -273,7 +307,6 @@ public class ParkingController {
         for(int i=1; i<= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
             result[i] += "Depth " + Integer.toString((i));
             doc.add(new Paragraph(result[i]));
-//            doc.setMargins(50, 50, 50, 50);
             result[i]="";
             for(int j = 1; j<= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
                 for(int k = 1; k <= this._parkingLotList.get(parkingLotNumber).getHeight(); k++){
@@ -375,11 +408,11 @@ public class ParkingController {
         }
     }
 
-    private boolean checkCarAlreadyParked(Integer carID){
+    private boolean checkCarAlreadyParked(Integer carID) throws CustomerNotificationFailureException {
         return _parkedCarList.contains(carID);
     }
 
-    private boolean addCarAsParked(Integer carID, Integer orderID, Integer parkingLotID) throws SQLException{
+    private boolean addCarAsParked(Integer carID, Integer orderID, Integer parkingLotID) throws SQLException, CustomerNotificationFailureException {
         if (checkCarAlreadyParked(carID)) // precaution.
             return false;
         if (!dbController.setCarAsParked(carID, orderID, parkingLotID))
@@ -416,6 +449,3 @@ public class ParkingController {
     }
 
 }
-
-
-

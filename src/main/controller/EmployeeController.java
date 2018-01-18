@@ -1,7 +1,7 @@
 package controller;
 
+import Exceptions.EmployeeNotificationFailureException;
 import com.itextpdf.text.DocumentException;
-import entity.Complaint;
 import entity.Employee;
 import entity.ParkingSpace;
 import entity.User;
@@ -103,11 +103,12 @@ public class EmployeeController {
      * TODO: Maybe show the pdf after creation (idk maybe).
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
-    public void getParkingLotSpacesImage(Integer parkingLotNumber) throws DocumentException {
+    public void getParkingLotSpacesImage(Integer parkingLotNumber) throws Exception {
         try {
-            parkingController.createPDF(parkingLotNumber);
-        } catch (FileNotFoundException e) {
+            parkingController.generateParkingStatusReport(parkingLotNumber);
+        } catch (Exception e) {
             e.printStackTrace();
+            throw new EmployeeNotificationFailureException("Failed to generate parking status report!");
         }
     }
 
