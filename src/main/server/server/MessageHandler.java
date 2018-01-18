@@ -18,6 +18,7 @@ import static entity.Message.DataType.*;
 import static entity.Message.MessageType;
 import static entity.Message.MessageType.FINISHED;
 import static entity.Message.MessageType.NEED_PAYMENT;
+import static entity.Report.ReportType;
 
 /**
  * Handles messages from client GUI:
@@ -284,6 +285,12 @@ public class MessageHandler {
                     response.addData(complaint);
                 }
                 break;
+            case REPORT:
+                response.setDataType(PRIMITIVE);
+                ReportType reportType = (ReportType) queryMsg.getData().get(1);
+                Integer parkingLotID = (Integer) queryMsg.getData().get(2);
+                response.addData(reportController.generateReport(reportType,userID,parkingLotID));
+                break;
             case SESSION:
                 break;
             default:
@@ -301,32 +308,38 @@ public class MessageHandler {
         Message response = new Message();
         response.setDataType(queryMsg.getDataType());
 
-        if (queryMsg.getDataType().equals(Message.DataType.PARKING_LOT_LIST)) //Parking lot queries are userless
+        switch (queryMsg.getDataType())
         {
-            ArrayList<Object> parkingLots = parkingController.getParkingLots();
-            response.setDataType(Message.DataType.PARKING_LOT_LIST);
-            response.setData(parkingLots);
-        }
-        else if (queryMsg.getDataType().equals(PARKING_LOT)) //Parking lot queries are user independent
-        {
-            response.setDataType(PARKING_LOT);
-            response.addData(parkingController.getParkingLotByID((Integer) queryMsg.getData().get(0)));
-        }
-        else if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) //It's a user-based query
-        {
-            User user = new User();
-            int userID = (int) queryMsg.getData().get(0);
-            User.UserType type = (User.UserType) queryMsg.getData().get(1);
-            switch (type)
-            {
-                case CUSTOMER:
-                    user = customerController.getCustomer(userID);
-                    break;
-                case EMPLOYEE:
-                    user = employeeController.getEmployeeByID(userID);
-                    break;
-            }
-            handleUserQueries(queryMsg, response);
+            case PARKING_LOT_LIST:
+                ArrayList<Object> parkingLots = parkingController.getParkingLots();
+                response.setDataType(Message.DataType.PARKING_LOT_LIST);
+                response.setData(parkingLots);
+                break;
+            case PARKING_LOT:
+                response.setDataType(PARKING_LOT);
+                response.addData(parkingController.getParkingLotByID((Integer) queryMsg.getData().get(0)));
+                break;
+            case REPORT:
+                handleUserQueries(queryMsg, response);
+                break;
+            default:
+                if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) //It's a user-based query
+                {
+                    User user = new User();
+                    int userID = (int) queryMsg.getData().get(0);
+                    User.UserType type = (User.UserType) queryMsg.getData().get(1);
+                    switch (type)
+                    {
+                        case CUSTOMER:
+                            user = customerController.getCustomer(userID);
+                            break;
+                        case MANAGER:
+                        case EMPLOYEE:
+                            user = employeeController.getEmployeeByID(userID);
+                            break;
+                    }
+                    handleUserQueries(queryMsg, response);
+                }
         }
         response.setMessageType(FINISHED);
         response.setTransID(queryMsg.getTransID());

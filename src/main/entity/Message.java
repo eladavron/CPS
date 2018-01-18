@@ -44,6 +44,7 @@ public class Message {
         USER,
         CARS,
         CUSTOMER,
+        REPORT,
         PARKING_LOT, //For a single parking lot
         PARKING_LOT_LIST, //For a list of parking lots
         PARKING_SPACE,
@@ -87,8 +88,14 @@ public class Message {
             switch (_type)
             {
                 case QUERY:
-                    _data.add(msg.getData().get(0));
-                    if (!_dataType.equals(DataType.PARKING_LOT) && !_dataType.equals(DataType.PARKING_LOT_LIST)) //Parking lot queries are userless
+                    _data.add(msg.getData().get(0)); //Copy UserID
+                    if (_dataType.equals(DataType.REPORT))
+                    {
+                        Report.ReportType type = mapper.convertValue(msg.getData().get(1), Report.ReportType.class);
+                        _data.add(type);
+                        _data.add(msg.getData().get(2)); //Copy parking lot ID;
+                    }
+                    else if (!_dataType.equals(DataType.PARKING_LOT) && !_dataType.equals(DataType.PARKING_LOT_LIST)) //Parking lot queries are userless
                     {
                         User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
                         _data.add(type);

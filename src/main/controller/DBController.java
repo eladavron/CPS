@@ -1541,7 +1541,7 @@ public class DBController {
     private String parseReportTypeToColumnName (Report.ReportType reportType){
         switch (reportType){
             case DAILY_CANCELED_ORDERS:
-                return "numberOfDailyCancelledOrders";
+                return "numberOfCancelledOrders";
             case DAILY_FINISHED_ORDERS:
                 return "numberOfCompletedOrders";
             case DAILY_LATED_ORDERS:

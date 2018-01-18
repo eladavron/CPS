@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import static client.GUI.CPSClientGUI.MANAGE_REPORTS;
 import static client.GUI.CPSClientGUI.PARKING_SPACES;
 
 public class EmployeeScreen implements Initializable{
@@ -29,7 +30,7 @@ public class EmployeeScreen implements Initializable{
     private Button btnParkingLotInit;
 
     @FXML
-    private TitledPane paneSpaces;
+    private Button btnReport;
 
     @FXML
     private VBox employeeRoot;
@@ -83,8 +84,12 @@ public class EmployeeScreen implements Initializable{
         if (event.getSource() == btnManageParkingSpaces)
         {
             CPSClientGUI.changeGUI(PARKING_SPACES);
+        } else if (event.getSource() == btnReport)
+        {
+            CPSClientGUI.changeGUI(MANAGE_REPORTS);
         }
-        else {
+        else
+        {
             throw new NotImplementedException(((Button) event.getSource()).getText());
         }
     }

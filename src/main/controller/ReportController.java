@@ -1,14 +1,7 @@
 package controller;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
-import entity.Employee;
 import entity.Report;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -41,20 +34,6 @@ public class ReportController {
 
     public  Report getReportByID(Integer reportID){
         return this._reportsList.get(reportID);
-    }
-
-    public void printReport(Report.ReportType reportType, Integer reportManagerID, Integer parkingLotID) throws FileNotFoundException,
-                                                                                          DocumentException,
-                                                                                          SQLException
-    {
-        Document doc = new Document();
-        //The pdf file will be created and stored in the same project folder.
-        PdfWriter.getInstance(doc, new FileOutputStream("ReportPrint.pdf"));
-        String reportString = generateReport(reportType,reportManagerID, parkingLotID);
-        doc.open();
-        doc.add(new Paragraph(reportString));
-        doc.close();
-
     }
 
     public String generateReport(Report.ReportType reportType, Integer reportManagerID, Integer parkingLotID) throws SQLException{

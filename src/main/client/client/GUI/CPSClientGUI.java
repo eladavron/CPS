@@ -53,6 +53,7 @@ public class CPSClientGUI extends Application{
 
     public static final String EMPLOYEE_SCREEN = "Forms/Employees/EmployeeScreen.fxml";
     public static final String PARKING_SPACES = "Forms/Employees/ManageParkingSpaces.fxml";
+    public static final String MANAGE_REPORTS = "Forms/Employees/ManageReports.fxml";
 
     /**
      * Public Finals
@@ -489,6 +490,10 @@ public class CPSClientGUI extends Application{
 
     public static ClientController getClient() {
         return _client;
+    }
+
+    public static Stage getPrimaryStage() {
+        return _primaryStage;
     }
 
     public static void setStatus(String status, Color color)
