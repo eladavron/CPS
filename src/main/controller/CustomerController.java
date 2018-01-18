@@ -27,6 +27,7 @@ public class CustomerController {
             instance = new CustomerController();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.err.println("SQL Failure loading the customers.");
         }
     }
 

@@ -13,6 +13,7 @@ public class Controllers {
     public static CustomerServiceController customerServiceController;
     public static ReportController          reportController;
     public static ComplaintController       complaintController;
+    public static RobotController           robotController;
 
     /**
      * Since all other Controllers need the dbcontroller to first set a connection
@@ -38,5 +39,6 @@ public class Controllers {
         customerController        = CustomerController.getInstance();
         reportController          = ReportController.getInstance();
         complaintController       = ComplaintController.getInstance();
+        robotController           = RobotController.getInstance();
     }
 }

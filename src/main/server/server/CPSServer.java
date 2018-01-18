@@ -60,6 +60,7 @@ public class CPSServer extends AbstractServer {
         } catch (IOException e) {
             SessionManager.dropSession(client);
             e.printStackTrace();
+            System.err.println("IO exception on handle msg from client");
         }
     }
 

@@ -228,4 +228,31 @@ public class OrderController {
         this._ordersList.putAll(activeOrders);
     }
 
+    /**
+     *
+     * @param orderID
+     * @param height
+     * @param width
+     * @param depth
+     */
+    public void setOrderHeightWidthDepth (Integer orderID,Integer height, Integer width, Integer depth){
+        getOrder(orderID).setParkingSpaceHeight(height);
+        getOrder(orderID).setParkingSpaceWidth(width);
+        getOrder(orderID).setParkingSpaceDepth(depth);
+
+    }
+
+    /**
+     *
+     * @param orderID
+     * @return
+     */
+    public ArrayList<Integer> getOrderHeightWidthDepth (Integer orderID){
+        ArrayList<Integer> heightWidthDepth = new ArrayList<>();
+        heightWidthDepth.add(getOrder(orderID).getParkingSpaceHeight());
+        heightWidthDepth.add(getOrder(orderID).getParkingSpaceWidth());
+        heightWidthDepth.add(getOrder(orderID).getParkingSpaceDepth());
+        return heightWidthDepth;
+    }
+
 }

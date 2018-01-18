@@ -222,6 +222,31 @@ public class DBController {
     }
 
     /**
+     * Query table with [tableName] and 2 [columns] with 2 [values] with the choise of condition:
+     *                  OR, AND, ETC.
+     * @param tableName
+     * @param field
+     * @param value
+     * @param condition
+     * @param field2
+     * @param value2
+     * @return
+     * @throws SQLException
+     */
+    private ResultSet queryTable(String tableName, String field, String value, String condition, String field2, String value2) throws SQLException{
+        String query = String.format("SELECT * FROM %s", tableName);
+
+        if ((field != null) && (!value.equals(""))) {
+            query += String.format(" WHERE %s = '%s'", field, value);
+        }
+        if ((field2 != null) && (!value2.equals(-1))) {
+            query += String.format(" %s %s = %s", condition, field2, value2);
+        }
+
+        return  callStatement(query, tableName);
+    }
+
+    /**
      * private calling Statement of query (prevent code duplication.
      * @param query
      * @return
@@ -373,7 +398,8 @@ public class DBController {
     public Map<Integer, Object> parseOrdersFromDBToMap(ResultSet rs) throws SQLException{
         Map<Integer, Object>  myOrders = new HashMap<>();
         if (rs == null){
-            return null;
+            //System.err.println("No orders were read from db");
+            return myOrders;
         }
         else {
             try {
@@ -381,7 +407,7 @@ public class DBController {
                     Order.OrderStatus _orderStatus = parseOrderStatus(rs.getString("OrderType"));
                     if (null == _orderStatus){
                         System.err.printf("Error occurred getting OrderStatus from table \"%s\"", "Orders");
-                        return null;
+                        return myOrders;
                     }
                     /*
                     Saving all orders in the server as "Order" and not differentiating preorders causes lots of problems.
@@ -402,6 +428,7 @@ public class DBController {
                             myOrders.put(rowOrder.getOrderID(), rowOrder);
                             break;
                         case DELETED:
+                            break; // should not ever go in here.
                         case IN_PROGRESS:
                             Order activeOrder = new Order(
                                     rs.getInt("idOrders"),
@@ -416,6 +443,19 @@ public class DBController {
                                     rs.getDouble("price"),
                                     returnTimeStampFromDB(rs, "orderCreationTime")
                             );
+
+                            // querying the Parking space table here, to make sure order is filled correctly and on time.
+                            ArrayList<Integer> myParkingSpace = getParkingSpaceForOrder(rs.getInt("idOrders"));
+
+                            /*if ((myParkingSpace == null)) { //TODO: pass this for debug -- not all "IN_PROGRESS" orders are actually parked.
+                                System.err.printf("Error occurred getting parking space data for order %s. not parked?", rs.getInt("idOrders"));
+                                throw new SQLException(); // car not parked.
+                            }*/
+                            if (myParkingSpace.size() == 3) {
+                                activeOrder.setParkingSpaceHeight(myParkingSpace.get(0));
+                                activeOrder.setParkingSpaceWidth(myParkingSpace.get(1));
+                                activeOrder.setParkingSpaceDepth(myParkingSpace.get(2));
+                            }
                             myOrders.put(activeOrder.getOrderID(), activeOrder);
                             break;
                     }
@@ -426,6 +466,26 @@ public class DBController {
             }
         }
         return myOrders;
+    }
+
+    private ArrayList<Integer> getParkingSpaceForOrder(Integer idOrder) throws SQLException {
+        ResultSet rs;
+        ArrayList<Integer> myArrayList = new ArrayList<>(3);
+        try {
+            rs = queryTable("ParkingSpace", "idOccupyingOrder", idOrder);
+            if(rs.next()){
+                myArrayList.add(0, rs.getInt("height"));
+                myArrayList.add(1, rs.getInt("width"));
+                myArrayList.add(2, rs.getInt("depth"));
+                return myArrayList;
+            }else
+                return myArrayList;
+
+        }catch (SQLException e){
+            System.err.println("Failed retrieving parking space of order "+ idOrder);
+            throw e;
+        }
+
     }
 
     /**
@@ -445,7 +505,9 @@ public class DBController {
         ResultSet rs;
 
         if (orderId == -1) { // get all rows
-            rs = queryTable("Orders");
+            //rs = queryTable("Orders");
+            rs = queryTable("Orders", "orderType", "'PRE_ORDER'", "OR", "orderType", "'IN_PROGRESS'");
+            // TODO: (maybe). workaround Ma'afan i know.. but it works for now, to filter only active orders from db.
 
         } else { // get specific order
             rs = queryTable("Orders", "idOrders", orderId);
@@ -509,7 +571,7 @@ public class DBController {
     private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) throws SQLException{
         ArrayList<Object> myLots = new ArrayList<>();
         if (rs == null){
-            return null;
+            return myLots;
         }
         else {
             try {
@@ -545,7 +607,7 @@ public class DBController {
     private ArrayList<ParkingSpace> parseParkingSpacesFromDB(ResultSet rs) throws SQLException{
         ArrayList<ParkingSpace> myParkingSpaces = new ArrayList<>();
         if (rs == null){
-            return null;
+            return myParkingSpaces;
         }
         else {
             try {
@@ -619,7 +681,7 @@ public class DBController {
             return result == 1;
         } catch (SQLException e)
         {
-            System.err.printf("An error occurred during updating the car space of occupying order: %s ", occupyingOrder, e.getMessage());
+            System.err.printf("An error occurred during updating the car space of occupying order: %s\n%s ", occupyingOrder, e.getMessage());
             throw e;
         }
     }
@@ -662,13 +724,13 @@ public class DBController {
                 return parseCustomerFromDB(rs);
         }
         //default is failure.
-        return null;
+        return new ArrayList<>();
     }
 
     private  ArrayList<User> parseEmployeeFromDB(ResultSet rs) throws SQLException {
         ArrayList<User> myEmployees = new ArrayList<>();
         if (rs == null){
-            return null;
+            return myEmployees;
         }
         else {
             try {
@@ -684,7 +746,7 @@ public class DBController {
                 }
             } catch (SQLException e) {
                 System.err.printf("Error occurred getting Employees data from 'Users' table:\n%s", e.getMessage());
-                return null;
+                throw e;
             }
         }
         return myEmployees;
@@ -719,7 +781,7 @@ public class DBController {
     private ArrayList<User> parseCustomerFromDB(ResultSet rs) throws SQLException {
         ArrayList<User> myCustomers = new ArrayList<>();
         if (rs == null){
-            return null;
+            return myCustomers;
         }
         else {
             try {
@@ -958,7 +1020,7 @@ public class DBController {
     public Map<Integer, Subscription> parseSubscriptions(ResultSet rs) throws SQLException {
         Map<Integer, Subscription> mySubscriptions = new HashMap<>();
         if (rs == null){
-            return null;
+            return mySubscriptions;
         }
         else {
             try {
@@ -992,7 +1054,7 @@ public class DBController {
                                     rs.getDate("endDate"));
                             break;
                         default:
-                            return null;
+                            return mySubscriptions;
                     }
                     mySubscriptions.put(rowSubscription.getSubscriptionID(), rowSubscription);
                 }
@@ -1064,6 +1126,7 @@ public class DBController {
     }
 
 
+    //region Complaints
     /**
      * Complaints
      */
@@ -1160,7 +1223,7 @@ public class DBController {
     public Map<Integer, Object> parseComplaintsFromDBToMap(ResultSet rs) throws SQLException{
         Map<Integer, Object>  myComplaints = new HashMap<>();
         if (rs == null){
-            return null;
+            return myComplaints;
         }
         else {
             try {
@@ -1168,7 +1231,7 @@ public class DBController {
                     Complaint.ComplaintStatus _complaintStatus = parseComplaintStatus(rs.getString("status"));
                     if (null == _complaintStatus){
                         System.err.printf("Error occurred getting complaintStatus from table \"%s\"", "Complaints");
-                        return null;
+                        return myComplaints;
                     }
                     Integer rep = (rs.getInt("idRepresentative") == 0)? -1 : rs.getInt("idRepresentative");
                     Complaint rowComplaint = new Complaint(
@@ -1233,9 +1296,12 @@ public class DBController {
         }
         return ret;
     }
+    //endregion
+
+
+    //region Reports
 
     //Making Reports Section:
-
     /**
      * WIP will add one report at a time prob so we can test it with Rami.
      * @param reportType the type of report to be returned to the Manager/Tasker.
@@ -1586,5 +1652,56 @@ public class DBController {
                 return null;
         }
     }
+    //endregion
+
+    //region car parked stuff
+    public boolean setCarAsParked(Integer carID, Integer orderID, Integer parkingLotID) throws SQLException{
+        try {
+            Statement stmt = db_conn.createStatement();
+            String query = String.format("INSERT INTO ParkedCars (idParkedCar, idOrder, idParkingLot) " +
+                    "VALUES (%s, %s, %s)", carID, orderID, parkingLotID);
+            int res = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            return res == 1;
+        }catch (SQLException e){
+            System.err.println("failed to mark car with id " + carID +" as parked");
+            throw e;
+        }
+    }
+
+    public ArrayList<Integer> getAllParkedCars() throws SQLException{
+        ArrayList<Integer> parkedCarList = new ArrayList<>();
+        try {
+            Statement stmt = db_conn.createStatement();
+            String query = "SELECT idParkedCar FROM ParkedCars";
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()){
+                parkedCarList.add(rs.getInt("idParkedCar"));
+            }
+        }catch (SQLException e){
+            System.err.println("failed to get all parked cars");
+            throw e;
+        }
+        return parkedCarList;
+
+    }
+
+    /**
+     * removes the actual parked car from DB
+     * @param carID
+     * @return
+     * @throws SQLException
+     */
+    public boolean unsetCarAsParked(Integer carID)throws SQLException{
+        try {
+            Statement stmt = db_conn.createStatement();
+            String query = String.format("DELETE FROM ParkedCars WHERE idParkedCar = %s", carID);
+            int res = stmt.executeUpdate(query);
+            return res == 1;
+        }catch (SQLException e){
+            System.err.println("failed to mark car with id " + carID +" as parked");
+            throw e;
+        }
+    }
+    //endregion
 
 }

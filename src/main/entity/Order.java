@@ -11,8 +11,6 @@ public class Order {
     /**
      * Private properties
      */
-    private static int _orderUIDCounter = -1;
-
 
     public enum OrderStatus {PRE_ORDER,IN_PROGRESS,FINISHED,DELETED}
 
@@ -27,6 +25,11 @@ public class Order {
     private Integer _customerID;
     private Date _creationTime;
     private double _price;
+
+    private Integer _parkingSpaceHeight = -1;
+    private Integer _parkingSpaceWidth = -1;
+    private Integer _parkingSpaceDepth = -1;
+
 
     /**
      * Empty constructor for use with Jackson
@@ -110,14 +113,6 @@ public class Order {
         this._customerID = customerID;
     }
 
-    public static int getOrderUIDCounter() {
-        return _orderUIDCounter;
-    }
-
-    public static void setOrderUIDCounter(int orderUIDCounter) {
-        Order._orderUIDCounter = orderUIDCounter;
-    }
-
     public Integer getCarID() {
         return _carID;
     }
@@ -162,6 +157,29 @@ public class Order {
         this._parkingLotNumber = parkingLotNumber;
     }
 
+    public Integer getParkingSpaceHeight() {
+        return _parkingSpaceHeight;
+    }
+
+    public void setParkingSpaceHeight(Integer parkingSpaceHeight) {
+        this._parkingSpaceHeight = parkingSpaceHeight;
+    }
+
+    public Integer getParkingSpaceWidth() {
+        return _parkingSpaceWidth;
+    }
+
+    public void setParkingSpaceWidth(Integer parkingSpaceWidth) {
+        this._parkingSpaceWidth = parkingSpaceWidth;
+    }
+
+    public Integer getParkingSpaceDepth() {
+        return _parkingSpaceDepth;
+    }
+
+    public void setParkingSpaceDepth(Integer parkingSpaceDepth) {
+        this._parkingSpaceDepth = parkingSpaceDepth;
+    }
 
     public double getPrice() {
         return _price;

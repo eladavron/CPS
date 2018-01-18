@@ -23,6 +23,7 @@ public class EmployeeController {
             ourInstance = new EmployeeController();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.err.println("SQLException on employee init");
         }
     }
 

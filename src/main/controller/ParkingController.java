@@ -1,5 +1,6 @@
 package controller;
 
+import Exceptions.NotImplementedException;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 import static controller.Controllers.dbController;
 import static controller.Controllers.orderController;
+import static controller.Controllers.robotController;
 
 
 /**
@@ -25,7 +27,8 @@ import static controller.Controllers.orderController;
 public class ParkingController {
 
     private Map<Integer, ParkingLot> _parkingLotList;
-    private Integer _numberOfSlotsOccupied;
+    private ArrayList<Integer> _parkedCarList; // TODO: decide if needed, and if here's the place. OrB.
+    private Integer _numberOfSlotsOccupied; // TODO: what for? that's a static controller.. total of slots occupied in all parking lots?
     private static boolean _initOnce = false; //TODO: REMOVE WHEN POSSIBLE
 
     private static ParkingController parkingInstance = new ParkingController();
@@ -38,7 +41,11 @@ public class ParkingController {
      */
     private ParkingController(){
         _parkingLotList = new HashMap<>() ;
+        _parkedCarList = new ArrayList<>();
+        // get all parked car on init.
+        addAllParkedCars();
     }
+
 
     /** Static 'instance' method */
     public static ParkingController getInstance() {
@@ -97,8 +104,8 @@ public class ParkingController {
     }
 
     public void initiateParkingLots() throws SQLException {
-        for (Integer parkingLotID: _parkingLotList.keySet())
-        {
+        for (Integer parkingLotID: _parkingLotList.keySet()) {
+            robotController.createRobot(parkingLotID);
             initiateParkingLot(parkingLotID, dbController.getParkingSpaces(parkingLotID));
         }
     }
@@ -114,6 +121,11 @@ public class ParkingController {
         Order order = orderController.getOrder(orderID);
         Integer parkingLotNumber = order.getParkingLotNumber();
 
+        // first check if car already parked.
+        if (checkCarAlreadyParked(order.getCarID()))
+            return false;
+
+
         if(this._parkingLotList.get(parkingLotNumber).getIsFullState()){
             return false;
         }
@@ -123,17 +135,20 @@ public class ParkingController {
 
         if(status.equals("FULL")){
             return false;
-    }
-        else{
+        } else{
+            if (!addCarAsParked(order.getCarID(), orderID, parkingLotNumber))
+                return false;
             this._numberOfSlotsOccupied += 1;
             this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(++_heightNumOccupied);
             _heightNumOccupied = this._parkingLotList.get(parkingLotNumber).getHeightNumOccupied();
             //Car is inserted onto the ParkingLot in position :(depth,width,height)
-            ParkingSpace currentParkingLot = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
-            currentParkingLot.setOccupyingOrderID(orderID);
-            currentParkingLot.setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
+            ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
+            currentParkingSpace.setOccupyingOrderID(orderID);
+            currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
             //TODO: make sure BY ref works here! (and also in the rest of the code ofc)..
-            return dbController.updateParkingSpace(parkingLotNumber, currentParkingLot);
+            orderController.setOrderHeightWidthDepth(orderID, -1, -1, -1); // TODO: fill in actual values. here or in other place.
+            robotController.insertCarToParkingLot(order.getCarID(), order.getParkingLotNumber(),null, null);
+            return dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
         }
 
 
@@ -156,7 +171,10 @@ public class ParkingController {
         currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.FREE);
         currentParkingSpace.setOccupyingOrderID(null);
         this._numberOfSlotsOccupied -= 1;
+        if (!unsetCarAsParked(order.getCarID()))
+            return false;
         updateAfterExit(parkingLotNumber);
+        robotController.extractCarFromParkingLot(order.getCarID(), order.getParkingLotNumber(), null, null);
         return dbController.updateParkingSpace(parkingLotNumber,currentParkingSpace);
     }
 
@@ -236,6 +254,7 @@ public class ParkingController {
      * X : Unavailable space
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
+    // TODO: should also go to client !
     public void createPDF(Integer parkingLotNumber) throws FileNotFoundException, DocumentException {
         String str = "";
         String newline = System.getProperty("line.separator");
@@ -347,6 +366,55 @@ public class ParkingController {
     public  ParkingLot getParkingLotByID(Integer parkingLotNumber){
         return this._parkingLotList.get(parkingLotNumber);
     }
+
+    private void addAllParkedCars(){ //TODO: throws SQLException{
+        try{
+            _parkedCarList.addAll(dbController.getAllParkedCars());
+        }catch (SQLException e){
+            //TODO: handle
+        }
+    }
+
+    private boolean checkCarAlreadyParked(Integer carID){
+        return _parkedCarList.contains(carID);
+    }
+
+    private boolean addCarAsParked(Integer carID, Integer orderID, Integer parkingLotID) throws SQLException{
+        if (checkCarAlreadyParked(carID)) // precaution.
+            return false;
+        if (!dbController.setCarAsParked(carID, orderID, parkingLotID))
+            return false;
+        _parkedCarList.add(carID);
+        return true;
+    }
+
+    private boolean unsetCarAsParked(Integer carID) throws SQLException{
+        if (!dbController.unsetCarAsParked(carID))
+            return false; // TOOD: maybe redundant. i'm tired. Orb.
+        _parkedCarList.remove(carID);
+        return true;
+    }
+
+    /**
+     * Gets order, finds the right place in DB according to estimated entry time
+     * @param order new order to park
+     * @return Map of carIds and new heightWidthDepth (For robot)
+     */
+    private Map<Integer, ArrayList<Integer>> calculateAndfixNewCarInParkingLot (Order order){
+
+        throw new NotImplementedException();
+    }
+
+    /**
+     * Gets order, locates it in the matrix. reorders the parking lot
+     * @param order new order to park
+     * @return Map of carIds and new heightWidthDepth (For robot)
+     */
+    private Map<Integer, ArrayList<Integer>> calculateAndfixExtractCarFromParkingLot (Order order){
+
+        throw new NotImplementedException();
+    }
+
 }
 
 

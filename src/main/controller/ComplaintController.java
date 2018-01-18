@@ -25,6 +25,7 @@ public class ComplaintController {
             instance = new ComplaintController();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.err.println("SQLException on complaints init");
         }
     }
 
