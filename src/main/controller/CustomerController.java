@@ -69,7 +69,7 @@ public class CustomerController {
     /**
      * Private function that retrieves the Customers list form the DB, on startup.
      */
-    private void getCustomersFromDb()throws SQLException {
+    private void getCustomersFromDb()throws SQLException { //R: not tested
         setCustomersList(dbController.getCustomers());
     }
 
@@ -86,7 +86,7 @@ public class CustomerController {
      * and then map it into our customer list.
      * @param list - the customer list taken from the DB.
      */
-    private void setCustomersList(ArrayList<User> list) {
+    private void setCustomersList(ArrayList<User> list) { // R: not tested
         for (User user : list){
             Customer customer = (Customer) user;
             _customersList.put(customer.getUID(), customer);
@@ -101,7 +101,7 @@ public class CustomerController {
      * @param customer to add to the System.
      * @return the Customer.
      */
-    public Customer addNewCustomer(Customer customer) throws CustomerAlreadyExists, SQLException {
+    public Customer addNewCustomer(Customer customer) throws CustomerAlreadyExists, SQLException { //R: not tested.
         return addNewCustomer(customer.getUID(),
                               customer.getName(),
                               customer.getPassword(),
@@ -109,11 +109,13 @@ public class CustomerController {
                               customer.getCarIDList());
     }
     public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList) throws CustomerAlreadyExists,SQLException {
+
         /**
          * First make sure there are no duplicates!
          */
         if (customerController.getCustomerByEmail(email) != null || employeeController.getEmployeeByEmail(email) != null) //Make sure no double registrations!
         {
+
             throw new CustomerAlreadyExists(String.format("A user is already registered with the email \"%s\"!", email));
         }
         Customer newCustomer = new Customer(uID, name, password, email, carIDList);
@@ -123,11 +125,11 @@ public class CustomerController {
         return newCustomer;
     }
 
-    public ArrayList<Object> getCustomersPreOrders(int customerID) throws SQLException{
+    public ArrayList<Object> getCustomersPreOrders(int customerID) throws SQLException{ //R: not tested
         return new ArrayList<>(dbController.getOrdersByUserID(customerID).values());
     }
 
-    public ArrayList<Object> getCustomersActiveOrders(int customerID){
+    public ArrayList<Object> getCustomersActiveOrders(int customerID){ //R: not tested
         return new ArrayList<>(_customersList.get(customerID).getActiveOrders().values());
     }
 
