@@ -13,7 +13,6 @@ public class Complaint {
     private Integer _parkingLotNumber;
 
     public enum ComplaintStatus{
-        NEW,
         OPEN,
         ACCEPTED,
         REJECTED,
@@ -35,7 +34,7 @@ public class Complaint {
      * @param description
      */
     public Complaint(Integer customerID, Integer relatedOrderID, String description, Integer parkingLotNumber) {
-        this._status = ComplaintStatus.NEW;
+        this._status = ComplaintStatus.OPEN;
         this._customerID = customerID;
         this._relatedOrderID = relatedOrderID;
         this._description = description;
@@ -47,18 +46,16 @@ public class Complaint {
      * @param complaintID
      * @param customerID
      * @param relatedOrderID
-     * @param customerServiceRepresentativeID
      * @param status
      * @param description
      * @param refund
      */
-    public Complaint(Integer complaintID, Integer customerID, Integer relatedOrderID, Integer customerServiceRepresentativeID,
+    public Complaint(Integer complaintID, Integer customerID, Integer relatedOrderID,
                      ComplaintStatus status, String description, Double refund, Integer parkingLotNumber)
     {
         this._complaintID = complaintID;
         this._customerID = customerID;
         this._relatedOrderID = relatedOrderID;
-        this._customerServiceRepresentativeID = customerServiceRepresentativeID;
         this._status = status;
         this._description = description;
         this._refund = refund;
@@ -71,14 +68,6 @@ public class Complaint {
     /**
      * Getters and Setters.
      */
-
-    public Integer getCustomerServiceRepresentativeID() {
-        return _customerServiceRepresentativeID;
-    }
-
-    public void setCustomerServiceRepresentativeID(Integer customerServiceRepresentativeID) {
-        this._customerServiceRepresentativeID = customerServiceRepresentativeID;
-    }
 
     public ComplaintStatus getStatus() {
         return _status;
@@ -166,7 +155,6 @@ public class Complaint {
                 + "\nComplaint Status: " + this.getStatus()
                 + "\nDetails: " + this.getDescription()
                 + (this.getParkingLotNumber() == null || this.getParkingLotNumber().equals(-1) ? "" : "\nRelated Parking Lot: " + this.getParkingLotNumber())
-                + (this.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + this.getRefund() + " NIS (The cheque is in the mail)." : "")
-                + (this.getCustomerServiceRepresentativeID().equals(-1) ? "" : "\nAssigned Representative: " + this.getCustomerServiceRepresentativeID());
+                + (this.getStatus().equals(Complaint.ComplaintStatus.ACCEPTED) ? "\nRefund given: " + this.getRefund() + " NIS (The cheque is in the mail)." : "");
     }
 }

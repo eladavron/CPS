@@ -1,11 +1,8 @@
 package client.GUI.Controls;
 
-import Exceptions.NotImplementedException;
 import client.GUI.Forms.Customers.ManageSubscriptions;
 import client.GUI.Helpers.ErrorHandlers;
 import entity.Subscription;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -62,19 +59,9 @@ public class SubscriptionCell extends ListCell<Subscription> {
                 lblText.setText(subType + " subscription No. " + item.getSubscriptionID() + ":\n"
                         + "Registered car: " + carsID + "\n"
                         + "Expiration date: " + item.getExpiration().toString());
-                btnDelete.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        extendSubscription(item);
-                    }
-                });
+                paneRow.setRight(null);
                 setGraphic(paneRow);
             }
         }
-    }
-
-    private void extendSubscription(Subscription item)
-    {
-        throw new NotImplementedException("Not yet implemented extension.");
     }
 }

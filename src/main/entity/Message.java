@@ -14,6 +14,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static entity.Message.MessageType.CREATE;
+
 /**
  * A message object between client and server
  * @author Elad Avron
@@ -27,6 +29,7 @@ public class Message {
         CREATE,
         UPDATE,
         DELETE,
+        INIT,
         END_PARKING,
         NEED_PAYMENT, //Indicates the customer needs to pay. Accompany with a double containing the amount.
         PAYMENT, //The message of the customer paying through the GUI. Accompany with a double containing the amount.
@@ -40,7 +43,8 @@ public class Message {
         SINGLE_ORDER, //For getting a single order from the server
         ORDER, //For getting ALL orders (that match a query) from the server
         PREORDER,
-        COMPLAINT,
+        COMPLAINT_PRE_CUSTOMER,
+        ALL_COMPLAINTS,
         USER,
         CARS,
         CUSTOMER,
@@ -88,17 +92,23 @@ public class Message {
             switch (_type)
             {
                 case QUERY:
-                    _data.add(msg.getData().get(0)); //Copy UserID
-                    if (_dataType.equals(DataType.REPORT))
+                    switch (_dataType)
                     {
-                        Report.ReportType type = mapper.convertValue(msg.getData().get(1), Report.ReportType.class);
-                        _data.add(type);
-                        _data.add(msg.getData().get(2)); //Copy parking lot ID;
-                    }
-                    else if (!_dataType.equals(DataType.PARKING_LOT) && !_dataType.equals(DataType.PARKING_LOT_LIST)) //Parking lot queries are userless
-                    {
-                        User.UserType type = mapper.convertValue(msg.getData().get(1), User.UserType.class);
-                        _data.add(type);
+                        case SINGLE_ORDER: //Userless
+                        case PARKING_LOT: //Userless
+                            _data.add(msg.getData().get(0)); //copy ID
+                        case PARKING_LOT_LIST: //Userless
+                        case ALL_COMPLAINTS: //Userless
+                            break;
+                        case REPORT: //Userless
+                            Report.ReportType reportType = mapper.convertValue(msg.getData().get(1), Report.ReportType.class);
+                            _data.add(reportType);
+                            _data.add(msg.getData().get(2)); //Copy parking lot ID;
+                            break;
+                        default: //User queries
+                            User.UserType userType = mapper.convertValue(msg.getData().get(1), User.UserType.class);
+                            _data.add(msg.getData().get(0)); //Copy UserID
+                            _data.add(userType);
                     }
                     break;
                 case LOGIN:
@@ -120,8 +130,11 @@ public class Message {
                                 _data.add(space);
                             }
                             break;
+                        case COMPLAINT_PRE_CUSTOMER:
+                            _data.add(mapper.convertValue(msg.getData().get(0), Complaint.class));
+                            break;
                     }
-                break;
+                    break;
                 default: //Not a special message type
                     if (_dataType == DataType.SESSION)
                     {
@@ -139,6 +152,9 @@ public class Message {
                                 LinkedHashMap userMap = (LinkedHashMap) msg.getData().get(3);
                                 user = new Customer(userMap);
                                 break;
+                            case MANAGER:
+                            case SUPERMAN:
+                            case CUSTOMER_SERVICE:
                             case EMPLOYEE:
                                 user = mapper.convertValue(msg.getData().get(3), Employee.class);
                                 break;
@@ -188,6 +204,7 @@ public class Message {
                                         PreOrder preOrder = mapper.convertValue(dataObject, PreOrder.class);
                                         _data.add(preOrder);
                                         break;
+                                    case SINGLE_ORDER:
                                     case ORDER:
                                         Order order = mapper.convertValue(dataObject, Order.class);
                                         _data.add(order);
@@ -207,6 +224,11 @@ public class Message {
                                         _data.add(user);
                                         break;
                                     case PARKING_LOT:
+                                        if (_type.equals(CREATE))
+                                        {
+                                            _data.add(dataObject); //It's just the ID
+                                            break;
+                                        }
                                     case PARKING_LOT_LIST:
                                         ParkingLot parkingLotQuery = mapper.convertValue(dataObject, ParkingLot.class);
                                         _data.add(parkingLotQuery);
@@ -215,7 +237,8 @@ public class Message {
                                         ParkingSpace parkingSpace = mapper.convertValue(dataObject, ParkingSpace.class);
                                         _data.add(parkingSpace);
                                         break;
-                                    case COMPLAINT:
+                                    case ALL_COMPLAINTS:
+                                    case COMPLAINT_PRE_CUSTOMER:
                                         Complaint complaint = mapper.convertValue(dataObject, Complaint.class);
                                         _data.add(complaint);
                                         break;

@@ -56,8 +56,8 @@ public class ComplaintCell extends ListCell<Complaint>{
             {
                 lblText.setText(item.getGUIString());
 
-                btnDelete.setVisible(item.getStatus().equals(Complaint.ComplaintStatus.NEW) || item.getStatus().equals(Complaint.ComplaintStatus.OPEN));
-
+                btnDelete.setVisible(item.getStatus().equals(Complaint.ComplaintStatus.OPEN));
+                btnDelete.setText("Cancel");
                 btnDelete.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
@@ -72,7 +72,7 @@ public class ComplaintCell extends ListCell<Complaint>{
     private void cancelComplaint(Complaint complaint)
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message cancelComplaint = new Message(Message.MessageType.DELETE, Message.DataType.COMPLAINT, complaint);
+        Message cancelComplaint = new Message(Message.MessageType.DELETE, Message.DataType.COMPLAINT_PRE_CUSTOMER, complaint);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {

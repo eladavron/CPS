@@ -21,7 +21,7 @@ import javafx.scene.control.TextArea;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import static entity.Message.DataType.COMPLAINT;
+import static entity.Message.DataType.COMPLAINT_PRE_CUSTOMER;
 import static entity.Message.MessageType.CREATE;
 
 public class NewComplaint implements Initializable {
@@ -78,7 +78,7 @@ public class NewComplaint implements Initializable {
                 cmbOrder.getValue() != null ? cmbOrder.getValue().getOrderID() : -1,
                 txtDetails.getText(),
                 parkingLotID);
-        Message newComplaintMsg = new Message(CREATE, COMPLAINT, newComplaint);
+        Message newComplaintMsg = new Message(CREATE, COMPLAINT_PRE_CUSTOMER, newComplaint);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {

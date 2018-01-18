@@ -20,6 +20,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.text.TextAlignment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,14 +74,16 @@ public class ParkingLotViewController {
             switch (item.getStatus()) {
                 case OCCUPIED:
                     Hyperlink occupied = new Hyperlink();
-                    occupied.setText("Occupied");
+                    occupied.setText("Occupied.\nOrder #" + item.getOccupyingOrderID());
                     occupied.setOnAction((event) -> showOrder(item.getOccupyingOrderID()));
+                    occupied.setTextAlignment(TextAlignment.CENTER);
                     pane.setCenter(occupied);
                     break;
                 case ORDERED:
                     Hyperlink ordered = new Hyperlink();
-                    ordered.setText("Ordered");
+                    ordered.setText("Ordered.\nOrder #" + item.getOccupyingOrderID());
                     ordered.setOnAction((event) -> showOrder(item.getOccupyingOrderID()));
+                    ordered.setTextAlignment(TextAlignment.CENTER);
                     pane.setCenter(ordered);
                     break;
                 case UNAVAILABLE:

@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import static controller.Controllers.*;
-import static controller.CustomerController.*;
+import static controller.CustomerController.SubscriptionOperationReturnCodes;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
 import static entity.Message.DataType.*;
 import static entity.Message.MessageType;
@@ -219,7 +219,8 @@ public class MessageHandler {
 
         try
         {
-            if (loggingUser != null && parkingLot.getParkingLotID() == -1) //Employee trying to log in remotely
+            if (loggingUser != null //User IS an employee&
+                    && parkingLot.getParkingLotID() == -1) //Employee trying to log in remotely
             {
                 throw new LoginException("Employees can only log in to their workplace!");
             }
@@ -291,8 +292,8 @@ public class MessageHandler {
                     response.addData(sub);
                 }
                 break;
-            case COMPLAINT:
-                response.setDataType(COMPLAINT);
+            case COMPLAINT_PRE_CUSTOMER:
+                response.setDataType(COMPLAINT_PRE_CUSTOMER);
                 for (Complaint complaint : complaintController.getComplaintsByUserID(userID))
                 {
                     response.addData(complaint);
@@ -332,8 +333,16 @@ public class MessageHandler {
                 response.setDataType(PARKING_LOT);
                 response.addData(parkingController.getParkingLotByID((Integer) queryMsg.getData().get(0)));
                 break;
+            case SINGLE_ORDER:
+                response.setDataType(SINGLE_ORDER);
+                response.addData(orderController.getOrder((Integer) queryMsg.getData().get(0)));
+                break;
             case REPORT:
                 handleUserQueries(queryMsg, response);
+                break;
+            case ALL_COMPLAINTS:
+                response.setDataType(ALL_COMPLAINTS);
+                response.setData(complaintController.getAllComplaint());
                 break;
             default:
                 if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) //It's a user-based query
@@ -346,6 +355,8 @@ public class MessageHandler {
                         case CUSTOMER:
                             user = customerController.getCustomer(userID);
                             break;
+                        case SUPERMAN:
+                        case CUSTOMER_SERVICE:
                         case MANAGER:
                         case EMPLOYEE:
                             user = employeeController.getEmployeeByID(userID);
@@ -401,10 +412,10 @@ public class MessageHandler {
                     response = new Message(FINISHED, PREORDER, removedOrder);
                 }
                 break;
-            case COMPLAINT:
+            case COMPLAINT_PRE_CUSTOMER:
                 Complaint complaint = (Complaint) deleteMsg.getData().get(0);
                 if (complaintController.cancelComplaint(complaint.getComplaintID()))
-                    response = new Message(FINISHED, COMPLAINT);
+                    response = new Message(FINISHED, COMPLAINT_PRE_CUSTOMER);
                 else
                     response = new Message(MessageType.FAILED, PRIMITIVE, "Something went wrong!");
                 break;
@@ -444,6 +455,11 @@ public class MessageHandler {
                     createMsgResponse = new Message(FINISHED, PREORDER, newPreOrder);
                 }
                 break;
+            case PARKING_LOT:
+                Integer parkingLotID = (Integer) createMsg.getData().get(0);
+                parkingController.initiateParkingLot(parkingLotID);
+                createMsgResponse = new Message(FINISHED, PARKING_LOT);
+                break;
             case CARS:
                 Integer uID = (Integer)createMsg.getData().get(0);
                 Integer carToAdd = (Integer)createMsg.getData().get(1);
@@ -468,11 +484,11 @@ public class MessageHandler {
                 SessionManager.getSession(clientConnection).setSubscriptionInNeedOfPayment(subscription);
                 createMsgResponse = new Message(NEED_PAYMENT, PRIMITIVE, subscriptionCharge);
                 break;
-            case COMPLAINT:
+            case COMPLAINT_PRE_CUSTOMER:
                 Complaint incomingComplaint = (Complaint) createMsg.getData().get(0);
                 Complaint returnComplaint = complaintController.createComplaint(incomingComplaint);
                 if (returnComplaint != null)
-                    createMsgResponse = new Message(FINISHED, COMPLAINT, returnComplaint);
+                    createMsgResponse = new Message(FINISHED, COMPLAINT_PRE_CUSTOMER, returnComplaint);
                 else
                     createMsgResponse = new Message(MessageType.FAILED, PRIMITIVE, "Ironically, something went wrong with your request.");
                 break;
@@ -505,6 +521,22 @@ public class MessageHandler {
                     }
                 }
                 returnMessage = new Message(FINISHED, PRIMITIVE, i + " parking spaces updated!");
+                break;
+            case COMPLAINT_PRE_CUSTOMER:
+                Complaint complaint = (Complaint) updateMsg.getData().get(0);
+                switch (complaint.getStatus())
+                {
+                    case ACCEPTED:
+                        complaintController.acceptComplaint(complaint.getComplaintID());
+                        break;
+                    case REJECTED:
+                        complaintController.rejectComplaint(complaint.getComplaintID());
+                        break;
+                    case CANCELLED:
+                        complaintController.cancelComplaint(complaint.getComplaintID());
+                        break;
+                }
+                returnMessage = new Message(FINISHED, COMPLAINT_PRE_CUSTOMER);
                 break;
         }
         returnMessage.setTransID(updateMsg.getTransID());

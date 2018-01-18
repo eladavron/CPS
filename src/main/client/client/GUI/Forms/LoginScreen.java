@@ -28,8 +28,7 @@ import java.util.ArrayList;
 
 import static client.GUI.CPSClientGUI.CUSTOMER_SCREEN;
 import static client.GUI.CPSClientGUI.EMPLOYEE_SCREEN;
-import static entity.User.UserType.MANAGER;
-import static entity.User.UserType.SUPERMAN;
+import static entity.User.UserType.*;
 
 public class LoginScreen {
 
@@ -278,14 +277,19 @@ public class LoginScreen {
                     case CUSTOMER:
                         redirect = CUSTOMER_SCREEN;
                         break;
-                    case MANAGER: //Technically shouldn't happen
                     case EMPLOYEE:
                         if (session.getParkingLot().getParkingLotManagerID().equals(session.getUser().getUID())) //Employee is the manager of this lot!
                         {
                             session.getUser().setUserType(MANAGER);
                         }
+                        if (session.getUser().getEmail().equals("cs@cps.com"))
+                        {
+                            session.getUser().setUserType(CUSTOMER_SERVICE);
+                        }
                         if (session.getUser().getUID() == 0)
+                        {
                             session.getUser().setUserType(SUPERMAN);
+                        }
                         redirect = EMPLOYEE_SCREEN;
                         break;
                     default:

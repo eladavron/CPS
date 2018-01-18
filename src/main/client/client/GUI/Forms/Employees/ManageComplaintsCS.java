@@ -1,7 +1,7 @@
-package client.GUI.Forms.Customers;
+package client.GUI.Forms.Employees;
 
 import client.GUI.CPSClientGUI;
-import client.GUI.Controls.ComplaintCell;
+import client.GUI.Controls.ComplaintCellCS;
 import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
@@ -22,23 +22,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class ManageComplaints implements Initializable {
+public class ManageComplaintsCS implements Initializable {
 
     @FXML
     private Button btnBack;
-
-    @FXML
-    private Button btnRefresh;
-
-    @FXML
-    private Button btnNew;
 
     @FXML
     private ListView<Complaint> listViewComplaint;
 
     private ObservableList<Complaint> _complaintList = FXCollections.observableArrayList();
 
-    private ManageComplaints _this;
+    private ManageComplaintsCS _this;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,21 +41,16 @@ public class ManageComplaints implements Initializable {
         listViewComplaint.setCellFactory(new Callback<ListView<Complaint>, ListCell<Complaint>>() {
             @Override
             public ListCell<Complaint> call(ListView<Complaint> param) {
-                return new ComplaintCell(_this);
+                return new ComplaintCellCS(_this);
             }
         });
         Platform.runLater(this::queryComplaints);
     }
 
-    @FXML
-    void refreshList(ActionEvent event) {
-        queryComplaints();
-    }
-
     public void queryComplaints()
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message queryComplaints = new Message(Message.MessageType.QUERY, Message.DataType.COMPLAINT_PRE_CUSTOMER, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
+        Message queryComplaints = new Message(Message.MessageType.QUERY, Message.DataType.ALL_COMPLAINTS);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
@@ -71,10 +60,7 @@ public class ManageComplaints implements Initializable {
                 {
                     for (Object complaint : complaints)
                     {
-                        if (!((Complaint)complaint).getStatus().equals(Complaint.ComplaintStatus.CANCELLED))
-                        {
-                            _complaintList.add((Complaint) complaint);
-                        }
+                        _complaintList.add((Complaint) complaint);
                     }
                 }
                 waitScreen.hide();
@@ -89,11 +75,6 @@ public class ManageComplaints implements Initializable {
         };
         MessageTasker queryOrders = new MessageTasker(queryComplaints, onSuccess, onFailed, "Checking for complaints...");
         waitScreen.run(queryOrders);
-    }
-
-    @FXML
-    void createComplaint(ActionEvent event) {
-        CPSClientGUI.changeGUI(CPSClientGUI.NEW_COMPLAINT);
     }
 
     @FXML

@@ -1,6 +1,7 @@
 package controller;
 
 import entity.Complaint;
+import entity.Order;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,14 +48,12 @@ public class ComplaintController {
     /**
      * Handle complaint by setting it with a representative id and changing it to OPEN
      * @param complaintID The complaint to handle.
-     * @param representativeID
      */
-    public boolean fileComplaint(Integer complaintID, Integer representativeID)throws SQLException {
+    public boolean fileComplaint(Integer complaintID)throws SQLException {
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null)
             return false;
         myComplaint.setStatus(Complaint.ComplaintStatus.OPEN);
-        myComplaint.setCustomerServiceRepresentativeID(representativeID);
         return dbController.updateComplaint(myComplaint);
     }
 
@@ -67,10 +66,14 @@ public class ComplaintController {
         if (myComplaint == null)
             return false;
         Integer orderID = myComplaint.getRelatedOrderID();
-        myComplaint.setRefund(orderController.getOrder(orderID).getPrice());
+        Order relatedOrder = null;
+        if (orderID != null && !orderID.equals(-1))
+        {
+            relatedOrder = orderController.getOrder(orderID);
+        }
+        myComplaint.setRefund(relatedOrder == null ? 0.0 : relatedOrder.getPrice());
         myComplaint.setStatus(Complaint.ComplaintStatus.ACCEPTED);
         return dbController.updateComplaint(myComplaint);
-
     }
 
     /**
@@ -95,11 +98,13 @@ public class ComplaintController {
         Complaint myComplaint = getComplaintByID(complaintID);
         if (myComplaint == null) // complaint with that id no found;
             return false;
-        boolean ret = dbController.cancelComplaint(complaintID);
-        // remove complaint from active list (after DB just as a precaution.
-        removeComplaintFromListByID(complaintID);
-        return ret;
-
+        if(dbController.cancelComplaint(complaintID))
+        {
+            // remove complaint from active list (after DB just as a precaution.
+            removeComplaintFromListByID(complaintID);
+            return true;
+        };
+        return false;
     }
 
     /**
@@ -107,7 +112,7 @@ public class ComplaintController {
      */
     public Complaint createComplaint(Integer customerID, Integer orderID, String Description, Integer parkingLotNumber) throws SQLException{
         Complaint complaint = new Complaint(customerID, orderID, Description, parkingLotNumber);
-        complaint.setStatus(Complaint.ComplaintStatus.NEW);
+        complaint.setStatus(Complaint.ComplaintStatus.OPEN);
         if (dbController.insertComplaint(complaint)){
             _complaintsList.put(complaint.getComplaintID(), complaint);
             return complaint;
@@ -162,6 +167,10 @@ public class ComplaintController {
      */
     private void removeComplaintFromListByID(Integer complaintID){
         _complaintsList.remove(complaintID);
+    }
+
+    public ArrayList<Object> getAllComplaint() throws SQLException {
+        return new ArrayList<Object>(dbController.getAllComplaints().values());
     }
 
     /**

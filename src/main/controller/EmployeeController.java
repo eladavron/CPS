@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static controller.Controllers.*;
+import static controller.Controllers.dbController;
+import static controller.Controllers.parkingController;
 
 public class EmployeeController {
     private Map<Integer, Employee> _employeeList = new HashMap<>();
@@ -89,10 +90,9 @@ public class EmployeeController {
     /**
      * Employee Controller calls the handleComplaint function which is implemented in CustomerServiceController.
      * @param complaintID The complaintID to handle/manage.
-     * @param representativeToHandleComplaint set representative to handle the complaint.
      */
-    public void manageComplaint(Integer complaintID, Integer representativeToHandleComplaint) throws SQLException{
-        CustomerServiceController.complaintController.fileComplaint(complaintID, representativeToHandleComplaint);
+    public void manageComplaint(Integer complaintID) throws SQLException{
+        CustomerServiceController.complaintController.fileComplaint(complaintID);
     }
 
 

@@ -703,6 +703,8 @@ public class DBController {
         ResultSet rs;
 
         switch (userType){
+            case SUPERMAN:
+            case CUSTOMER_SERVICE:
             case MANAGER:
             case EMPLOYEE:
                 if (userID == -1) {
@@ -1139,14 +1141,13 @@ public class DBController {
         try {
             Statement stmt = db_conn.createStatement();
             int complaintId;
-            String representativeID = valueOrNull(complaint.getCustomerServiceRepresentativeID());
             String orderID = valueOrNull(complaint.getRelatedOrderID());
             String parkingLotID = valueOrNull(complaint.getParkingLotNumber());
-            stmt.executeUpdate(String.format("INSERT INTO Complaints (idUser, idOrder, idRepresentative," +
+            stmt.executeUpdate(String.format("INSERT INTO Complaints (idUser, idOrder," +
                             " status, description, refund, idParkingLot)" +
-                            " VALUES ('%s', %s, %s," +
+                            " VALUES ('%s', %s," +
                             "'%s', '%s', '%s', %s)",
-                    complaint.getCustomerID(), orderID, representativeID,
+                    complaint.getCustomerID(), orderID,
                     complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund(), complaint.getParkingLotNumber()),
                     Statement.RETURN_GENERATED_KEYS);
 
@@ -1176,13 +1177,12 @@ public class DBController {
         }
         try {
             Statement stmt = db_conn.createStatement();
-            String representativeID = (complaint.getCustomerServiceRepresentativeID() == -1) ? "NULL" :
-                    complaint.getCustomerServiceRepresentativeID().toString();
-            stmt.executeUpdate(String.format("UPDATE Complaints SET idUser = '%s', idOrder ='%s', idRepresentative = %s," +
-                            " status = '%s', description = '%s', refund = '%s'" +
-                            "WHERE idComplaints = '%s'",
-                    complaint.getCustomerID(), complaint.getRelatedOrderID(), representativeID,
-                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund(), complaint.getComplaintID()),
+            String parkingLotID = valueOrNull(complaint.getParkingLotNumber());
+            stmt.executeUpdate(String.format("UPDATE Complaints SET idUser = '%s', idOrder =%s," +
+                            " status = '%s', description = '%s', refund = '%s', idParkingLot=%s" +
+                            "WHERE idComplaints = %s",
+                    complaint.getCustomerID(), valueOrNull(complaint.getRelatedOrderID()),
+                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund(), parkingLotID, complaint.getComplaintID()),
                     Statement.RETURN_GENERATED_KEYS);
             return true;
 
@@ -1232,12 +1232,10 @@ public class DBController {
                         System.err.printf("Error occurred getting complaintStatus from table \"%s\"", "Complaints");
                         return myComplaints;
                     }
-                    Integer rep = (rs.getInt("idRepresentative") == 0)? -1 : rs.getInt("idRepresentative");
                     Complaint rowComplaint = new Complaint(
                             rs.getInt("idComplaints"),
                             rs.getInt("idUser"),
                             rs.getInt("idOrder"),
-                            rep,
                             _complaintStatus,
                             desanitizeFromSQL(rs.getString("description")),
                             rs.getDouble("refund"),
@@ -1276,9 +1274,6 @@ public class DBController {
     private Complaint.ComplaintStatus parseComplaintStatus(String status) throws SQLException{
         Complaint.ComplaintStatus ret;
         switch (status) {
-            case "NEW":
-                ret = Complaint.ComplaintStatus.NEW;
-                break;
             case "OPEN":
                 ret = Complaint.ComplaintStatus.OPEN;
                 break;
@@ -1633,7 +1628,7 @@ public class DBController {
 
     /**
      * Checks if the value of an Integer is null (or -1) and sets it to "NULL" for SQL injections
-     * @param wrap whether or not to wrap the value in single quotes
+     * @param number The Integer to check
      * @return "NULL" if null, string of value otherwise
      */
     private String valueOrNull(Integer number)

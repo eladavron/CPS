@@ -54,6 +54,7 @@ public class CPSClientGUI extends Application{
     public static final String EMPLOYEE_SCREEN = "Forms/Employees/EmployeeScreen.fxml";
     public static final String PARKING_SPACES = "Forms/Employees/ManageParkingSpaces.fxml";
     public static final String MANAGE_REPORTS = "Forms/Employees/ManageReports.fxml";
+    public static final String MANAGE_COMPLAINTS_CS = "Forms/Employees/ManageComplaintsCS.fxml";
 
     /**
      * Public Finals

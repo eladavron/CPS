@@ -11,7 +11,7 @@
                <children>
                   <GridPane layoutX="22.2" layoutY="22.2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1">
                            <children>
                               <Button fx:id="btnParkingLotInit" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleEmployeeButton" text="Initialize Parking Lot" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
@@ -19,7 +19,7 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </GridPane.margin>
                         </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1">
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <children>
                               <Button fx:id="btnParkingLotStatus" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleEmployeeButton" text="Set Parking Lot Status" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <padding>
@@ -31,12 +31,12 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </GridPane.margin>
                         </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.rowIndex="1">
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card" GridPane.rowSpan="2">
                            <children>
                               <Button fx:id="btnManageParkingSpaces" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleEmployeeButton" text="Manage Parking Spaces" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                            <GridPane.margin>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                              <Insets bottom="2.5" left="2.5" right="2.5" top="2.5" />
                            </GridPane.margin>
                         </AnchorPane>
                      </children>
@@ -89,6 +89,13 @@
                      <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                      </rowConstraints>
+                     <children>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
+                           <children>
+                              <Button fx:id="btnManageComplaintCS" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleEmployeeButton" text="Manage Complaints" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                     </children>
                   </GridPane>
                </children>
             </AnchorPane>
