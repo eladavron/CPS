@@ -29,7 +29,6 @@ public class ParkingController {
 
     private Map<Integer, ParkingLot> _parkingLotList;
     private ArrayList<Integer> _parkedCarList;
-    private static boolean _initOnce = false; //TODO: REMOVE WHEN POSSIBLE
 
     private static ParkingController parkingInstance = new ParkingController();
     private Integer _heightNumOccupied;
@@ -376,10 +375,7 @@ public class ParkingController {
     public ArrayList<Object> getParkingLots() throws SQLException{
         ArrayList<Object> parkingLots = dbController.getParkingLots();
         setParkingLotsList(parkingLots);
-        if (!_initOnce) { //TODO: REMOVE WHEN POSSIBLE באמאשך
-            initiateParkingLots();
-            _initOnce = true;
-        }
+        initiateParkingLots();
         return parkingLots;
     }
 
