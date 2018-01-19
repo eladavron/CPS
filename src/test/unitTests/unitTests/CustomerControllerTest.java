@@ -21,7 +21,9 @@ import static controller.Controllers.orderController;
 import static org.assertj.core.api.Assertions.assertThat;
 import static utils.TimeUtils.addTime;
 
-
+/**
+ * Testing the functionality of CustomerController.
+ */
 class CustomerControllerTest extends ApplicationTest {
     private Customer _testCustomer;
     private ArrayList<Integer> carList;
@@ -51,6 +53,9 @@ class CustomerControllerTest extends ApplicationTest {
         customerController.getCustomersList().clear();
     }
 
+    /**
+     * Test of getCustomer function.
+     */
     @Test
     void getCustomerTest(){
         Customer customer = null;
@@ -63,6 +68,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(customer).isEqualToComparingFieldByField(_testCustomer);
     }
 
+    /**
+     * Test of getCustomerByEmail function.
+     */
     @Test
     void getCustomerByEmailTest(){
         try {
@@ -75,6 +83,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(customer).isEqualToComparingFieldByField(_testCustomer);
     }
 
+    /**
+     * Test of addNewCustomer function.
+     */
     @Test
     void addNewCustomerTest() {
         ArrayList<Integer> list = new ArrayList<>();
@@ -88,6 +99,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(customerController.getCustomersList()).contains(newCustomer);
     }
 
+    /**
+     * Test of addCarToCustomer function.
+     */
     @Test
     void addCarToCustomerTest()
     {
@@ -102,6 +116,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(_testCustomer.getCarIDList()).contains(7788899);
     }
 
+    /**
+     * Test of addCar function.
+     */
     @Test
     void addCarTest()
     {
@@ -113,6 +130,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(_testCustomer.getCarIDList()).contains(211);
     }
 
+    /**
+     * Test of removeCar function.
+     */
     @Test
     void removeCarTest()
     {
@@ -124,6 +144,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(_testCustomer.getCarIDList()).doesNotContain(211);
     }
 
+    /**
+     * Test of addNewRegularSubscription function.
+     */
     @Test
     void addNewRegularSubscriptionTest()
     {
@@ -143,6 +166,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(subscriptionList).containsKeys(regularSubscription.getSubscriptionID());
     }
 
+    /**
+     * Test of addNewFullSubscription function.
+     */
     @Test
     void addNewFullSubscriptionTest()
     {
@@ -162,6 +188,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(subscriptionList).containsKeys(fullSubscription.getSubscriptionID());
     }
 
+    /**
+     * Test of addNewOrder function.
+     */
     @Test
     void addNewOrderTest(){
         Date date = new Date();
@@ -176,6 +205,9 @@ class CustomerControllerTest extends ApplicationTest {
         assertThat(customerController.getCustomer(777).getActiveOrders()).containsValues(newOrder);
     }
 
+    /**
+     * Test of addNewPreOrder function.
+     */
     @Test
     void addNewPreOrderTest(){
         Date date = new Date();
