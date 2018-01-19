@@ -2,6 +2,7 @@ package client.GUI.Forms.Employees;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import client.GUI.Helpers.ReportUtils;
@@ -23,7 +24,7 @@ import java.util.ResourceBundle;
 import static entity.Message.DataType.REPORT;
 import static entity.Message.MessageType.QUERY;
 
-public class ManageReports implements Initializable {
+public class ManageReports extends GUIController implements Initializable {
 
     @FXML
     private Button btnBack;

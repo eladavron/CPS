@@ -3,8 +3,10 @@ package client.GUI.Forms.Employees;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.ParkingLotViewController;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Refreshable;
 import entity.Message;
 import entity.ParkingLot;
 import entity.ParkingSpace;
@@ -25,7 +27,7 @@ import static entity.Message.DataType.PARKING_SPACE;
 import static entity.Message.MessageType.QUERY;
 import static entity.Message.MessageType.UPDATE;
 
-public class ManageParkingSpaces implements Initializable {
+public class ManageParkingSpaces extends GUIController implements Initializable, Refreshable {
 
     @FXML
     private Button btnApply;
@@ -186,10 +188,14 @@ public class ManageParkingSpaces implements Initializable {
         tabMain.getTabs().add(tab);
     }
 
+    @Override
+    public void refresh() {
+        queryParkingLot();
+    }
+
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(isDirty());
     }
-
 
 }

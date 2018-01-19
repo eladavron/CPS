@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.CustomerController;
 import entity.*;
 import ocsf.server.ConnectionToClient;
+import utils.TimeUtils;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -15,8 +16,7 @@ import static controller.CustomerController.SubscriptionOperationReturnCodes;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.QUERY_RESPONSE;
 import static entity.Message.DataType.*;
 import static entity.Message.MessageType;
-import static entity.Message.MessageType.FINISHED;
-import static entity.Message.MessageType.NEED_PAYMENT;
+import static entity.Message.MessageType.*;
 import static entity.Report.ReportType;
 
 /**
@@ -137,7 +137,7 @@ public class MessageHandler {
             sendToClient(endParkingResponse, clientConnection);
 
         }catch (OrderNotFoundException e){
-            endParkingResponse.setMessageType(MessageType.FAILED);
+            endParkingResponse.setMessageType(FAILED);
             endParkingResponse.setDataType(PRIMITIVE);
             endParkingResponse.addData("Order ID " + order.getOrderID() + " was not found, please contact CPS personnel");
             sendToClient(endParkingResponse, clientConnection);
@@ -158,7 +158,7 @@ public class MessageHandler {
                     response.setDataType(PREORDER);
                     response.addData(orderInNeedOfPayment);
                 } else {
-                    response.setMessageType(MessageType.FAILED);
+                    response.setMessageType(FAILED);
                     response.setDataType(PRIMITIVE);
                     response.addData("Are we feeling generous today?");
                 }
@@ -188,7 +188,7 @@ public class MessageHandler {
                 }
                 else
                 {
-                    response = new Message(MessageType.FAILED, SUBSCRIPTION);
+                    response = new Message(FAILED, SUBSCRIPTION);
                 }
         }
         response.setTransID(paymentNeededMsg.getTransID());
@@ -248,7 +248,7 @@ public class MessageHandler {
         }
         catch (LoginException le)
         {
-            loginResponse = new Message(MessageType.FAILED, Message.DataType.PRIMITIVE, le.getMessage());
+            loginResponse = new Message(FAILED, Message.DataType.PRIMITIVE, le.getMessage());
         }
         loginResponse.setTransID(msg.getTransID());
         sendToClient(loginResponse, clientConnection);
@@ -308,7 +308,7 @@ public class MessageHandler {
             case SESSION:
                 break;
             default:
-                response = new Message(MessageType.FAILED, PRIMITIVE, "Unknown query type " + queryMsg.getDataType());
+                response = new Message(FAILED, PRIMITIVE, "Unknown query type " + queryMsg.getDataType());
         }
     }
 
@@ -398,13 +398,13 @@ public class MessageHandler {
                     }
                     else
                     {
-                        response.setMessageType(MessageType.FAILED);
+                        response.setMessageType(FAILED);
                         response.setDataType(PRIMITIVE);
                         response.addData("Car removal from DB failed");
                     }
                 }catch(LastCarRemovalException e)
                 {
-                    response.setMessageType(MessageType.FAILED);
+                    response.setMessageType(FAILED);
                     response.setDataType(PRIMITIVE);
                     response.addData("It is required to have at least 1 registered car");
                 }
@@ -416,7 +416,7 @@ public class MessageHandler {
                 Order removedOrder = customerController.removeOrder(customer, preOrderToDelete.getOrderID());
                 if (removedOrder == null)
                 { //TODO: Add support for payment required && order not found exception
-                    response.setMessageType(MessageType.FAILED);
+                    response.setMessageType(FAILED);
                 }
                 else
                 {
@@ -428,10 +428,10 @@ public class MessageHandler {
                 if (complaintController.cancelComplaint(complaint.getComplaintID()))
                     response = new Message(FINISHED, COMPLAINT_PRE_CUSTOMER);
                 else
-                    response = new Message(MessageType.FAILED, PRIMITIVE, "Something went wrong!");
+                    response = new Message(FAILED, PRIMITIVE, "Something went wrong!");
                 break;
             default:
-                response = new Message(MessageType.FAILED, PRIMITIVE, "Unsupported creation type: " + deleteMsg.getMessageType());
+                response = new Message(FAILED, PRIMITIVE, "Unsupported creation type: " + deleteMsg.getMessageType());
         }
         response.setTransID(deleteMsg.getTransID());
         sendToClient(response,clientConnection);
@@ -448,12 +448,34 @@ public class MessageHandler {
                 break;
             case ORDER:
                 Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
+                /*
+                Check that the user isn't trying to order a 14-day long parking with a full subscription
+                 */
+                if (TimeUtils.timeDifference(order.getActualEntryTime(), order.getEstimatedExitTime(), TimeUtils.Units.DAYS) > 14
+                        && (subscriptionController.getSubscriptionByCarAndType(order.getCostumerID(),
+                        order.getCarID(),
+                        Subscription.SubscriptionType.FULL) != null))
+                {
+                    createMsgResponse = new Message(FAILED, PRIMITIVE, "You can't park for more than 14 days with a Full Subscription!");
+                    break;
+                }
                 Order newOrder = customerController.addNewOrder(order);
                 parkingController.enterParkingLot(newOrder.getOrderID());
                 createMsgResponse = new Message(FINISHED, Message.DataType.ORDER, newOrder);
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
+                /*
+                Check that the user isn't trying to order a 14-day long parking with a full subscription
+                 */
+                if (TimeUtils.timeDifference(preorder.getEstimatedEntryTime(), preorder.getEstimatedExitTime(), TimeUtils.Units.DAYS) > 14
+                        && (subscriptionController.getSubscriptionByCarAndType(preorder.getCostumerID(),
+                        preorder.getCarID(),
+                        Subscription.SubscriptionType.FULL) != null))
+                {
+                    createMsgResponse = new Message(FAILED, PRIMITIVE, "You can't park for more than 14 days with a Full Subscription!");
+                    break;
+                }
                 Order newPreOrder = customerController.addNewPreOrder(preorder);
                 double estimatedCharge = newPreOrder.getPrice();
                 if (estimatedCharge > 0)
@@ -501,10 +523,10 @@ public class MessageHandler {
                 if (returnComplaint != null)
                     createMsgResponse = new Message(FINISHED, COMPLAINT_PRE_CUSTOMER, returnComplaint);
                 else
-                    createMsgResponse = new Message(MessageType.FAILED, PRIMITIVE, "Ironically, something went wrong with your request.");
+                    createMsgResponse = new Message(FAILED, PRIMITIVE, "Ironically, something went wrong with your request.");
                 break;
             default:
-                createMsgResponse = new Message(MessageType.FAILED, PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());
+                createMsgResponse = new Message(FAILED, PRIMITIVE,"Unknown Type: " + createMsg.getDataType().toString());
                 createMsgResponse.setTransID(createMsg.getTransID());
                 sendToClient(createMsgResponse, clientConnection);
                 return false;

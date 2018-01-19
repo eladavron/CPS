@@ -2,6 +2,7 @@ package client.GUI.Controls;
 
 import client.GUI.CPSClientGUI;
 import client.GUI.Helpers.ErrorHandlers;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageTasker;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -387,13 +388,13 @@ public class WaitScreen extends AnchorPane implements Initializable {
      * Redirect the GUI to a different screen when closing.
      * @param GUIScreen The fxml file to redirect to.
      */
-    public void redirectOnClose(String GUIScreen)
+    public void redirectOnClose(String GUIScreen, GUIController source)
     {
         if (GUIScreen != null) {
             _onClose = new Runnable() {
                 @Override
                 public void run() {
-                    CPSClientGUI.changeGUI(GUIScreen);
+                    CPSClientGUI.changeGUI(GUIScreen, source);
                 }
             };
         } else

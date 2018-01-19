@@ -3,8 +3,10 @@ package client.GUI.Forms.Employees;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.ReportCell;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Refreshable;
 import entity.FinalReport;
 import entity.Message;
 import javafx.application.Platform;
@@ -24,7 +26,7 @@ import java.util.ResourceBundle;
 import static entity.Message.DataType.FINAL_REPORT;
 import static entity.Message.MessageType.QUERY;
 
-public class ManageAllReports implements Initializable {
+public class ManageAllReports extends GUIController implements Initializable, Refreshable {
 
     @FXML
     private Button btnBack;
@@ -80,8 +82,15 @@ public class ManageAllReports implements Initializable {
         initReports();
     }
 
+
+    @Override
+    public void refresh() {
+        initReports();
+    }
+
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);
     }
+
 }

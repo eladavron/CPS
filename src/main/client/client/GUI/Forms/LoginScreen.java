@@ -32,8 +32,6 @@ import static entity.User.UserType.*;
 
 public class LoginScreen {
 
-    //TODO: Figure out why you get double lists when you navigate back here.
-
     private CPSClientGUI parentGUI;
 
     //region Login FXML
@@ -98,6 +96,9 @@ public class LoginScreen {
 
     private CarLister _carLister;
 
+    /**
+     * Initializes the GUI elements
+     */
     @FXML
     void initialize() {
         assert paneLogin != null : "fx:id=\"paneLogin\" was not injected: check your FXML file 'LoginScreen.fxml'.";
@@ -128,6 +129,12 @@ public class LoginScreen {
     }
 
 
+    //region Registration Methods
+
+    /**
+     * Attempts to register the new user after validating all required fields are filled.
+     * @param event The click event.
+     */
     @FXML
     void attemptRegister(ActionEvent event) {
         if (!Validation.notEmpty(txtRegisterName, txtRegisterEmail) || !Validation.emailValidation(txtRegisterEmail))
@@ -147,7 +154,11 @@ public class LoginScreen {
                 waitScreen.setOnClose(new Runnable() {
                     @Override
                     public void run() {
-                        Platform.runLater(()-> setConnectedGUI(true));
+                        Platform.runLater(()-> {
+                            txtLoginEmail.setText(txtRegisterEmail.getText());
+                            txtLoginPwd.setText(txtRegisterPwd.getText());
+                            setConnectedGUI(true);
+                        });
                     }
                 });
                 StringBuilder carStrings = new StringBuilder();
@@ -178,6 +189,10 @@ public class LoginScreen {
         MessageTasker taskRegister = new MessageTasker(newUserMessage, onSuccess,onFailed, "Registering...");
         waitScreen.run(taskRegister);
     }
+
+    //endregion
+
+    //region Connection Methods
 
     /**
      * Handle the "connect" button.
@@ -256,6 +271,29 @@ public class LoginScreen {
         waitScreen.run(_attemptConnect);
     }
 
+    //endregion
+
+    //region Login Methods
+    /**
+     * Handles the "Login" button click.
+     * Checks for all the relevant fields and then calls the AttemptLogin method.
+     * @param event The event from the click or keystroke.
+     */
+    @FXML
+    private void handleLogin(ActionEvent event){
+        if (!Validation.notEmpty(txtLoginEmail,txtLoginPwd, cmbParkingLots) || !Validation.emailValidation(txtLoginEmail))
+            return;
+
+        attemptLogin(txtLoginEmail.getText(), txtLoginPwd.getText());
+    }
+
+    /**
+     * Attempts to log in with the given parameters.
+     * The email is validated for being a valid email.
+     * All actual login validation is done server-side.
+     * @param email The email address of the user.
+     * @param password The password
+     */
     private void attemptLogin(String email, String password)
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -303,7 +341,7 @@ public class LoginScreen {
                     default:
                         throw new LoginException("Unknown user type " + session.getUserType());
                 }
-                waitScreen.redirectOnClose(redirect);
+                waitScreen.redirectOnClose(redirect, null);
                 waitScreen.showSuccess("Welcome " + session.getUser().getName(),"Welcome to the CPS service!", 2);
             }
         };
@@ -318,27 +356,20 @@ public class LoginScreen {
             }
         };
         MessageTasker _loginTask = new MessageTasker(loginMessage, onSuccess, onFailure, "Logging in...");
-        waitScreen.run(_loginTask, 10);
+        waitScreen.run(_loginTask);
     }
 
+    /**
+     * Refresh the list of Parking Lots.
+     * This is needed in case the user cancels the part where we try to query the server for parking lots.
+     * @param event The click event.
+     */
     @FXML
     private void refreshLots(ActionEvent event)
     {
         Inits.initParkingLots(cmbParkingLots);
     }
-
-    /**
-     * Attempts to login.
-     * Assumes connection is already established.
-     * @param event The event from the click or keystroke.
-     */
-    @FXML
-    private void attemptLogin(ActionEvent event){
-        if (!Validation.notEmpty(txtLoginEmail,txtLoginPwd, cmbParkingLots) || !Validation.emailValidation(txtLoginEmail))
-            return;
-
-        attemptLogin(txtLoginEmail.getText(), txtLoginPwd.getText());
-    }
+    //endregion
 
     /**
      * A quick way to toggle between "Connect" and "Login" modes.

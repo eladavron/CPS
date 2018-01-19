@@ -10,14 +10,14 @@
             <FlowPane hgap="10.0" vgap="10.0">
                <children>
                   <Label text="Related Order:" />
-                  <ComboBox fx:id="cmbOrder" prefWidth="150.0" promptText="Select Order..." />
+                  <ComboBox fx:id="cmbOrder" promptText="Select Order..." />
                   <Button fx:id="btnClear" mnemonicParsing="false" onAction="#clearOrder" text="Clear" />
                </children>
             </FlowPane>
             <FlowPane hgap="10.0" vgap="10.0">
                <children>
                   <Label text="Related Parking Lot:" />
-                  <ComboBox fx:id="cmbParkingLot" prefWidth="150.0" promptText="Select Parking Lot..." />
+                  <ComboBox fx:id="cmbParkingLot" promptText="Select Parking Lot..." />
                </children>
             </FlowPane>
             <Label text="Complaint Details:" />

@@ -3,6 +3,7 @@ package client.GUI.Forms.Employees;
 import Exceptions.NotImplementedException;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import client.GUI.Helpers.ReportUtils;
@@ -26,7 +27,7 @@ import static entity.Message.DataType.PARKING_LOT_IMAGE;
 import static entity.Message.MessageType.CREATE;
 import static entity.Message.MessageType.QUERY;
 
-public class EmployeeScreen implements Initializable{
+public class EmployeeScreen extends GUIController implements Initializable{
 
     @FXML
     private Button btnManageParkingSpaces;
@@ -129,14 +130,14 @@ public class EmployeeScreen implements Initializable{
     void handleEmployeeButton(ActionEvent event) {
         if (event.getSource() == btnManageParkingSpaces)
         {
-            CPSClientGUI.changeGUI(PARKING_SPACES);
+            CPSClientGUI.changeGUI(PARKING_SPACES, this);
         } else if (event.getSource() == btnReport)
         {
-            CPSClientGUI.changeGUI(MANAGE_REPORTS);
+            CPSClientGUI.changeGUI(MANAGE_REPORTS, this);
         }
         else if (event.getSource() == btnManageComplaintCS)
         {
-            CPSClientGUI.changeGUI(MANAGE_COMPLAINTS_CS);
+            CPSClientGUI.changeGUI(MANAGE_COMPLAINTS_CS, this);
         }
         else if (event.getSource() == btnParkingLotInit)
         {
@@ -144,7 +145,7 @@ public class EmployeeScreen implements Initializable{
         }
         else if (event.getSource() == btnViewAll)
         {
-            CPSClientGUI.changeGUI(VIEW_ALL_REPORTS);
+            CPSClientGUI.changeGUI(VIEW_ALL_REPORTS, this);
         }
         else if (event.getSource() == btnParkingLotImage)
         {
@@ -153,7 +154,7 @@ public class EmployeeScreen implements Initializable{
             MessageRunnable onSuccess = new MessageRunnable() {
                 @Override
                 public void run() {
-                    waitScreen.setOnClose(()-> ReportUtils.createPDF((String) getMessage().getData().get(0), true));
+                    waitScreen.setOnClose(()-> ReportUtils.showReportPopup((String) getMessage().getData().get(0), "Parking Lot Image:"));
                     waitScreen.hide();
                 }
             };

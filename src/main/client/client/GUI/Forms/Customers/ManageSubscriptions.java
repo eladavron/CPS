@@ -3,8 +3,10 @@ package client.GUI.Forms.Customers;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.SubscriptionCell;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Refreshable;
 import entity.Message;
 import entity.Subscription;
 import javafx.collections.FXCollections;
@@ -21,7 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class ManageSubscriptions implements Initializable {
+public class ManageSubscriptions extends GUIController implements Initializable, Refreshable {
 
     @FXML
     private Button btnBack;
@@ -49,13 +51,13 @@ public class ManageSubscriptions implements Initializable {
             }
         });
         listViewSubs.setItems(_subList);
-        querySubscriptions(); //TODO: Why doesn't it work on auto-refreshes?
+        querySubscriptions();
     }
 
     private void querySubscriptions()
     {
         WaitScreen waitScreen = new WaitScreen();
-        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.SUBSCRIPTION, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
+        Message querySubs = new Message(Message.MessageType.QUERY, Message.DataType.SUBSCRIPTION, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
@@ -85,14 +87,14 @@ public class ManageSubscriptions implements Initializable {
                 waitScreen.showDefaultError(getErrorString());
             }
         };
-        MessageTasker queryOrders = new MessageTasker(queryOrdersMsg, onSuccess, onFailed, "Checking subscription...");
+        MessageTasker queryOrders = new MessageTasker(querySubs, onSuccess, onFailed, "Checking subscription...");
         waitScreen.run(queryOrders);
     }
 
     @FXML
     void addSubscription(ActionEvent event)
     {
-        CPSClientGUI.changeGUI("Forms/Customers/NewSubscription.fxml"); //For now, only this control should access this so it's not moved to the main.
+        CPSClientGUI.changeGUI("Forms/Customers/NewSubscription.fxml", this); //For now, only this control should access this so it's not moved to the main.
     }
 
     @FXML
@@ -100,10 +102,14 @@ public class ManageSubscriptions implements Initializable {
         querySubscriptions();
     }
 
+
+    @Override
+    public void refresh() {
+        querySubscriptions();
+    }
+
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);
     }
-
-
 }

@@ -23,7 +23,7 @@ public class StringUtils {
      */
     public static String sanitizeForSQL(String input)
     {
-        return input.replaceAll("'", "''");
+        return input.replaceAll("`", "").replaceAll("'","''");
     }
 
     public static String desanitizeFromSQL(String input)

@@ -3,8 +3,10 @@ package client.GUI.Forms.Customers;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.PreorderCell;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Refreshable;
 import entity.Message;
 import entity.Order;
 import entity.PreOrder;
@@ -26,7 +28,7 @@ import java.util.ResourceBundle;
 
 import static entity.Order.OrderStatus.PRE_ORDER;
 
-public class ManagePreorders implements Initializable {
+public class ManagePreorders extends GUIController implements Initializable, Refreshable {
 
     @FXML
     private ListView<PreOrder> listViewOrder;
@@ -98,13 +100,19 @@ public class ManagePreorders implements Initializable {
         queryPreorders();
     }
 
+    @Override
+    public void refresh() {
+        queryPreorders();
+    }
+
     @FXML
     void createOrder(ActionEvent event) {
-        CPSClientGUI.changeGUI(CPSClientGUI.NEW_PREORDER);
+        CPSClientGUI.changeGUI(CPSClientGUI.NEW_PREORDER, this);
     }
 
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);
     }
+
 }

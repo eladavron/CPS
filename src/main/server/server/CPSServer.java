@@ -65,6 +65,7 @@ public class CPSServer extends AbstractServer {
      */
     protected void serverStarted() {
         System.out.println(String.format("Server online! Listening on Port %d", getPort()));
+        System.out.println("\n\n\n********\nReady for action!\n********\n");
     }
 
     /**

@@ -22,7 +22,6 @@ public class ExitParking {
      * The server will reply with a list of orders, which this method will filter for orders that are
      * both currently "active" (read: parked) and in the parking lot the user is currently logged on to.
      * In case more than one car is parked in the parking lot, will display a selection box.
-     * TODO: Maybe filter messages on server side?
      */
     public static void exitParkingStart()
     {
@@ -78,7 +77,6 @@ public class ExitParking {
     /**
      * Finish the process of taking your car out.
      * @param order the active order to end.
-     * TODO: Handle charging in case of debt if server returns "FAILED" due to debt. May be a good idea to add a MessageType.DEBT_EXISTS.
      */
     private static void exitParkingFinish(Order order)
     {

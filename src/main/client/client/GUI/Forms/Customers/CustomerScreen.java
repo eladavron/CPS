@@ -2,6 +2,7 @@ package client.GUI.Forms.Customers;
 
 import Exceptions.NotImplementedException;
 import client.GUI.CPSClientGUI;
+import client.GUI.Helpers.GUIController;
 import entity.Session;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,7 +18,7 @@ import java.util.ResourceBundle;
 /**
  * A controller for the main customer screen.
  */
-public class CustomerScreen implements Initializable {
+public class CustomerScreen extends GUIController implements Initializable {
 
     @FXML
     private Button btnCreateOrder;
@@ -93,13 +94,8 @@ public class CustomerScreen implements Initializable {
         {
             filename = CPSClientGUI.MANAGE_COMPLAINTS;
         } else {
-            //TODO: Handle?
             throw new NotImplementedException(event.getSource().toString());
         }
-        CPSClientGUI.changeGUI(filename);
+        CPSClientGUI.changeGUI(filename, this);
     }
-
-
-
-
 }

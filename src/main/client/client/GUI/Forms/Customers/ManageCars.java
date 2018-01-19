@@ -3,9 +3,7 @@ package client.GUI.Forms.Customers;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.CarCell;
 import client.GUI.Controls.WaitScreen;
-import client.GUI.Helpers.MessageRunnable;
-import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.Validation;
+import client.GUI.Helpers.*;
 import entity.Customer;
 import entity.Message;
 import entity.User;
@@ -24,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class ManageCars implements Initializable{
+public class ManageCars extends GUIController implements Initializable, Refreshable{
     @FXML
     private Button btnBack;
 
@@ -102,6 +100,11 @@ public class ManageCars implements Initializable{
         queryServerForCars();
     }
 
+    @Override
+    public void refresh() {
+        queryServerForCars();
+    }
+
     @FXML
     void newCar(ActionEvent event) {
         TextInputDialog newCarDialog = new TextInputDialog();
@@ -143,5 +146,4 @@ public class ManageCars implements Initializable{
             waitScreen.run(taskNewCar);
         });
     }
-
 }

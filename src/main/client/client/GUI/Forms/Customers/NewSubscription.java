@@ -3,10 +3,7 @@ package client.GUI.Forms.Customers;
 import Exceptions.NotImplementedException;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
-import client.GUI.Helpers.Inits;
-import client.GUI.Helpers.MessageRunnable;
-import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.Validation;
+import client.GUI.Helpers.*;
 import controller.CustomerController.SubscriptionOperationReturnCodes;
 import entity.*;
 import entity.Subscription.SubscriptionType;
@@ -30,7 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class NewSubscription implements Initializable{
+public class NewSubscription extends GUIController implements Initializable{
 
     @FXML
     private FlowPane flowCarSelection;

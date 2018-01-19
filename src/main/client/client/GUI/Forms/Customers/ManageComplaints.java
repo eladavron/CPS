@@ -3,8 +3,10 @@ package client.GUI.Forms.Customers;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.ComplaintCell;
 import client.GUI.Controls.WaitScreen;
+import client.GUI.Helpers.GUIController;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.Refreshable;
 import entity.Complaint;
 import entity.Message;
 import javafx.application.Platform;
@@ -22,7 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class ManageComplaints implements Initializable {
+public class ManageComplaints extends GUIController implements Initializable, Refreshable {
 
     @FXML
     private Button btnBack;
@@ -93,7 +95,12 @@ public class ManageComplaints implements Initializable {
 
     @FXML
     void createComplaint(ActionEvent event) {
-        CPSClientGUI.changeGUI(CPSClientGUI.NEW_COMPLAINT);
+        CPSClientGUI.changeGUI(CPSClientGUI.NEW_COMPLAINT, this);
+    }
+
+    @Override
+    public void refresh() {
+        queryComplaints();
     }
 
     @FXML

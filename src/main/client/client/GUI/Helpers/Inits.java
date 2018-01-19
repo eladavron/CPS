@@ -4,6 +4,7 @@ import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
 import entity.*;
 import javafx.collections.FXCollections;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -52,6 +53,11 @@ public class Inits {
                         comboBox.getItems().add((PreOrder) object);
                     }
                 }
+                if (comboBox.getItems().size() == 0) //Empty list
+                {
+                    comboBox.setPromptText("No Orders on record.");
+                    comboBox.setDisable(true);
+                }
                 waitScreen.hide();
             }
         };
@@ -99,6 +105,11 @@ public class Inits {
                 {
                     comboBox.getItems().add((Order) obj);
                 }
+                if (comboBox.getItems().size() == 0)
+                {
+                    comboBox.setPromptText("No history on record.");
+                    comboBox.setDisable(true);
+                }
                 waitScreen.hide();
             }
         };
@@ -106,7 +117,7 @@ public class Inits {
         MessageRunnable onFailure = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showError("Error querying server!", "Could not get required information from the server." + "\n" + getErrorString());
+                waitScreen.showDefaultError(getErrorString());
             }
         };
         User user = new User();
@@ -117,6 +128,60 @@ public class Inits {
         Message query = new Message(Message.MessageType.QUERY, ORDER, user.getUID(), user.getUserType());
         MessageTasker queryOrders = new MessageTasker(query, onSuccess, onFailure);
         waitScreen.run(queryOrders);
+    }
+
+    public static void initSubscriptions(ComboBox<Subscription> comboBox)
+    {
+        comboBox.setConverter(new StringConverter<Subscription>() {
+            @Override
+            public String toString(Subscription object) {
+                if (object != null)
+                    return object.getSubscriptionType() + " subscription #" + object.getSubscriptionID();
+                else
+                    return null;
+            }
+
+            @Override
+            public Subscription fromString(String string) {
+                return null;
+            }
+        });
+
+        WaitScreen waitScreen = new WaitScreen();
+        Message querySubs = new Message(Message.MessageType.QUERY, Message.DataType.SUBSCRIPTION, CPSClientGUI.getLoggedInUserID(), CPSClientGUI.getSession().getUserType());
+        MessageRunnable onSuccess = new MessageRunnable() {
+            @Override
+            public void run() {
+                comboBox.getItems().clear();
+                comboBox.setItems(null);
+                comboBox.setItems(FXCollections.observableArrayList());
+                for (Object obj : getMessage().getData())
+                {
+                    if (obj instanceof Subscription) {
+                        comboBox.getItems().add((Subscription) obj);
+                    }
+                }
+                if (comboBox.getItems().size() == 0)
+                {
+                    comboBox.setPromptText("No Subscriptions registered.");
+                    comboBox.setDisable(true);
+                }
+                else
+                {
+                    comboBox.setDisable(false);
+                    comboBox.setPromptText("Select Subscription...");
+                }
+                waitScreen.hide();
+            }
+        };
+        MessageRunnable onFailure = new MessageRunnable() {
+            @Override
+            public void run() {
+                waitScreen.showDefaultError(getErrorString());
+            }
+        };
+        MessageTasker taskSubs = new MessageTasker(querySubs, onSuccess, onFailure);
+        waitScreen.run(taskSubs);
     }
 
 
@@ -167,9 +232,21 @@ public class Inits {
             }
 
             //Select default
-            if (comboBox.getItems().size() == 1)
+            if (comboBox.getItems().size() == 0)
+            {
+                comboBox.setDisable(true);
+                comboBox.setPromptText("You have no car in your account.");
+            }
+            else if (comboBox.getItems().size() == 1)
             {
                 comboBox.getSelectionModel().select(0);
+                comboBox.setDisable(false);
+            }
+            else
+            {
+                comboBox.getSelectionModel().clearSelection();
+                comboBox.setDisable(false);
+                comboBox.setPromptText("Select car...");
             }
         }
     }
@@ -191,6 +268,17 @@ public class Inits {
                 {
                     comboBox.getItems().add((ParkingLot) obj);
                 }
+                if (comboBox.getItems().size() == 0)
+                {
+                    comboBox.setPromptText("No Parking Lots on record.");
+                    comboBox.setDisable(true);
+                }
+                else
+                {
+                    comboBox.getSelectionModel().clearSelection();
+                    comboBox.setDisable(false);
+                    comboBox.setPromptText("Select Parking Lot...");
+                }
                 waitScreen.hide();
             }
         };
@@ -209,5 +297,14 @@ public class Inits {
         Message query = new Message(Message.MessageType.QUERY, PARKING_LOT_LIST, user.getUID(), user.getUserType());
         MessageTasker queryParkinglots = new MessageTasker(query, onSuccess, onFailure);
         waitScreen.run(queryParkinglots);
+    }
+
+    public static Object getController(Node node) {
+        Object controller = null;
+        do {
+            controller = node.getProperties().get("foo");
+            node = node.getParent();
+        } while (controller == null && node != null);
+        return controller;
     }
 }

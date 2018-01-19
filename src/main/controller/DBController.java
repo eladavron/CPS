@@ -1177,12 +1177,13 @@ public class DBController {
             int complaintId;
             String orderID = valueOrNull(complaint.getRelatedOrderID());
             String parkingLotID = valueOrNull(complaint.getParkingLotNumber());
+            String description = sanitizeForSQL(complaint.getDescription());
             stmt.executeUpdate(String.format("INSERT INTO Complaints (idUser, idOrder," +
                             " status, description, refund, idParkingLot)" +
                             " VALUES ('%s', %s," +
                             "'%s', '%s', '%s', %s)",
                     complaint.getCustomerID(), orderID,
-                    complaint.getStatus(), sanitizeForSQL(complaint.getDescription()), complaint.getRefund(), complaint.getParkingLotNumber()),
+                    complaint.getStatus(), description, complaint.getRefund(), complaint.getParkingLotNumber()),
                     Statement.RETURN_GENERATED_KEYS);
 
             ResultSet rs = stmt.getGeneratedKeys();

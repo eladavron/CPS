@@ -2,7 +2,10 @@ package client.GUI;
 
 import client.ClientController;
 import client.GUI.Helpers.ErrorHandlers;
-import entity.*;
+import client.GUI.Helpers.GUIController;
+import client.GUI.Helpers.Refreshable;
+import entity.Message;
+import entity.Session;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -21,14 +24,17 @@ import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Optional;
+import java.util.Stack;
 
 /**
  * The main GUI application
  * Also acts as a controller for the main GUI root FXML.
  * @author Elad Avron
  */
-public class CPSClientGUI extends Application{
+public class CPSClientGUI extends Application {
 
     /**
      * FXML paths
@@ -70,7 +76,7 @@ public class CPSClientGUI extends Application{
     private static ConnectionStatus _connectionStatus = ConnectionStatus.DISCONNECTED;
     private static String _lastConnectionIP;
 
-    private static Stack<Node> _history = new Stack<Node>();
+    private static Stack<GUIController> _history = new Stack<GUIController>();
 
     /**
      * FXML decelerations
@@ -178,7 +184,8 @@ public class CPSClientGUI extends Application{
             _btnLogout = btnLogout;
 
             _primaryStage = primaryStage;
-            changeGUI(LOGIN_SCREEN);
+
+            backToLogin();
 
             _primaryStage.setScene(scene);
             _primaryStage.setMinHeight(rootPane.getPrefHeight());
@@ -193,7 +200,7 @@ public class CPSClientGUI extends Application{
                 alert.setHeaderText("Are you sure you want to exit?");
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
-                    OrderlyShutdown();
+                    orderlyShutdown();
                 } else {
                     event.consume();
                 }
@@ -209,12 +216,15 @@ public class CPSClientGUI extends Application{
      * Replaces the inner gui page with the supplied filename.
      * @param filename a local fxml filename to load.
      */
-    public static void changeGUI(String filename, boolean addToHistory) {
+    public static void changeGUI(String filename, GUIController controller) {
         try {
             URL guiURL = CPSClientGUI.class.getResource(filename);
             Node guiRoot = FXMLLoader.load(guiURL);
-            if (addToHistory && _pageRoot.getChildren().size() > 0)
-                _history.push(_pageRoot.getChildren().get(0));
+            if (_pageRoot.getChildren().size() > 0 && controller != null)
+            {
+                controller.setNode(_pageRoot.getChildren().get(0));
+                _history.push(controller);
+            }
             _pageRoot.getChildren().clear();
             _pageRoot.getChildren().add(guiRoot);
             _btnLogout.setVisible(!filename.equals(LOGIN_SCREEN) && getSession() != null);
@@ -226,11 +236,6 @@ public class CPSClientGUI extends Application{
         {
             ErrorHandlers.GUIError(io, false);
         }
-    }
-
-    public static void changeGUI(String filename)
-    {
-        changeGUI(filename, true);
     }
 
     /**
@@ -249,28 +254,27 @@ public class CPSClientGUI extends Application{
             }
         }
         _pageRoot.getChildren().clear();
-        Node guiRoot = _history.pop(); //Pop history.
-        if (guiRoot.getId() != null) //These cases are to force refresh in list views.
+        GUIController history = _history.pop(); //Pop history.
+        if (history instanceof Refreshable)
         {
-            if (guiRoot.getId().equals("rootOrders"))
-            {
-                changeGUI(MANAGE_PREORDERS, false);
-                return;
-            }
-            else if (guiRoot.getId().equals("rootSubs"))
-            {
-                changeGUI(MANAGE_SUBSCRIPTIONS, false);
-                return;
-            }
-            else if (guiRoot.getId().equals("complaintRoot"))
-            {
-                changeGUI(MANAGE_COMPLAINTS, false);
-                return;
-            }
+            ((Refreshable)history).refresh();
         }
-        _pageRoot.getChildren().add(guiRoot);
+        Node guiRoot = history.getNode();
         guiRoot.setDisable(false);
+        _pageRoot.getChildren().add(guiRoot);
+        AnchorPane.setTopAnchor(guiRoot, 0.0);
+        AnchorPane.setBottomAnchor(guiRoot, 0.0);
+        AnchorPane.setLeftAnchor(guiRoot, 0.0);
+        AnchorPane.setRightAnchor(guiRoot, 0.0);
+    }
 
+    public static void backToLogin() throws IOException {
+        //Loading Login GUI manually to not add to history
+        URL guiURL = CPSClientGUI.class.getResource(LOGIN_SCREEN);
+        Node guiRoot = FXMLLoader.load(guiURL);
+        _pageRoot.getChildren().clear();
+        _pageRoot.getChildren().add(guiRoot);
+        _btnLogout.setVisible(true);
         AnchorPane.setTopAnchor(guiRoot, 0.0);
         AnchorPane.setBottomAnchor(guiRoot, 0.0);
         AnchorPane.setLeftAnchor(guiRoot, 0.0);
@@ -280,7 +284,7 @@ public class CPSClientGUI extends Application{
     /**
      * Shuts down the app while notifying the server of a logout.
      */
-    private void OrderlyShutdown()
+    private void orderlyShutdown()
     {
         if (isConnected() && getSession() != null)
         {
@@ -347,7 +351,11 @@ public class CPSClientGUI extends Application{
             _connectionStatus = ConnectionStatus.RESET;
             _client = null;
             _session = null;
-            changeGUI(LOGIN_SCREEN);
+        }
+        try {
+            backToLogin();
+        } catch (IOException e) {
+            ErrorHandlers.GUIError(e,true);
         }
     }
 
@@ -359,15 +367,18 @@ public class CPSClientGUI extends Application{
 
     @FXML
     void doLogout(ActionEvent event) {
-        Alert areYouSure = new Alert(Alert.AlertType.CONFIRMATION);
-        areYouSure.setHeaderText("Are you sure you want to log out?");
-        areYouSure.setContentText("Any unsaved changes will be lost!");
-        areYouSure.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-        Optional<ButtonType> result = areYouSure.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.YES)
-        {
-            sendLogout();
-            changeGUI(LOGIN_SCREEN);
+        try {
+            Alert areYouSure = new Alert(Alert.AlertType.CONFIRMATION);
+            areYouSure.setHeaderText("Are you sure you want to log out?");
+            areYouSure.setContentText("Any unsaved changes will be lost!");
+            areYouSure.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+            Optional<ButtonType> result = areYouSure.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.YES) {
+                sendLogout();
+                backToLogin();
+            }
+        } catch (IOException e) {
+            ErrorHandlers.GUIError(e,true);
         }
     }
 
@@ -451,37 +462,6 @@ public class CPSClientGUI extends Application{
         }
     }
 
-    /**
-     * Checks if the logged in user has a subscription of a given type for a car ID and returns it.
-     * @param carID Car ID to check.
-     * @param type Type of subscription to check. Can be null for ALL;
-     * @return null if no sub was found
-     */
-    public static ArrayList<Subscription> getSubscriptionsByCarAndType(Integer carID, Subscription.SubscriptionType type)
-    {
-        ArrayList<Subscription> returnList = new ArrayList<>();
-        if (_session.getUserType() == User.UserType.CUSTOMER)
-        {
-            ArrayList subs = ((Customer)_session.getUser()).getSubscriptionList();
-            for (Object sub : subs)
-            {
-                if (sub instanceof Subscription && ((Subscription) sub).getCarsID().contains(carID)) //Found sub for this car type.
-                {
-                    if (type != null && ((Subscription) sub).getSubscriptionType().equals(type)) //Subscription is of the requested type.
-                        returnList.add((Subscription)sub);
-                    else if (type == null) //Or if no type specified
-                        returnList.add((Subscription)sub);
-                }
-            }
-        }
-        return returnList;
-    }
-
-    public static ArrayList<Subscription> getSubscriptionsByCar(Integer carID)
-    {
-        return getSubscriptionsByCarAndType(carID, null);
-    }
-
     public static Session getSession()
     {
         return _session;
@@ -516,7 +496,6 @@ public class CPSClientGUI extends Application{
     public static AnchorPane getPageRoot() {
         return _pageRoot;
     }
-
     //endregion
 
 }

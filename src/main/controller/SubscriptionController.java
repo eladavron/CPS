@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static controller.Controllers.billingController;
-import static controller.Controllers.dbController;
+import static controller.Controllers.*;
 import static utils.TimeUtils.addTime;
 
 /**
@@ -81,6 +80,20 @@ public class SubscriptionController {
             return rSubs.getSubscriptionID();
         }
         return -1;
+    }
+
+    public Subscription getSubscriptionByCarAndType (Integer customerID, Integer carNumber, Subscription.SubscriptionType type)
+    {
+        for (Object sub : customerController.getCustomer(customerID).getSubscriptionList())
+        {
+            if (sub instanceof Subscription
+                    && ((Subscription) sub).getCarsID().contains(carNumber)
+                    && ((Subscription) sub).getSubscriptionType().equals(type))
+            {
+                return (Subscription) sub;
+            }
+        }
+        return null;
     }
 
     /**

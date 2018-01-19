@@ -3,10 +3,7 @@ package client.GUI.Forms.Customers;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
 import client.GUI.Controls.WaitScreen;
-import client.GUI.Helpers.Inits;
-import client.GUI.Helpers.MessageRunnable;
-import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.Validation;
+import client.GUI.Helpers.*;
 import entity.Message;
 import entity.Order;
 import entity.PreOrder;
@@ -17,23 +14,19 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
  * The controller for entering a parking session.
  */
-public class EnterParking implements Initializable {
+public class EnterParking extends GUIController implements Initializable, Refreshable {
 
     @FXML
     private Button btnBack;
@@ -49,6 +42,9 @@ public class EnterParking implements Initializable {
 
     @FXML
     private ComboBox<Subscription> cmbSubscription;
+
+    @FXML
+    private Hyperlink linkManageSubs;
 
 
     @FXML
@@ -83,19 +79,21 @@ public class EnterParking implements Initializable {
             public void run() {
                 Inits.initCars(cmbCar);
                 Inits.initPreorders(cmbOrder);
+                Inits.initSubscriptions(cmbSubscription);
             }
         });
         cmbOrder.valueProperty().addListener((observable, oldValue, newValue) -> fillOrder());
-        cmbCar.valueProperty().addListener((observable, oldValue, newValue) -> {
-            _subList.clear();
-            ArrayList<Subscription> subs = CPSClientGUI.getSubscriptionsByCar(newValue);
-          _subList.addAll(subs);
-          flowSubscription.setVisible(!_subList.isEmpty());
-        });
         btnReset.disableProperty().bind(cmbOrder.valueProperty().isNull());
         paneOrderDetails.disableProperty().bind(cmbOrder.valueProperty().isNotNull());
-        flowSubscription.setVisible(false);
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
+    }
+
+    @Override
+    public void refresh()
+    {
+        Inits.initCars(cmbCar);
+        Inits.initPreorders(cmbOrder);
+        Inits.initSubscriptions(cmbSubscription);
     }
 
     /**
@@ -104,10 +102,10 @@ public class EnterParking implements Initializable {
      */
     private boolean validateForm() {
         Validation.clearAllHighlighted();
-        boolean validate = true;
-        if (cmbCar.getSelectionModel().getSelectedIndex() < 0) //Makes sure car ID is selected
+        boolean validate = Validation.notEmpty(cmbCar);
+        if (cmbSubscription.getValue() != null && !cmbSubscription.getValue().getCarsID().contains(cmbCar.getValue())) //If the car isn't in the subscription.
         {
-            Validation.showError(cmbCar, "Please select a valid car number!");
+            Validation.showError(cmbCar, "This car is not registered the subscription you have selected!");
             validate = false;
         }
         return Validation.validateTimes(null, _exitDateTime) && validate;
@@ -144,7 +142,7 @@ public class EnterParking implements Initializable {
             public void run() {
                 Order order = (Order) getMessage().getData().get(0);
                 waitScreen.showSuccess("Car Parked!", order.toGUIString());
-                waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN);
+                waitScreen.redirectOnClose(CPSClientGUI.CUSTOMER_SCREEN, null);
             }
         };
         MessageRunnable onFailure = new MessageRunnable() {
@@ -170,10 +168,31 @@ public class EnterParking implements Initializable {
 
     @FXML
     void resetForm(ActionEvent event) {
-        cmbOrder.getSelectionModel().select(-1);
-        cmbOrder.setValue(null);
-        cmbCar.getSelectionModel().select(-1);
+        cmbOrder.getSelectionModel().clearSelection();
+        cmbCar.getSelectionModel().clearSelection();
         exitDate.setValue(null);
+    }
+
+    /**
+     * Refresh the list of Preorders.
+     * This is needed in case the user cancels the part where we try to query the server for preorders..
+     * @param event The click event.
+     */
+    @FXML
+    private void refreshOrders(ActionEvent event)
+    {
+        Inits.initPreorders(cmbOrder);
+    }
+
+
+    @FXML
+    void manageCars(ActionEvent event) {
+        CPSClientGUI.changeGUI(CPSClientGUI.MANAGE_CARS, this);
+    }
+
+    @FXML
+    void manageSubs(ActionEvent event) {
+        CPSClientGUI.changeGUI(CPSClientGUI.MANAGE_SUBSCRIPTIONS, this);
     }
 
     @FXML

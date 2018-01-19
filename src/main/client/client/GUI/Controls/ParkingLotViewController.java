@@ -53,7 +53,7 @@ public class ParkingLotViewController {
                     for (int d = 1; d <= _parkingLot.getDepth(); d++) {
                         ParkingSpace thisSpace = _parkingLot.getParkingSpaceMatrix()[d][w][h];
                         Node thisNode = parkingSpaceNode(thisSpace);
-                        parkingGrid.add(thisNode, w, d); //TODO: Might have to flip this, check!
+                        parkingGrid.add(thisNode, w, d);
                         GridPane.setHgrow(thisNode, Priority.ALWAYS);
                         GridPane.setVgrow(thisNode, Priority.ALWAYS);
                     }

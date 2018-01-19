@@ -115,7 +115,7 @@ public class MessageTasker extends Task<Message> {
                                 try {
                                     handlePayment(incoming);
                                 } catch (Exception e) {
-                                    _waitScreen.showError("Payment required!", "You must pay before you leave!");
+                                    _waitScreen.showError("Payment required!", "You must pay before you continue!");
                                 }
                             }
                         });

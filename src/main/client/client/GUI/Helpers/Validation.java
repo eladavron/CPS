@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import static entity.Subscription.SubscriptionType.FULL;
+
 /**
  * A class for common validators
  */
@@ -111,6 +113,7 @@ public class Validation {
         Bounds boundInScene = control.localToScreen(control.getBoundsInLocal());
         if (boundInScene != null)
             tooltip.show(control.getScene().getWindow(), boundInScene.getMaxX() + 5, boundInScene.getMinY());
+        control.requestFocus();
         highlightControl(control, tooltip);
     }
 
@@ -180,16 +183,15 @@ public class Validation {
      * @param carID The car ID for the parking request. Will be checked against the logged in user.
      * @return True if valid, false if not - while highlighting the error.
      */
-    public static boolean validateParkingLength(DateTimeCombo entryTime, DateTimeCombo exitTime, Integer carID)
+    public static boolean validateParkingLength(DateTimeCombo entryTime, DateTimeCombo exitTime, Integer carID, Subscription subscription)
     {
         Date entry = (entryTime == null) ? new Date() : entryTime.getDateTime();
         Date exit = exitTime.getDateTime();
         if (CPSClientGUI.getSession().getUserType().equals(User.UserType.CUSTOMER))
         {
-            if (!CPSClientGUI.getSubscriptionsByCarAndType(carID, Subscription.SubscriptionType.FULL).isEmpty() //Has subscription
+            if (subscription != null && subscription.getSubscriptionType().equals(FULL) //Has full subscription
                     && TimeUtils.timeDifference(entry, exit, TimeUtils.Units.DAYS) > 14) //Full subscription asks to park for more than 14 days
             {
-
                 exitTime.showError("You can't park for more than 14 days with a full subscription!");
                 return false;
             }
@@ -221,7 +223,7 @@ public class Validation {
 
     public static boolean emailValidation(TextField email)
     {
-        if (email.getText().equals("u")) //MASTER USER
+        if (email.getText().equals("u") || email.getText().isEmpty()) //MASTER USER or empty
         {
             return true;
         }

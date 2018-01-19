@@ -55,7 +55,10 @@ public class ParkingController {
      */
     private void initiateParkingLot(Integer parkingLotNumber, ArrayList<ParkingSpace> parkingSpaces) throws SQLException
     {
-        System.out.println("Starting Init of parking lot number: " + parkingLotNumber );
+        if (Controllers.IS_DEBUG_CONTROLLER)
+        {
+            System.out.println("Starting Init of parking lot number: " + parkingLotNumber );
+        }
         ParkingLot thisParkingLot = this._parkingLotList.get(parkingLotNumber);
         for (ParkingSpace parkingSpace : parkingSpaces)
         {
@@ -86,7 +89,9 @@ public class ParkingController {
                 }
             }
         }
-        System.out.println("Done.");
+        if (Controllers.IS_DEBUG_CONTROLLER) {
+            System.out.println("Done.");
+        }
     }
 
     public void initiateParkingLot(Integer parkingLotNumber) throws SQLException{

@@ -20,7 +20,10 @@ public class RobotController {
     public void createRobot(Integer parkingLotID){
         Robot robot = new Robot(parkingLotID);
         _listOfRobots.put(parkingLotID, robot);
-        System.out.println("Hello from "+ robot.toString());
+        if (Controllers.IS_DEBUG_CONTROLLER)
+        {
+            System.out.println("Hello from "+ robot.toString());
+        }
     }
 
     public void  removeRobot(Integer parkingLotID){

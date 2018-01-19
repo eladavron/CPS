@@ -4,10 +4,7 @@ package client.GUI.Forms.Customers;
 import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
 import client.GUI.Controls.WaitScreen;
-import client.GUI.Helpers.Inits;
-import client.GUI.Helpers.MessageRunnable;
-import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.Validation;
+import client.GUI.Helpers.*;
 import entity.Message;
 import entity.ParkingLot;
 import entity.PreOrder;
@@ -25,7 +22,7 @@ import java.util.ResourceBundle;
  * A controller for creating new Preorders.
  * @author Elad Avron
  */
-public class NewPreorder implements Initializable {
+public class NewPreorder extends GUIController implements Initializable {
 
     @FXML
     private Button btnBack;
@@ -87,8 +84,7 @@ public class NewPreorder implements Initializable {
          If full subscription, do not allow parking for more than 14 days.
          */
         return Validation.validateTimes(_entryDateTime, _exitDateTime)
-                && Validation.notEmpty(cmbParkingLot, cmbCarID)
-                && Validation.validateParkingLength(_entryDateTime,_exitDateTime, cmbCarID.getValue());
+                && Validation.notEmpty(cmbParkingLot, cmbCarID);
     }
 
     /**
@@ -104,7 +100,7 @@ public class NewPreorder implements Initializable {
         Date entryTime = _entryDateTime.getDateTime();
         Date exitTime = _exitDateTime.getDateTime();
         int parkingLotNumber = cmbParkingLot.getSelectionModel().getSelectedItem().getParkingLotID();
-        PreOrder newOrder = new PreOrder(CPSClientGUI.getLoggedInUserID(), cmbCarID.getValue(), exitTime, parkingLotNumber , 0.0, entryTime); //TODO: Figure out charge
+        PreOrder newOrder = new PreOrder(CPSClientGUI.getLoggedInUserID(), cmbCarID.getValue(), exitTime, parkingLotNumber , 0.0, entryTime);
         newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.PREORDER, newOrder);
         MessageRunnable onSuccess = new MessageRunnable() {
@@ -128,6 +124,17 @@ public class NewPreorder implements Initializable {
         };
         MessageTasker createOrder = new MessageTasker(newMessage, onSuccess, onFailure, "Reserving...");
         waitScreen.run(createOrder, 10);
+    }
+
+    @FXML
+    private void refreshLots(ActionEvent event)
+    {
+        Inits.initParkingLots(cmbParkingLot);
+    }
+
+    @FXML
+    void manageCars(ActionEvent event) {
+        CPSClientGUI.changeGUI(CPSClientGUI.MANAGE_CARS, this);
     }
 
     @FXML
