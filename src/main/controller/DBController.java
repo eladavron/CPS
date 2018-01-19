@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.Date;
 
 import static controller.Controllers.IS_DEBUG_CONTROLLER;
+import static controller.Controllers.customerController;
 import static controller.Controllers.employeeController;
 import static utils.StringUtils.desanitizeFromSQL;
 import static utils.StringUtils.sanitizeForSQL;
@@ -556,6 +557,10 @@ public class DBController {
      * @return specific / all orders , null if error
      */
     public Map<Integer, Object> getOrdersByUserID(int userID) throws SQLException {
+        if(isTest){
+            Map<Integer, Object> map = new HashMap<>();
+            return map;
+        }
         ResultSet rs;
 
         if (userID == -1) { // get all rows
@@ -724,11 +729,19 @@ public class DBController {
 
     public ArrayList<User> getCustomers() throws SQLException
     {
+        if(isTest){
+            ArrayList<User> array = new ArrayList<>();
+            return array;
+        }
         return getUserByID(-1, User.UserType.CUSTOMER);
     }
 
     public ArrayList<User> getEmployees() throws SQLException
     {
+        if(isTest){
+            ArrayList<User> array = new ArrayList<>();
+            return array;
+        }
         return getUserByID(-1, User.UserType.EMPLOYEE);
     }
 
@@ -880,7 +893,7 @@ public class DBController {
      */
     public boolean insertCustomer(Customer customer) throws SQLException{
         if (this.isTest){
-            customer.setUID(1);
+            customer.setUID(customer.getUID());
             return true;
         }
         try {
@@ -924,6 +937,9 @@ public class DBController {
      * @return True if successful, False otherwise.
      */
     public boolean addCarToCustomer(Integer customerID, Integer carID) throws SQLException{
+        if(isTest){
+            return true;
+        }
 
         //TODO: Check if user-car is already inserted and show msg / if not active Set to active.
         try {
@@ -949,6 +965,9 @@ public class DBController {
      * @return True if successful, False otherwise.
      */
     public boolean removeCarFromCustomer(Integer customerID, Integer carID) throws SQLException{
+        if(isTest){
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             stmt.executeUpdate(String.format("UPDATE CarToUser SET isActive=0 WHERE  idCars=%s AND idUser=%s",
@@ -965,8 +984,9 @@ public class DBController {
 
 
     public boolean insertSubscription(Subscription subs) throws SQLException{
+        Integer fakeID = 1;
         if (this.isTest){
-            subs.setSubscriptionID(1);
+            subs.setSubscriptionID(fakeID++);
             return true;
         }
         String params = "idUser, endDate";

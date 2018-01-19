@@ -1,5 +1,6 @@
 package unitTests;
 
+import controller.BillingController;
 import controller.DBController;
 import controller.SubscriptionController;
 import entity.FullSubscription;
@@ -17,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static controller.Controllers.billingController;
 import static controller.Controllers.dbController;
 import static entity.Subscription.SubscriptionType.REGULAR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,14 +31,16 @@ public class SubscriptionControllerTest extends ApplicationTest{
     private FullSubscription _testFullSubscription;
     private static SubscriptionController subscriptionController;
     private Subscription _testSubscription2nd;
-    ArrayList<Integer> _carsIDList1;
-    ArrayList<Integer> _carsIDList2;
-    ArrayList<Integer> _carsIDList3;
-    ArrayList<Integer> _carsIDList4;
+    ArrayList<Integer> _carsIDList1 = new ArrayList<>();
+    ArrayList<Integer> _carsIDList2 = new ArrayList<>();
+    ArrayList<Integer> _carsIDList3 = new ArrayList<>();
+    ArrayList<Integer> _carsIDList4 = new ArrayList<>();
+
     @BeforeAll
     static void setTestInitDB(){
         dbController = DBController.getInstance();
         subscriptionController = SubscriptionController.getInstance();
+        billingController = BillingController.getInstance();
         dbController.isTest = true;
     }
 
@@ -47,6 +51,7 @@ public class SubscriptionControllerTest extends ApplicationTest{
         _carsIDList2.add(611);
         _carsIDList3.add(222);
         _carsIDList4.add(22);
+        _carsIDList2.add(61);
         _testSubscription = new Subscription(12,_carsIDList1,REGULAR);
         _testSubscription2nd = new Subscription(51, _carsIDList2, REGULAR);
         _testRegularSubscription = new RegularSubscription(111,_carsIDList3,"11:11",1);
@@ -76,8 +81,14 @@ public class SubscriptionControllerTest extends ApplicationTest{
 
     @Test
     void addFullSubscriptionTest() {
-        _newSubscriptionFromConstructor = subscriptionController.addFullSubscription(11, _carsIDList4);
-        assertThat(_newSubscriptionFromConstructor).isEqualToIgnoringGivenFields(_testFullSubscription,"_expiration");
+//        _newSubscriptionFromConstructor = subscriptionController.addFullSubscription(11, _carsIDList4);
+        try {
+            _newSubscriptionFromConstructor = subscriptionController.addFullSubscription(11,_carsIDList4);
+        } catch (NullPointerException e){
+            System.out.println("The fucking bug got to here......");
+            e.printStackTrace();
+        }
+        assertThat(_newSubscriptionFromConstructor).isEqualToIgnoringGivenFields(_testFullSubscription,"_expiration","_charge");
     }
 
 

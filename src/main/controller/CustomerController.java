@@ -79,7 +79,7 @@ public class CustomerController {
      */
     public Collection<Customer> getCustomersList() {
         return _customersList.values();
-    }
+    } // R: not tested
 
     /**
      * Private function used in order to convert the general user array into customer
@@ -103,10 +103,10 @@ public class CustomerController {
      */
     public Customer addNewCustomer(Customer customer) throws CustomerAlreadyExists, SQLException {
         return addNewCustomer(customer.getUID(),
-                              customer.getName(),
-                              customer.getPassword(),
-                              customer.getEmail(),
-                              customer.getCarIDList());
+                customer.getName(),
+                customer.getPassword(),
+                customer.getEmail(),
+                customer.getCarIDList());
     }
     public Customer addNewCustomer(Integer uID, String name, String password, String email, ArrayList<Integer> carIDList) throws CustomerAlreadyExists,SQLException {
         /**
