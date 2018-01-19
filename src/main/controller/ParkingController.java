@@ -163,7 +163,9 @@ public class ParkingController {
 
         initCurrentParkingValues(parkingLotNumber);
 
-        _heightNumOccupied--;
+        if(_heightNumOccupied > 1){
+            _heightNumOccupied--;
+        }
         ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
         currentParkingSpace.setStatus(FREE);
         currentParkingSpace.setOccupyingOrderID(null);
