@@ -23,6 +23,7 @@ public class DBController {
     private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
     public boolean isTest = false;
     public boolean firstRunOfServerToday = false;
+    public Integer fakeID = 1;
 
     // Date formatter for DB insertions
     private java.text.SimpleDateFormat _simpleDateFormatForDb =
@@ -984,7 +985,6 @@ public class DBController {
 
 
     public boolean insertSubscription(Subscription subs) throws SQLException{
-        Integer fakeID = 1;
         if (this.isTest){
             subs.setSubscriptionID(fakeID++);
             return true;
