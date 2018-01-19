@@ -1,5 +1,6 @@
 package controller;
 
+import Exceptions.NotImplementedException;
 import entity.*;
 import utils.StringUtils;
 import utils.TimeUtils;
@@ -1334,7 +1335,7 @@ public class DBController {
                 return reportToReturn;
             }
             default:
-                return null;
+                throw new NotImplementedException();
         }
     }
 

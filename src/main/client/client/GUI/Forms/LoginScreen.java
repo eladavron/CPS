@@ -110,6 +110,10 @@ public class LoginScreen {
         _carLister = new CarLister(listCarIDs);
         chkRemote.selectedProperty().bindBidirectional(cmbParkingLots.disableProperty());
         cmbParkingLots.disableProperty().addListener(observable -> Validation.removeHighlight(cmbParkingLots));
+        if (CPSClientGUI.getLastConnectionIP() != null)
+        {
+            txtHostname.setText(CPSClientGUI.getLastConnectionIP());
+        }
         txtLoginEmail.focusedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -206,6 +210,7 @@ public class LoginScreen {
             CPSClientGUI.setStatus("Invalid port number!", Color.RED);
             return;
         }
+
         String host = txtHostname.getText();
         Integer port = Integer.valueOf(txtPort.getText());
 
@@ -215,6 +220,7 @@ public class LoginScreen {
             protected Void call() throws Exception {
                 updateMessage("Connecting...");
                 try {
+                    CPSClientGUI.setLastConnectionIP(host);
                     CPSClientGUI.connect(host, port);
                 } catch (IOException io){
                     throw io;

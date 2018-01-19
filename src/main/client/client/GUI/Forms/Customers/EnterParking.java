@@ -126,8 +126,17 @@ public class EnterParking implements Initializable {
         Date exitTime = _exitDateTime.getDateTime();
         Integer parkingLotNumber = CPSClientGUI.getSession().getParkingLot().getParkingLotID();
         Order newOrder = new Order(CPSClientGUI.getLoggedInUserID(), cmbCar.getValue(),exitTime,parkingLotNumber);
+        if (cmbOrder.getValue() != null)
+        {
+            newOrder.setOrderID(cmbOrder.getValue().getOrderID());
+            newOrder.setCarID(cmbOrder.getValue().getCarID());
+        }
+        else
+        {
+            newOrder.setOrderID(0);
+            newOrder.setCarID(cmbCar.getValue());
+        }
         newOrder.setOrderStatus(Order.OrderStatus.IN_PROGRESS);
-        newOrder.setOrderID(0);
         Message newMessage = new Message(Message.MessageType.CREATE, Message.DataType.ORDER, newOrder);
 
         MessageRunnable onSuccess = new MessageRunnable() {

@@ -22,12 +22,6 @@ public class CPSServer extends AbstractServer {
     final private static String DEFAULT_PWD = "6R1Csn4B";
 
     /**
-     * Default Strings
-     */
-    final private static String HELP_COMMANDS = "Available commands:\n\tquery <table_name> (leave blank to get table names)\n\tcreate employee <name> <email> <password>\n\texit\n";
-    final private static String HELP_CREATE = "Valid format for command is: create employee <name> <email> <password>\n";
-
-    /**
      * Instance Parameters
      */
     public static boolean IS_DEBUG;

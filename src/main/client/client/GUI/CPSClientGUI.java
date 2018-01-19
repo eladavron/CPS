@@ -67,6 +67,7 @@ public class CPSClientGUI extends Application{
 
     public enum ConnectionStatus { CONNECTED, DISCONNECTED, RESET };
     private static ConnectionStatus _connectionStatus = ConnectionStatus.DISCONNECTED;
+    private static String _lastConnectionIP;
 
     private static Stack<Node> _history = new Stack<Node>();
 
@@ -495,6 +496,14 @@ public class CPSClientGUI extends Application{
 
     public static Stage getPrimaryStage() {
         return _primaryStage;
+    }
+
+    public static String getLastConnectionIP() {
+        return _lastConnectionIP;
+    }
+
+    public static void setLastConnectionIP(String _lastConnectionIP) {
+        CPSClientGUI._lastConnectionIP = _lastConnectionIP;
     }
 
     public static void setStatus(String status, Color color)

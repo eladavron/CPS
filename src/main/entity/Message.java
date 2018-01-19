@@ -102,6 +102,7 @@ public class Message {
                             break;
                         case REPORT: //Userless
                             Report.ReportType reportType = mapper.convertValue(msg.getData().get(1), Report.ReportType.class);
+                            _data.add(msg.getData().get(0)); //Add User ID
                             _data.add(reportType);
                             _data.add(msg.getData().get(2)); //Copy parking lot ID;
                             break;
