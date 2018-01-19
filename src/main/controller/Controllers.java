@@ -14,6 +14,7 @@ public class Controllers {
     public static ReportController          reportController;
     public static ComplaintController       complaintController;
     public static RobotController           robotController;
+    public static boolean IS_DEBUG_CONTROLLER = false;
 
     /**
      * Since all other Controllers need the dbcontroller to first set a connection

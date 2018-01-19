@@ -126,6 +126,7 @@ public class CPSServer extends AbstractServer {
         }
 
         IS_DEBUG = cmd.hasOption("debug");
+        Controllers.IS_DEBUG_CONTROLLER = IS_DEBUG;
 
         if (cmd.hasOption("database")) {
             if (!cmd.getOptionValue("database").matches("^((mysql):\\/)?\\/?([^:\\/\\s]+)(\\:\\d+)?((\\/\\w+)*\\/)([\\w\\-\\.]+[^#?\\s]+)(.*)?(#[\\w\\-]+)?$")) {

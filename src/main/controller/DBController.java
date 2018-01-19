@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
+import static controller.Controllers.IS_DEBUG_CONTROLLER;
 import static utils.StringUtils.desanitizeFromSQL;
 import static utils.StringUtils.sanitizeForSQL;
 
@@ -19,6 +20,7 @@ public class DBController {
     private static Connection db_conn; //The connection to the database.
     private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
     public boolean isTest = false;
+    public boolean firstRunOfServerToday = false;
 
     // Date formatter for DB insertions
     private java.text.SimpleDateFormat _simpleDateFormatForDb =
@@ -59,10 +61,38 @@ public class DBController {
             while (res.next()) {
                 listTables.add(res.getString("TABLE_NAME"));
             }
+            checkFirstRunOfTheDay();
         }
         catch (SQLException ex)
         {
+            if (IS_DEBUG_CONTROLLER)
+            System.err.println("SQL Exception on DB init");
             throw ex;
+        }
+    }
+
+    private void checkFirstRunOfTheDay() throws SQLException {
+        try{
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            // Update server Login to DB
+            String query = String.format("SELECT * FROM ServerLogins WHERE YEAR = %s AND MONTH = %s AND DAY = %s",
+                    cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_WEEK));
+            Statement stmt = db_conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            if (!rs.next()) {
+                firstRunOfServerToday = true;
+                // insert today's login to server
+                stmt = db_conn.createStatement();
+                query = String.format("INSERT INTO ServerLogins (YEAR, MONTH, DAY) VALUES (%s, %s, %s)",
+                        cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_WEEK));
+                int result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+                if (result != 1) {
+                    throw new SQLException("Failed inserting today's login to server");
+                }
+            }
+        }catch (SQLException e){
+            throw e;
         }
     }
 
