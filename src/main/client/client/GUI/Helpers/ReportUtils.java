@@ -6,6 +6,8 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 
 import java.awt.*;
@@ -13,8 +15,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Optional;
 
-public class PDFUtils {
+public class ReportUtils {
     public static void createPDF(String content, boolean showAfter)
     {
         FileChooser fileChooser = new FileChooser();
@@ -27,9 +30,8 @@ public class PDFUtils {
         //The pdf file will be created and stored in the same project folder.
         try {
             PdfWriter.getInstance(doc, new FileOutputStream(file));
-            String reportString = content;
             doc.open();
-            doc.add(new Paragraph(reportString));
+            doc.add(new Paragraph(content));
             if (showAfter) {
                 Desktop.getDesktop().open(file);
             }
@@ -59,6 +61,23 @@ public class PDFUtils {
             e.printStackTrace();
         } finally {
             doc.close();
+        }
+    }
+
+    public static void showReportPopup(String content, String header)
+    {
+        Alert popup = new Alert(Alert.AlertType.NONE);
+        popup.setHeaderText(header);
+        TextArea textArea = new TextArea(content);
+        textArea.setEditable(false);
+        popup.getDialogPane().setContent(textArea);
+        ButtonType savePDF = new ButtonType("Save PDF");
+        popup.getDialogPane().getButtonTypes().addAll(savePDF, ButtonType.OK);
+        popup.setResizable(true);
+        Optional<ButtonType> result = popup.showAndWait();
+        if (result.isPresent() && result.get() == savePDF)
+        {
+            createPDF(content, true);
         }
     }
 }

@@ -5,7 +5,7 @@ import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.PDFUtils;
+import client.GUI.Helpers.ReportUtils;
 import entity.Message;
 import entity.Session;
 import entity.User;
@@ -40,6 +40,11 @@ public class EmployeeScreen implements Initializable{
     @FXML
     private Button btnReport;
 
+    @FXML
+    private TitledPane paneSuperman;
+
+    @FXML
+    private Button btnViewAll;
 
     @FXML
     private Button btnParkingLotImage;
@@ -73,15 +78,15 @@ public class EmployeeScreen implements Initializable{
             case EMPLOYEE:
                 status = "an employee in this branch";
                 employeeRoot.getChildren().remove(paneManagement);
-                employeeRoot.getChildren().remove(paneCS);
+                employeeRoot.getChildren().removeAll(paneCS, paneSuperman);
                 break;
             case CUSTOMER_SERVICE:
                 status = "a Customer Service representative";
-                employeeRoot.getChildren().remove(paneManagement);
+                employeeRoot.getChildren().removeAll(paneManagement, paneSuperman);
                 break;
             case MANAGER:
                 status = "the manager of this branch";
-                employeeRoot.getChildren().remove(paneCS);
+                employeeRoot.getChildren().removeAll(paneCS, paneSuperman);
                 break;
             case SUPERMAN:
                 status = "the general manager of this company";
@@ -137,6 +142,10 @@ public class EmployeeScreen implements Initializable{
         {
             initParkingLot();
         }
+        else if (event.getSource() == btnViewAll)
+        {
+            CPSClientGUI.changeGUI(VIEW_ALL_REPORTS);
+        }
         else if (event.getSource() == btnParkingLotImage)
         {
             WaitScreen waitScreen = new WaitScreen();
@@ -144,7 +153,7 @@ public class EmployeeScreen implements Initializable{
             MessageRunnable onSuccess = new MessageRunnable() {
                 @Override
                 public void run() {
-                    waitScreen.setOnClose(()->PDFUtils.createPDF((String) getMessage().getData().get(0), true));
+                    waitScreen.setOnClose(()-> ReportUtils.createPDF((String) getMessage().getData().get(0), true));
                     waitScreen.hide();
                 }
             };

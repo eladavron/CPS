@@ -349,6 +349,12 @@ public class MessageHandler {
                 response.setDataType(ALL_COMPLAINTS);
                 response.setData(complaintController.getAllComplaint());
                 break;
+            case FINAL_REPORT:
+                response.setDataType(FINAL_REPORT);
+                for (FinalReport report : reportController.getAllReports()) {
+                    response.addData(report);
+                }
+                break;
             default:
                 if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) //It's a user-based query
                 {

@@ -4,7 +4,7 @@ import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
-import client.GUI.Helpers.PDFUtils;
+import client.GUI.Helpers.ReportUtils;
 import entity.Message;
 import entity.Report;
 import javafx.collections.FXCollections;
@@ -107,7 +107,7 @@ public class ManageReports implements Initializable {
     @FXML
     void savePDF(ActionEvent event)
     {
-        PDFUtils.createPDF(txtReport.getText(), true);
+        ReportUtils.createPDF(txtReport.getText(), true);
     }
 
     @FXML

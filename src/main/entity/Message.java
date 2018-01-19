@@ -49,6 +49,7 @@ public class Message {
         CARS,
         CUSTOMER,
         REPORT,
+        FINAL_REPORT, //For reports only the company manager sees
         PARKING_LOT, //For a single parking lot
         PARKING_LOT_LIST, //For a list of parking lots
         PARKING_SPACE,
@@ -100,6 +101,7 @@ public class Message {
                         case PARKING_LOT_IMAGE: //Userless with ID
                             _data.add(msg.getData().get(0)); //copy ID
                         case PARKING_LOT_LIST: //Userless
+                        case FINAL_REPORT: //USerless
                         case ALL_COMPLAINTS: //Userless
                             break;
                         case REPORT: //Userless
@@ -248,6 +250,10 @@ public class Message {
                                     case COMPLAINT_PRE_CUSTOMER:
                                         Complaint complaint = mapper.convertValue(dataObject, Complaint.class);
                                         _data.add(complaint);
+                                        break;
+                                    case FINAL_REPORT:
+                                        FinalReport report = mapper.convertValue(dataObject, FinalReport.class);
+                                        _data.add(report);
                                         break;
                                     default:
                                         throw new InvalidMessageException("Unknown data type: " + msg.getDataType().toString());

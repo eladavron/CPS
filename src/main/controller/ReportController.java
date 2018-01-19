@@ -1,5 +1,6 @@
 package controller;
 
+import entity.FinalReport;
 import entity.Report;
 
 import java.sql.SQLException;
@@ -38,5 +39,9 @@ public class ReportController {
 
     public String generateReport(Report.ReportType reportType, Integer reportManagerID, Integer parkingLotID) throws SQLException{
         return dbController.makeReportFromDB(reportType,reportManagerID, parkingLotID);
+    }
+
+    public ArrayList<FinalReport> getAllReports() throws SQLException {
+        return dbController.queryAllReports();
     }
 }

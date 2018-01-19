@@ -75,6 +75,30 @@
             </AnchorPane>
         </content>
       </TitledPane>
+      <TitledPane fx:id="paneSuperman" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Company Manager" VBox.vgrow="ALWAYS">
+         <content>
+            <AnchorPane>
+               <children>
+                  <GridPane layoutX="22.2" layoutY="22.2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" styleClass="card">
+                           <children>
+                              <Button fx:id="btnViewAll" layoutX="116.0" layoutY="16.0" mnemonicParsing="false" onAction="#handleEmployeeButton" text="View All Reports" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                     </children>
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                  </GridPane>
+               </children>
+            </AnchorPane>
+         </content>
+      </TitledPane>
       <TitledPane fx:id="paneCS" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Customer Service" VBox.vgrow="ALWAYS">
          <content>
             <AnchorPane>
