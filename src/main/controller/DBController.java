@@ -24,6 +24,8 @@ public class DBController {
     public boolean isTest = false;
     public boolean firstRunOfServerToday = false;
     public Integer fakeID = 1;
+    public Integer fakeOrderID = 1;
+
 
     // Date formatter for DB insertions
     private java.text.SimpleDateFormat _simpleDateFormatForDb =
@@ -34,6 +36,8 @@ public class DBController {
     static {
         instance = new DBController();
     }
+
+
     /** Static 'instance' method */
     public static DBController getInstance() {
         return instance;
@@ -348,7 +352,7 @@ public class DBController {
      */
     public boolean insertOrder(Order order, Billing.priceList priceType) throws SQLException{
         if (isTest) {
-            order.setOrderID(1);
+            order.setOrderID(fakeOrderID++);
             return true;
         }
         try {
@@ -402,7 +406,9 @@ public class DBController {
      */
     public boolean deleteOrder (int orderId, double charged) throws SQLException
     {
-
+        if(isTest){
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED', price= '%s' WHERE  idOrders=%s",
@@ -529,6 +535,10 @@ public class DBController {
      * @return all orders in list
      */
     public Map<Integer, Object> getAllOrders() throws SQLException {
+        if(isTest){
+            Map<Integer, Object> map = new HashMap<>();
+            return map;
+        }
         return getOrdersByID(-1);
     }
 
