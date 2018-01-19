@@ -2,6 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <Accordion fx:id="loginRoot" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.GUI.Forms.LoginScreen">
    <panes>
@@ -15,6 +17,14 @@
                            <children>
                               <Label text="Location:" />
                               <ComboBox fx:id="cmbParkingLots" promptText="Select Location..." />
+                              <Button mnemonicParsing="false" fx:id="btnRefreshLots" onAction="#refreshLots">
+                                 <graphic>
+                                    <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../images/refresh.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic></Button>
                               <CheckBox fx:id="chkRemote" mnemonicParsing="false" text="Login Remotely" />
                            </children>
                         </FlowPane>
@@ -45,7 +55,7 @@
                      <children>
                         <FlowPane hgap="10.0" vgap="10.0">
                            <children>
-                              <Label text="Name:" />
+                              <Label text="Full Name:" />
                               <TextField fx:id="txtRegisterName" />
                            </children>
                         </FlowPane>

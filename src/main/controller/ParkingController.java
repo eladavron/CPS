@@ -2,24 +2,16 @@ package controller;
 
 import Exceptions.CustomerNotificationFailureException;
 import Exceptions.NotImplementedException;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 import entity.Order;
 import entity.ParkingLot;
 import entity.ParkingSpace;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static controller.Controllers.dbController;
-import static controller.Controllers.orderController;
-import static controller.Controllers.robotController;
+import static controller.Controllers.*;
 import static entity.ParkingSpace.ParkingStatus.FREE;
 
 /**
@@ -287,27 +279,21 @@ public class ParkingController {
      * X : Unavailable space
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
-    // TODO: should also go to client !
-    public void generateParkingStatusReport(Integer parkingLotNumber) throws FileNotFoundException, DocumentException {
+    public String generateParkingStatusReport(Integer parkingLotNumber){
         String str = "";
-        String newline = System.getProperty("line.separator");
         Integer depthNum = this._parkingLotList.get(parkingLotNumber).getDepth();
-        String[] result = new String[depthNum];
+        String[] result = new String[depthNum +1];
         // emptying the result string to start working on it.
         for(int i = 0 ; i < result.length ; i++){
             result[i] = "";
         }
+        StringBuilder finalString = new StringBuilder();
 
-        Document doc = new Document();
-        //The pdf file will be created and stored in the same projec folder.
-        PdfWriter.getInstance(doc, new FileOutputStream("Report.pdf"));
-        doc.open();
-
-        for(int i=1; i<= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
+        for(int i=1; i <= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
             result[i] += "Depth " + Integer.toString((i));
-            doc.add(new Paragraph(result[i]));
+            finalString.append("\n").append(result[i]);
             result[i]="";
-            for(int j = 1; j<= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
+            for(int j = 1; j <= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
                 for(int k = 1; k <= this._parkingLotList.get(parkingLotNumber).getHeight(); k++){
                     switch (this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[i][j][k].getStatus()){
                         case FREE:
@@ -324,19 +310,19 @@ public class ParkingController {
                             break;
                     }
                 }
-                result[i] += newline;
-                doc.add(new Paragraph(result[i]));
+                result[i] += "\n";
+                finalString.append("\n").append(result[i]);
                 result[i] = "";
             }
         }
-        str += newline + newline + newline + newline;
+        str += "\n\n\n";
         str += "____________________________________________\n";
         str += "* F : Free space \n " +
                 "* S : Ordered space \n " +
                 "* O : Occupied space \n " +
                 "* X : Unavailable space \n";
-        doc.add(new Paragraph(str));
-        doc.close();
+        finalString.append("\n").append(str);
+        return finalString.toString();
     }
 
     /**

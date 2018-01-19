@@ -107,9 +107,11 @@ public class DBController {
     public static Connection connect(String url, String username, String password) throws SQLException {
         try
         {
+
+            System.out.print("Connecting to Database...");
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
             Connection conn = DriverManager.getConnection("jdbc:" + url, username, password);
-            System.out.println("Database connected!");
+            System.out.println("Connected!");
             return conn;
         }
         catch (SQLException ex)

@@ -5,6 +5,7 @@ import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
 import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
+import client.GUI.Helpers.PDFUtils;
 import entity.Message;
 import entity.Session;
 import entity.User;
@@ -21,7 +22,9 @@ import java.util.ResourceBundle;
 
 import static client.GUI.CPSClientGUI.*;
 import static entity.Message.DataType.PARKING_LOT;
+import static entity.Message.DataType.PARKING_LOT_IMAGE;
 import static entity.Message.MessageType.CREATE;
+import static entity.Message.MessageType.QUERY;
 
 public class EmployeeScreen implements Initializable{
 
@@ -37,6 +40,10 @@ public class EmployeeScreen implements Initializable{
     @FXML
     private Button btnReport;
 
+
+    @FXML
+    private Button btnParkingLotImage;
+
     @FXML
     private VBox employeeRoot;
 
@@ -46,10 +53,7 @@ public class EmployeeScreen implements Initializable{
     @FXML
     private TitledPane paneManagement;
 
-    @FXML
-    private Button btnParkingLotStatus;
-
-    @FXML
+   @FXML
     private Button btnManageComplaintCS;
 
     private Session _session;
@@ -133,9 +137,25 @@ public class EmployeeScreen implements Initializable{
         {
             initParkingLot();
         }
-        else if (event.getSource() == btnParkingLotStatus)
+        else if (event.getSource() == btnParkingLotImage)
         {
-            parkingLotStatus();
+            WaitScreen waitScreen = new WaitScreen();
+            Message queryImage = new Message(QUERY, PARKING_LOT_IMAGE, CPSClientGUI.getSession().getParkingLot().getParkingLotID());
+            MessageRunnable onSuccess = new MessageRunnable() {
+                @Override
+                public void run() {
+                    waitScreen.setOnClose(()->PDFUtils.createPDF((String) getMessage().getData().get(0), true));
+                    waitScreen.hide();
+                }
+            };
+            MessageRunnable onFailure = new MessageRunnable() {
+                @Override
+                public void run() {
+                    waitScreen.showDefaultError(getErrorString());
+                }
+            };
+            MessageTasker taskQueryImage = new MessageTasker(queryImage, onSuccess, onFailure);
+            waitScreen.run(taskQueryImage);
         }
         else
         {

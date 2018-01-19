@@ -329,6 +329,11 @@ public class MessageHandler {
                 response.setDataType(Message.DataType.PARKING_LOT_LIST);
                 response.setData(parkingLots);
                 break;
+            case PARKING_LOT_IMAGE:
+                Integer parkingLotID = (Integer) queryMsg.getData().get(0);
+                response.setDataType(PRIMITIVE);
+                response.addData(parkingController.generateParkingStatusReport(parkingLotID));
+                break;
             case PARKING_LOT:
                 response.setDataType(PARKING_LOT);
                 response.addData(parkingController.getParkingLotByID((Integer) queryMsg.getData().get(0)));
@@ -538,6 +543,12 @@ public class MessageHandler {
                 }
                 returnMessage = new Message(FINISHED, COMPLAINT_PRE_CUSTOMER);
                 break;
+            case PARKING_LOT:
+                Integer parkingLotIDToUpdate = (Integer) updateMsg.getData().get(0);
+                boolean isFull = (boolean) updateMsg.getData().get(1);
+                parkingController.getParkingLotByID(parkingLotIDToUpdate).setIsFullState(isFull);
+                //TODO: Should we have a DB call for this as well?
+                returnMessage = new Message(FINISHED, PRIMITIVE, "Done.");
         }
         returnMessage.setTransID(updateMsg.getTransID());
         sendToClient(returnMessage, clientConnection);

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
@@ -11,12 +12,32 @@
                 </TabPane>
             </center>
             <bottom>
-                <ToolBar nodeOrientation="RIGHT_TO_LEFT" styleClass="toolbar-colored" BorderPane.alignment="CENTER">
-                    <items>
-                        <Button fx:id="btnApply" mnemonicParsing="false" onAction="#applyChanges" text="Apply" />
-                        <Button fx:id="btnRevert" mnemonicParsing="false" onAction="#revertChanges" text="Revert" />
-                    </items>
-                </ToolBar>
+                <AnchorPane>
+                    <children>
+                        <BorderPane styleClass="toolbar-colored" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <left>
+                                <ToggleButton fx:id="toggleFull" mnemonicParsing="false" onAction="#toggleFull" text="&quot;Full&quot; Sign: Off" />
+                            </left>
+                            <right>
+                                <FlowPane alignment="CENTER_LEFT" columnHalignment="CENTER" hgap="10.0" nodeOrientation="RIGHT_TO_LEFT" vgap="10.0" BorderPane.alignment="CENTER_LEFT">
+                                    <children>
+                                        <Button fx:id="btnApply" mnemonicParsing="false" onAction="#applyChanges" text="Apply" />
+                                        <Button fx:id="btnRevert" mnemonicParsing="false" onAction="#revertChanges" text="Revert" />
+                                    </children>
+                                </FlowPane>
+                            </right>
+                     <padding>
+                        <Insets top="5.0" />
+                     </padding>
+                        </BorderPane>
+                    </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <BorderPane.margin>
+                  <Insets />
+               </BorderPane.margin>
+                </AnchorPane>
             </bottom>
         </BorderPane>
     </content>

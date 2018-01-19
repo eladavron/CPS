@@ -52,6 +52,7 @@ public class Message {
         PARKING_LOT, //For a single parking lot
         PARKING_LOT_LIST, //For a list of parking lots
         PARKING_SPACE,
+        PARKING_LOT_IMAGE,
         SUBSCRIPTION,
         SESSION
     };
@@ -94,8 +95,9 @@ public class Message {
                 case QUERY:
                     switch (_dataType)
                     {
-                        case SINGLE_ORDER: //Userless
-                        case PARKING_LOT: //Userless
+                        case SINGLE_ORDER: //Userless with ID
+                        case PARKING_LOT: //Userless with ID
+                        case PARKING_LOT_IMAGE: //Userless with ID
                             _data.add(msg.getData().get(0)); //copy ID
                         case PARKING_LOT_LIST: //Userless
                         case ALL_COMPLAINTS: //Userless
@@ -133,6 +135,10 @@ public class Message {
                             break;
                         case COMPLAINT_PRE_CUSTOMER:
                             _data.add(mapper.convertValue(msg.getData().get(0), Complaint.class));
+                            break;
+                        case PARKING_LOT:
+                            _data.add(msg.getData().get(0)); //Copy Lot ID
+                            _data.add(msg.getData().get(1)); //Copy new status
                             break;
                     }
                     break;

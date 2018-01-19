@@ -33,10 +33,11 @@ public class ManageParkingSpaces implements Initializable {
     @FXML
     private Button btnRevert;
 
-
     @FXML
     private Button btnBack;
 
+    @FXML
+    private ToggleButton toggleFull;
 
     @FXML
     private TabPane tabMain;
@@ -52,6 +53,8 @@ public class ManageParkingSpaces implements Initializable {
         _this = this;
         btnApply.disableProperty().bind(_dirty.not());
         btnRevert.disableProperty().bind(_dirty.not());
+        toggleFull.selectedProperty().addListener((observable, oldValue, newValue) ->
+                toggleFull.setText("\"Full\" Sign: " + (newValue ? "On" : "Off")));
         Platform.runLater(this::queryParkingLot);
     }
 
@@ -62,7 +65,10 @@ public class ManageParkingSpaces implements Initializable {
             @Override
             public void run() {
                 tabMain.getTabs().clear();
-                _controller = new ParkingLotViewController((ParkingLot) getMessage().getData().get(0),_this);
+                ParkingLot parkingLot = (ParkingLot) getMessage().getData().get(0);
+                toggleFull.setSelected(parkingLot.getIsFullState());
+                _controller = new ParkingLotViewController(parkingLot,_this);
+
                 waitScreen.setOnClose(()->Platform.runLater(()->initController()));
                 waitScreen.hide();
             }
@@ -120,6 +126,30 @@ public class ManageParkingSpaces implements Initializable {
         };
         MessageTasker updateTask = new MessageTasker(updateMessage, onSuccess, onFailed, "Saving to server...");
         waitScreen.run(updateTask);
+    }
+
+
+    @FXML
+    void toggleFull(ActionEvent event) {
+        boolean isFull = toggleFull.isSelected();
+        WaitScreen waitScreen = new WaitScreen();
+        Message toggleFullMessage = new Message(UPDATE, PARKING_LOT, _controller.getParkingLot().getParkingLotID(), isFull);
+        MessageRunnable onSuccess = new MessageRunnable() {
+            @Override
+            public void run() {
+                _controller.getParkingLot().setIsFullState(isFull);
+                waitScreen.hide();
+            }
+        };
+        MessageRunnable onFailure = new MessageRunnable() {
+            @Override
+            public void run() {
+                toggleFull.setSelected(false);
+                waitScreen.showDefaultError(getErrorString());
+            }
+        };
+        MessageTasker taskUpdate = new MessageTasker(toggleFullMessage,onSuccess,onFailure,"Toggling Sign...");
+        waitScreen.run(taskUpdate);
     }
 
     @FXML

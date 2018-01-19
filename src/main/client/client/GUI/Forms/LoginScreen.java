@@ -80,9 +80,11 @@ public class LoginScreen {
     @FXML
     private TitledPane paneConnection;
 
-
     @FXML
     private TextField txtPort;
+
+    @FXML
+    private Button btnRefreshLots;
 
     @FXML
     private Button btnLogin;
@@ -317,6 +319,12 @@ public class LoginScreen {
         };
         MessageTasker _loginTask = new MessageTasker(loginMessage, onSuccess, onFailure, "Logging in...");
         waitScreen.run(_loginTask, 10);
+    }
+
+    @FXML
+    private void refreshLots(ActionEvent event)
+    {
+        Inits.initParkingLots(cmbParkingLots);
     }
 
     /**

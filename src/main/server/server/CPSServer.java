@@ -64,7 +64,7 @@ public class CPSServer extends AbstractServer {
      * Called when the server starts listening for connections.
      */
     protected void serverStarted() {
-        System.out.println("Server listening for connections on port " + getPort() +"\n\n********\nReady for action!!!\n********\n\n");
+        System.out.println(String.format("Server online! Listening on Port %d", getPort()));
     }
 
     /**
@@ -82,8 +82,8 @@ public class CPSServer extends AbstractServer {
      * @param args override arguments (optional)
      */
     public static void main(String[] args) {
-        /**
-         * Command Line Parser Setup
+        /*
+         Command Line Parser Setup
          */
 
         Options options = new Options();
@@ -112,8 +112,8 @@ public class CPSServer extends AbstractServer {
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
 
-        /**
-         * Parse Command Line Arguments
+        /*
+         Parse Command Line Arguments
          */
 
         try {
@@ -136,8 +136,8 @@ public class CPSServer extends AbstractServer {
             }
         }
 
-        /**
-         * Override defaults if needed
+        /*
+         Override defaults if needed
          */
 
         int port = cmd.hasOption("port") ? Integer.valueOf(cmd.getOptionValue("port")) : DEFAULT_PORT;
@@ -145,8 +145,8 @@ public class CPSServer extends AbstractServer {
         dbPwd = cmd.hasOption("password") ? cmd.getOptionValue("password") : DEFAULT_PWD;
         dbUrl = cmd.hasOption("database") ? cmd.getOptionValue("database") : DEFAULT_URL;
 
-        /**
-         * Connection Attempt
+        /*
+         Connection Attempt
          */
 
         CPSServer sv = new CPSServer(port);
@@ -172,8 +172,8 @@ public class CPSServer extends AbstractServer {
         PeriodicLateCheck periodicLateCheck = new PeriodicLateCheck();
         periodicLateCheck.execute();
 
-        /**
-         * Start listening and handle messages.
+        /*
+         Start listening and handle messages.
          */
         try {
             sv.listen(); //Start listening for connections
@@ -231,7 +231,6 @@ public class CPSServer extends AbstractServer {
                             else
                             {
                                 SessionManager.dropSession(sessionToDrop);
-                                //TODO: Anything else you need to - like disconnect actual listening?
                                 System.out.println("Session #" + sessionToDrop.getSid() + " dropped!");
                             }
                         }
@@ -249,7 +248,6 @@ public class CPSServer extends AbstractServer {
                         System.out.print("Purging all sessions...");
                         SessionManager.getSessionsMap().clear();
                         System.out.println("Done!");
-                        //TODO: Anything else you need to - like disconnect actual listening?
                         break;
                     case "exit":
                         //TODO: Handle orderly exit?
@@ -261,10 +259,7 @@ public class CPSServer extends AbstractServer {
                     default:
                         System.out.println("Unknown command \"" + message +"\"");
                 }
-            } catch (IOException e) {
-                System.err.println("An error occurred processing that command.");
-                e.printStackTrace();
-            } catch (SQLException e) {
+            } catch (IOException | SQLException e) {
                 System.err.println("An error occurred processing that command.");
                 e.printStackTrace();
             }
