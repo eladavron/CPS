@@ -93,6 +93,7 @@ public class ParkingController {
         if (Controllers.IS_DEBUG_CONTROLLER) {
             System.out.println("Done.");
         }
+        robotController.createRobot(thisParkingLot.getParkingLotID(), thisParkingLot.getDepth(), thisParkingLot.getWidth(), thisParkingLot.getHeight());
     }
 
     public void initiateParkingLot(Integer parkingLotNumber) throws SQLException{
@@ -101,7 +102,6 @@ public class ParkingController {
 
     public void initiateParkingLots() throws SQLException {
         for (Integer parkingLotID: _parkingLotList.keySet()) {
-            robotController.createRobot(parkingLotID);
             initiateParkingLot(parkingLotID, dbController.getParkingSpaces(parkingLotID));
         }
     }
@@ -145,8 +145,8 @@ public class ParkingController {
             currentParkingSpace.setOccupyingOrderID(orderID);
             currentParkingSpace.setStatus(ParkingSpace.ParkingStatus.OCCUPIED);
             this._parkingLotList.get(parkingLotNumber).setHeightNumOccupied(_heightNumOccupied + 1);
-            orderController.setOrderHeightWidthDepth(orderID, _heightNumOccupied, _widthNumOccupied, _depthNumOccupied); // TODO: fill in actual values. here or in other place.
-            robotController.insertCarToParkingLot(order.getCarID(), order.getParkingLotNumber(),null, null);
+            orderController.setOrderHeightWidthDepth(orderID, _heightNumOccupied, _widthNumOccupied, _depthNumOccupied);
+            robotController.insertCarToParkingLot(order.getCarID(), order.getParkingLotNumber(), order.getEstimatedExitTime());
             return dbController.updateParkingSpace(parkingLotNumber, currentParkingSpace);
         }
     }
@@ -181,7 +181,7 @@ public class ParkingController {
             throw new CustomerNotificationFailureException("Your request cannot be currently processed, please contact customer service at Oops@iDidItAgain.com!");
         }
         updateAfterExit(parkingLotNumber);
-        robotController.extractCarFromParkingLot(order.getCarID(), order.getParkingLotNumber(), null, null);
+        robotController.extractCarFromParkingLot(order.getCarID(), order.getParkingLotNumber());
 
         return dbController.updateParkingSpace(parkingLotNumber,currentParkingSpace);
     }
