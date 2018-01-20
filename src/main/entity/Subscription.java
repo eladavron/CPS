@@ -15,12 +15,12 @@ public class Subscription {
 	/**
 	 * Private attributes of Subscription class.
 	 */
-    private static int _subscriptionUIDCounter = -1;
+	private static int _subscriptionUIDCounter = -1;
 
 
 
-    private SubscriptionType _subscriptionType;
-    private Integer _subscriptionID;
+	private SubscriptionType _subscriptionType;
+	private Integer _subscriptionID;
 	private ArrayList<Integer> _carsIDList;
 	private Date _expiration;
 	private Integer _userID;
@@ -29,15 +29,15 @@ public class Subscription {
 
 	public enum SubscriptionType{FULL, REGULAR, REGULAR_MULTIPLE}
 
-    /**
-     * Class constructor
-     * @param userID User's ID
-     * @param carsIDList User's cars ids list.
-     * @param subscriptionType The type of the subscription.
-     */
+	/**
+	 * Class constructor
+	 * @param userID User's ID
+	 * @param carsIDList User's cars ids list.
+	 * @param subscriptionType The type of the subscription.
+	 */
 	public Subscription(Integer userID, ArrayList<Integer> carsIDList, SubscriptionType subscriptionType) {
-	    this._userID =userID;
-	    this._carsIDList = carsIDList;
+		this._userID =userID;
+		this._carsIDList = carsIDList;
 		this._expiration = addTime(new Date(), TimeUtils.Units.DAYS, 28);
 		this._subscriptionType = subscriptionType;
 	}
@@ -78,17 +78,17 @@ public class Subscription {
 	 * Get the subscription's car id
 	 * @return The subscription's car id
 	 */
-    public ArrayList<Integer> getCarsID() {
-        return _carsIDList;
-    }
+	public ArrayList<Integer> getCarsID() {
+		return _carsIDList;
+	}
 
 	/**
 	 * Set the subscription's cars ids list
 	 * @param carsID Car ID to set the subscription's car id
 	 */
-    public void setCarsID(ArrayList<Integer> carsID) {
-        this._carsIDList = carsID;
-    }
+	public void setCarsID(ArrayList<Integer> carsID) {
+		this._carsIDList = carsID;
+	}
 
 	/**
 	 * Get the expiration of the subscription.
@@ -111,8 +111,8 @@ public class Subscription {
 	}
 
 	public SubscriptionType getSubscriptionType() {
-        return _subscriptionType;
-    }
+		return _subscriptionType;
+	}
 
 	public Integer getUserID() {
 		return _userID;
@@ -122,31 +122,31 @@ public class Subscription {
 		this._userID = userID;
 	}
 
-    @Override
-    public String toString() {
-        String str =  "Subscription info: \n" +
-                "subscription type=" + _subscriptionType +
-                ", subscription ID=" + _subscriptionID +
-                ", cars ids list: \n" ;
-        for(Integer carID : this._carsIDList){
-            str += carID + ", ";
-        }
-        str += ", expiration=" + _expiration +
-        ", user ID=" + _userID;
-        return str;
-    }
+	@Override
+	public String toString() {
+		String str =  "Subscription info: \n" +
+				"subscription type=" + _subscriptionType +
+				", subscription ID=" + _subscriptionID +
+				", cars ids list: \n" ;
+		for(Integer carID : this._carsIDList){
+			str += carID + ", ";
+		}
+		str += ", expiration=" + _expiration +
+				", user ID=" + _userID;
+		return str;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Subscription that = (Subscription) o;
-        return _subscriptionType == that._subscriptionType &&
-                Objects.equals(_subscriptionID, that._subscriptionID) &&
-                Objects.equals(_carsIDList, that._carsIDList) &&
-                Objects.equals(_expiration, that._expiration) &&
-                Objects.equals(_userID, that._userID);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Subscription that = (Subscription) o;
+		return _subscriptionType == that._subscriptionType &&
+				Objects.equals(_subscriptionID, that._subscriptionID) &&
+				Objects.equals(_carsIDList, that._carsIDList) &&
+				Objects.equals(_expiration, that._expiration) &&
+				Objects.equals(_userID, that._userID);
+	}
 
 	public double getCharge() { return _charge; }
 

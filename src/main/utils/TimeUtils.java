@@ -2,6 +2,9 @@ package utils;
 
 import Exceptions.NotImplementedException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -9,8 +12,37 @@ import java.util.concurrent.TimeUnit;
 public class TimeUtils {
 
     public static final long SECONDS_IN_MS = 1000;
-    public static final long MINUTES_IN_MS = 60*SECONDS_IN_MS;
-    public static final long HOURS_IN_MS   = 60*MINUTES_IN_MS;
+    public static final long MINUTES_IN_MS = 60 * SECONDS_IN_MS;
+    public static final long HOURS_IN_MS   = 60 * MINUTES_IN_MS;
+    public static final long DAYS_IN_MS    = 24 * HOURS_IN_MS;
+
+    /**
+     * Returns time to target hour in miliseconds
+     * @param targetHour the target hour in 24 hours (midnight is 0)
+     * @return Time in ms until target hour
+     */
+    public static long getNumMilliSecsTillHour(int targetHour)
+    {
+        long msToTargetHour = LocalDateTime.now().until(LocalDate.now().atTime(targetHour,0), ChronoUnit.MILLIS);
+        return msToTargetHour > 0 ? msToTargetHour : (msToTargetHour + 24 * HOURS_IN_MS);
+    }
+
+    /**
+     * calculates time in milliseconds until the next round hour
+     * @return millisecs until next hour
+     */
+    public static long getMilliSecsUntilNextRoundHour()
+    {
+        Calendar calendar = Calendar.getInstance();
+        Date time         = new Date();
+        long now          = new Date().getTime();
+
+        calendar.setTime(time);
+        calendar.add(Calendar.HOUR, 1);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        return calendar.getTime().getTime() - now;
+    }
 
     /**
      * An enum of types of time units.

@@ -44,4 +44,5 @@ public class ReportController {
     public ArrayList<FinalReport> getAllReports() throws SQLException {
         return dbController.queryAllReports();
     }
+
 }

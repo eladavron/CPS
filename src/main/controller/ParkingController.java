@@ -5,6 +5,7 @@ import Exceptions.NotImplementedException;
 import entity.Order;
 import entity.ParkingLot;
 import entity.ParkingSpace;
+import entity.Report;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -438,12 +439,23 @@ public class ParkingController {
         return  parkingLot.getDepth() * parkingLot.getHeight() * parkingLot.getWidth();
     }
 
+
     /**
-     * A function the get the current list of parking lots.
-     * @return the list.
+     * Generate daily reports for orders
+     * @throws SQLException
      */
-    public Map<Integer, ParkingLot> getParkingLotList()
-    {
+    public void genTaskerDailyReports() throws SQLException {
+        ArrayList<Object> parkingLotList = dbController.getParkingLots();
+
+        for (Object lot : parkingLotList) {
+            ParkingLot parkingLot = (ParkingLot) lot;
+            reportController.generateReport(Report.ReportType.DAILY_FINISHED_ORDERS, 999, parkingLot.getParkingLotID());
+            reportController.generateReport(Report.ReportType.DAILY_LATED_ORDERS, 999, parkingLot.getParkingLotID());
+            reportController.generateReport(Report.ReportType.DAILY_CANCELED_ORDERS, 999, parkingLot.getParkingLotID());
+        }
+    }
+
+    public Map<Integer,ParkingLot> getParkingLotList() {
         return _parkingLotList;
     }
 }

@@ -1,27 +1,36 @@
-package scheduledTasks;
+package TaskScheduler;
 
 import entity.PreOrder;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static controller.Controllers.customerController;
-import static controller.Controllers.orderController;
-import static scheduledTasks.scheduledTask.logScheduledTask;
+import static controller.Controllers.*;
+import static entity.Subscription.SubscriptionType.FULL;
 import static utils.TimeUtils.*;
 
+
+/**
+ * A class which periodically checks every minute for cars late for reserved orders and send reminders
+ * Scheduled to run on the 30th minute of every hour
+ */
 public class PeriodicLateCheck extends scheduledTask{
 
     private static final long MAXIMUM_BREACH_TIME = 30*MINUTES_IN_MS;
 
+    /**
+     * Starts scheduling for late checks to parking
+     */
     public void execute() {
 
         Runnable runnable = () -> {
 
-            logScheduledTask("Checking for late orders");
+            printScheduledTaskExecution("Checking for late orders");
             for (PreOrder thisPreOrder : orderController.getAllPreOrders())
             {                                                  //BreachPeriod==between 0 and 30 mins after estimated.
                 if (!thisPreOrder.isMarkedLate() && isEstimatedEntryTimeBreachedByZeroToThirtyMins(thisPreOrder))
@@ -39,12 +48,13 @@ public class PeriodicLateCheck extends scheduledTask{
                         e.printStackTrace();
                         System.err.println("An error occurred processing that command.");
                     }
-                    logScheduledTask("Order #" + thisPreOrder.getOrderID() + " was deleted due to late customer");
+                    printScheduledTaskExecution("Order #" + thisPreOrder.getOrderID() + " was deleted due to late customer");
                 }
             }
         };
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(runnable, 0, 1, TimeUnit.MINUTES);
+
     }
 
 
@@ -56,7 +66,7 @@ public class PeriodicLateCheck extends scheduledTask{
      */
     private static boolean isEstimatedEntryTimeBreachedBy(long milliSecs, PreOrder preOrder) {
         boolean isEntryTimeBreached = (new Date().getTime() - preOrder.getEstimatedEntryTime().getTime() > milliSecs);
-        return isEntryTimeBreached;
+        return  isEntryTimeBreached;
     }
 
     /**

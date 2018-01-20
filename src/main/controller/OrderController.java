@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static controller.Controllers.*;
+import static entity.Order.OrderStatus.IN_PROGRESS;
 import static entity.Order.OrderStatus.PRE_ORDER;
 import static utils.TimeUtils.HOURS_IN_MS;
 
@@ -98,6 +99,15 @@ public class OrderController {
                 allPreOrdersList.add((PreOrder) orderObj);
         }
         return allPreOrdersList;
+    }
+    public ArrayList<Order> getAllActiveOrders()
+    {
+        ArrayList<Order> allActiveOrdersList = new ArrayList<Order>();
+        for (Object orderObj:_ordersList.values()){
+            if (((Order) orderObj).getOrderStatus().equals(IN_PROGRESS))
+                allActiveOrdersList.add((Order) orderObj);
+        }
+        return allActiveOrdersList;
     }
 
     /**

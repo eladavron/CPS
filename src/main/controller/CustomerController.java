@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static controller.Controllers.*;
+import static controller.CustomerController.MailNotificationTemplates.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.*;
 import static entity.Billing.priceList.*;
 import static entity.Order.OrderStatus.*;
@@ -56,6 +57,16 @@ public class CustomerController {
      * A private constructor for the Singleton.
      * @throws SQLException if something goes wrong with the SQL queries in the controller.
      */
+
+    /*
+    *Used for specifying type of notification to be sent to the user.
+    */
+    public enum MailNotificationTemplates {
+        LATE_FOR_PARKING,
+        SUBSCRIPTION_EXPIRY_REMINDER,
+        FULL_SUBSCRIPTION_MAX_PARK_TIME_BREACHED
+    }
+
     private CustomerController() throws SQLException{
         getCustomersFromDb();
     }
@@ -478,14 +489,73 @@ public class CustomerController {
     }
 
     /**
-     * When a customer is late for an ordered session, sends him an email reminding him.
-     * @param preOrder The preorder.
-     * @return True if mail sent successfully (assumes always true).
+     * send late for parking reminder to customer
+     * @param preOrder the preorder
+     * @return true on success, false on failure
      */
     public boolean sendEntryTimeBreachedNotification(PreOrder preOrder)
     {
         Customer lateCustomer = getCustomer(preOrder.getCostumerID());
         System.out.println("Order #" + preOrder.getOrderID() + " is late. Parking reminder for " + lateCustomer.getName() + " was sent to " + lateCustomer.getEmail());
-        return true; //Assuming mailing always works
+        mailCustomerNotification(lateCustomer,LATE_FOR_PARKING);
+        return true;
+    }
+
+    /**
+     * Send max park time breached notification
+     * @param order the order
+     */
+    public void sendMaxParkTimeBreachedTowingNotification(Order order)
+    {
+        Customer forgetfulCustomer = getCustomer(order.getCostumerID());
+        System.out.println("Order #" + order.getOrderID() + ": Car is in the parking lot for over 14 day. " +
+                "Towing notification for " + forgetfulCustomer.getName() + " was sent to " + forgetfulCustomer.getEmail());
+        orderTowingTruckForPickUpCar(order.getCostumerID(), order.getCarID(), order.getParkingLotNumber());
+        mailCustomerNotification(forgetfulCustomer, FULL_SUBSCRIPTION_MAX_PARK_TIME_BREACHED);
+
+         //Assuming order a towing truck and mailing the customer always work
+    }
+
+    /**
+     * sends subscription expiration notifications to customer
+     * @param subscription expiring subscription
+     */
+    public void sendSubscriptionUpcomingExpiryNotification(Subscription subscription)
+    {
+        Customer customer = getCustomer(subscription.getUserID());
+        System.out.println( "Subscription #" + subscription.getSubscriptionID() + ": Subscription will expire in 1 week."
+                + "Renewal reminder for " + customer.getName() + " was sent to " + customer.getEmail());
+        mailCustomerNotification(customer,SUBSCRIPTION_EXPIRY_REMINDER);
+    }
+
+
+    /**
+     * Orders a towing truck for full subscriber who's car is in the parking lot for the max the
+     * @param customerID the customer's Id
+     * @param carID the car ID
+     * @param parkingLotNumber the number of the parking lot.
+     */
+    private void orderTowingTruckForPickUpCar(Integer customerID, Integer carID, Integer parkingLotNumber) {
+        //assuming always works
+    }
+
+    /**
+     * Mails the customer notification according to params
+     * @param customer customer ID
+     * @param mailNotificationTemplate Notification template
+     */
+    private void mailCustomerNotification(Customer customer, MailNotificationTemplates mailNotificationTemplate) {
+        switch (mailNotificationTemplate)
+        {//assuming sending notification never fails
+            case LATE_FOR_PARKING:
+                //send late for parking notification
+                break;
+            case SUBSCRIPTION_EXPIRY_REMINDER:
+                //send expiry reminder to customer
+                break;
+            case FULL_SUBSCRIPTION_MAX_PARK_TIME_BREACHED:
+                //send notification about towing the car
+                break;
+        }
     }
 }

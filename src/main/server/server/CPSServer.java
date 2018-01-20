@@ -5,7 +5,7 @@ import entity.Session;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import org.apache.commons.cli.*;
-import scheduledTasks.PeriodicLateCheck;
+import TaskScheduler.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +15,7 @@ import java.sql.SQLException;
 /**
  * The main CPS Server class, extending the OCSF base class with lots of modifications of our own.
  */
+
 public class CPSServer extends AbstractServer {
     /**
      * Default Params. Will not be hard-coded in final product.
@@ -168,12 +169,20 @@ public class CPSServer extends AbstractServer {
             return;
         }
 
-
         /*
         Init scheduled tasks
          */
-        PeriodicLateCheck periodicLateCheck = new PeriodicLateCheck();
-        periodicLateCheck.execute();
+        PeriodicLateCheck                  periodicLateCheckTask         = new PeriodicLateCheck();
+        TwoWeeksParkBreach                 twoWeeksParkBreachTask        = new TwoWeeksParkBreach();
+        GenerateDailyReports               reportsGenerationTask         = new GenerateDailyReports();
+        SubscriptionExpirationNotification subExpirationNotificationTask = new SubscriptionExpirationNotification();
+        /*
+        Schedule the tasks
+         */
+        reportsGenerationTask.execute();
+        periodicLateCheckTask.execute();
+        twoWeeksParkBreachTask.execute();
+        subExpirationNotificationTask.execute();;
 
         /*
          Start listening and handle messages.

@@ -18,6 +18,10 @@ import static utils.TimeUtils.addTime;
  */
 public class SubscriptionController {
 
+    public Map<Integer, Subscription> getSubscriptionsMap() {
+        return _subscriptionsList;
+    }
+
     //TODO: remove this or change thing to be taken from DB once its added to our system.
     private Map<Integer, Subscription> _subscriptionsList;
 
@@ -44,6 +48,18 @@ public class SubscriptionController {
     /** Static 'instance' method */
     public static SubscriptionController getInstance() {
         return instance;
+    }
+
+    /**
+     * Checks is a subscription of a specific type exists for a customer and carID combination
+     * @param subType Type of subscription
+     * @param customerID Customer's ID
+     * @param carID Car ID
+     * @return true if a specific subscription of specified type exists for customer and car ID, false otherwise
+     */
+    public boolean doesExistsSubscriptionOfType(Subscription.SubscriptionType subType, Integer customerID, Integer carID)
+    {
+        return getSubscriptionByCarAndType(customerID, carID, subType) != null;
     }
 
     public Subscription getSubscription(Integer subscriptionID)
