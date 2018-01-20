@@ -134,7 +134,9 @@ public class Message {
                         case ORDER:
                             _data.add(msg.getData().get(0)); //copy User ID
                             _data.add(mapper.convertValue(msg.getData().get(1), User.UserType.class)); //Copy User Type
-                            _data.add(msg.getData().get(2)); //Copy Parking Lot ID
+                            if (msg.getData().size() >= 3) //If it's for a specific parking lot
+                                _data.add(msg.getData().get(2)); //Copy Parking Lot ID
+                            break;
                         default: //Other User queries
                             User.UserType userType = mapper.convertValue(msg.getData().get(1), User.UserType.class);
                             _data.add(msg.getData().get(0)); //Copy UserID

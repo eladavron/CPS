@@ -346,9 +346,17 @@ public class MessageHandler {
                 response.setData(customerController.getCustomersPreOrders(userID));
                 break;
             case ORDER:
-                Integer parkingLotID = (Integer) queryMsg.getData().get(2);
                 response.setDataType(Message.DataType.ORDER);
-                response.setData(customerController.getCustomersActiveOrdersInLot(userID, parkingLotID));
+                if (queryMsg.getData().size() >= 3) //It's for a specific parking lot
+                {
+                    Integer parkingLotID = (Integer) queryMsg.getData().get(2);
+                    response.setData(customerController.getCustomersActiveOrdersInLot(userID, parkingLotID));
+                }
+                else //It's for all parking lots
+                {
+                    ArrayList<Object> returnList = new ArrayList<Object>(dbController.getOrdersByUserID(userID).values());
+                    response.setData(returnList);
+                }
                 break;
             case CARS:
                 for (Integer car : (customerController.getCustomer((userID))).getCarIDList())
