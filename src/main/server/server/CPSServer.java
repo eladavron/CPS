@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 
+/**
+ * The main CPS Server class, extending the OCSF base class with lots of modifications of our own.
+ */
 public class CPSServer extends AbstractServer {
     /**
      * Default Params. Will not be hard-coded in final product.
@@ -79,8 +82,7 @@ public class CPSServer extends AbstractServer {
 
     /**
      * Starts the server.
-     *
-     * @param args override arguments (optional)
+     * @param args Override arguments (optional)
      */
     public static void main(String[] args) {
         /*
@@ -187,6 +189,7 @@ public class CPSServer extends AbstractServer {
 
     /**
      * This method waits for input from the console.
+     * This is optional to make the Server Administrators' life easier.
      */
     private static void accept() {
         BufferedReader fromConsole = new BufferedReader(new InputStreamReader(System.in));
@@ -257,12 +260,8 @@ public class CPSServer extends AbstractServer {
                     case "debug off":
                         Controllers.IS_DEBUG_CONTROLLER = false;
                         System.out.println("Debug mode deactivated!");
-
-
                     case "exit":
-                        //TODO: Handle orderly exit?
                         System.out.println("So long, and thanks for all the fish!");
-                        System.exit(0);
                         break;
                     case "": //Empty string
                         break;

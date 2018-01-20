@@ -27,6 +27,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+/**
+ * A GUI Controller for the "New Subscription" screen.
+ */
 public class NewSubscription extends GUIController implements Initializable{
 
     @FXML
@@ -38,10 +41,6 @@ public class NewSubscription extends GUIController implements Initializable{
 
     @FXML
     private ComboBox<String> cmbExitMinute;
-
-    /**
-     * This control is populated in load time by the FXML.
-     */
 
     @FXML
     private ComboBox<String> cmbSubType;
@@ -84,6 +83,9 @@ public class NewSubscription extends GUIController implements Initializable{
     private static final int REGULAR_MULTICAR = 1;
     private static final int FULL = 2;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Platform.runLater(()->{
@@ -129,11 +131,18 @@ public class NewSubscription extends GUIController implements Initializable{
         });
     }
 
+    /**
+     * Handles the "New..." button click.
+     * @param event the button click.
+     */
     @FXML
     void attemptNew(ActionEvent event) {
         attemptNewSubscription();
     }
 
+    /**
+     * Attempts to create a new subscription after validating the form.
+     */
     private void attemptNewSubscription() {
         if (!validateForm())
             return;
@@ -206,6 +215,10 @@ public class NewSubscription extends GUIController implements Initializable{
         waitScreen.run(taskCreation);
     }
 
+    /**
+     * Validates the form for errors such as empty fields or bad selections.
+     * @return True if form is valid, false if not.
+     */
     private boolean validateForm()
     {
         if (!Validation.notEmpty(cmbSubType))
@@ -236,6 +249,10 @@ public class NewSubscription extends GUIController implements Initializable{
         }
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(true);

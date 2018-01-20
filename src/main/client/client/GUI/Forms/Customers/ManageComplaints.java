@@ -24,6 +24,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+/**
+ * A custom GUI controller for managing a user's Complaints.
+ */
 public class ManageComplaints extends GUIController implements Initializable, Refreshable {
 
     @FXML
@@ -42,6 +45,9 @@ public class ManageComplaints extends GUIController implements Initializable, Re
 
     private ManageComplaints _this;
 
+    /**
+    * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         _this = this;
@@ -55,11 +61,18 @@ public class ManageComplaints extends GUIController implements Initializable, Re
         Platform.runLater(this::queryComplaints);
     }
 
+    /**
+     * Handles the "Refresh List" button click.
+     * @param event The button click event.
+     */
     @FXML
     void refreshList(ActionEvent event) {
         queryComplaints();
     }
 
+    /**
+     * Queries the server for all complaints by this user and populates the list with the results.
+     */
     public void queryComplaints()
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -93,16 +106,27 @@ public class ManageComplaints extends GUIController implements Initializable, Re
         waitScreen.run(queryOrders);
     }
 
+    /**
+     * Handles the "New Complaint" button click by redirecting the GUI to the {@link NewComplaint} screen.
+     * @param event The click event.
+     */
     @FXML
     void createComplaint(ActionEvent event) {
         CPSClientGUI.changeGUI(CPSClientGUI.NEW_COMPLAINT, this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         queryComplaints();
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);

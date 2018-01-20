@@ -28,6 +28,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A custom made Wait Screen with lots of capabilities.
+ * It is responsible for showing the progress of requests by the user to the server, as well as displaying any error
+ * or success messages. It can run custom-made {@link MessageTasker} tasks or regular {@link Task}s while it's displayed,
+ * And also supports custom messages, timeouts, and error-handling.
+ */
 public class WaitScreen extends AnchorPane implements Initializable {
 
     @FXML
@@ -52,7 +58,9 @@ public class WaitScreen extends AnchorPane implements Initializable {
 
     private static int timeToClose;
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnCancel.setOnAction(new EventHandler<ActionEvent>() {
@@ -129,7 +137,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
     /**
      * Binds the window's status message to a given string property.
      * Use this to bind the window's message to a thread.
-     * @param sp the <code>StringProperty</code> method.
+     * @param sp the {@link javafx.beans.property.StringProperty} to bind.
      */
     public void bindMessageProperty(ReadOnlyStringProperty sp) {
         lblMessage.textProperty().bind(sp);
@@ -147,6 +155,10 @@ public class WaitScreen extends AnchorPane implements Initializable {
         }
     }
 
+    /**
+     * Resets the timeout counter back to 0 and starts the clock again.
+     * @param seconds The new timeout to set.
+     */
     public void resetTimeout(int seconds)
     {
        timer = new Timer();
@@ -375,9 +387,9 @@ public class WaitScreen extends AnchorPane implements Initializable {
     }
 
     /**
-     * Set a custom action to execute when the window closes.
-     * If you want it to happen AFTER the window closes, or just to be safe, use <code>Platform.runLater</code>
-     * @param action
+     * Set a custom action to execute when the window closes.<br>
+     * If you want it to happen AFTER the window closes, or just to be safe, use {@link Platform#runLater(Runnable)}
+     * @param action the action of closing the window.
      */
     public void setOnClose(Runnable action)
     {
@@ -387,6 +399,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
     /**
      * Redirect the GUI to a different screen when closing.
      * @param GUIScreen The fxml file to redirect to.
+     * @param source the GUI Controller currently shown.
      */
     public void redirectOnClose(String GUIScreen, GUIController source)
     {
@@ -401,6 +414,11 @@ public class WaitScreen extends AnchorPane implements Initializable {
             _onClose = null;
     }
 
+    /**
+     * Set whether or not to initiate the {@link CPSClientGUI#goBack(boolean)} method upon closing, which will have the
+     * GUI go back to whatever screen it was displaying before the one that initiated this wait screen.
+     * @param set Whether or not to do it.
+     */
     public void setGoBackOnClose(boolean set)
     {
         if (set) {
@@ -417,6 +435,7 @@ public class WaitScreen extends AnchorPane implements Initializable {
     //endregion
 
     //region Getters and Setters
+
     public void setTitle(String title) {
         this.lblTitle.setText(title);
     }

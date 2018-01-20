@@ -16,6 +16,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -30,57 +31,74 @@ import java.util.Optional;
 import java.util.Stack;
 
 /**
- * The main GUI application
+ * The main GUI application.<br>
  * Also acts as a controller for the main GUI root FXML.
- * @author Elad Avron
  */
 public class CPSClientGUI extends Application {
 
-    /**
-     * FXML paths
-     */
+
+    //region FXML Paths
     public final static String LOGIN_SCREEN = "Forms/LoginScreen.fxml";
+
     /*
     Customer Screens
      */
 
-    public final static String CUSTOMER_SCREEN = "Forms/Customers/CustomerScreen.fxml";
-    public final static String ENTER_PARKING = "Forms/Customers/EnterParking.fxml";
-    public final static String NEW_PREORDER = "Forms/Customers/NewPreorder.fxml";
-    public final static String MANAGE_PREORDERS = "Forms/Customers/ManagePreorders.fxml";
-    public final static String MANAGE_CARS = "Forms/Customers/ManageCars.fxml";
-    public final static String MANAGE_SUBSCRIPTIONS = "Forms/Customers/ManageSubscriptions.fxml";
-    public static final String NEW_COMPLAINT = "Forms/Customers/NewComplaint.fxml";
+    /** Path to screen FXML */
+    public final static String CUSTOMER_SCREEN = "Forms/Customers/CustomerScreen.fxml";           /** Path to screen FXML */
+    public final static String ENTER_PARKING = "Forms/Customers/EnterParking.fxml";               /** Path to screen FXML */
+    public final static String NEW_PREORDER = "Forms/Customers/NewPreorder.fxml";                 /** Path to screen FXML */
+    public final static String MANAGE_PREORDERS = "Forms/Customers/ManagePreorders.fxml";         /** Path to screen FXML */
+    public final static String MANAGE_CARS = "Forms/Customers/ManageCars.fxml";                   /** Path to screen FXML */
+    public final static String MANAGE_SUBSCRIPTIONS = "Forms/Customers/ManageSubscriptions.fxml"; /** Path to screen FXML */
+    public static final String NEW_COMPLAINT = "Forms/Customers/NewComplaint.fxml";               /** Path to screen FXML */
     public static final String MANAGE_COMPLAINTS = "Forms/Customers/ManageComplaints.fxml";
 
     /*
     Employee Screens
      */
 
-    public static final String EMPLOYEE_SCREEN = "Forms/Employees/EmployeeScreen.fxml";
-    public static final String PARKING_SPACES = "Forms/Employees/ManageParkingSpaces.fxml";
-    public static final String MANAGE_REPORTS = "Forms/Employees/ManageReports.fxml";
-    public static final String MANAGE_COMPLAINTS_CS = "Forms/Employees/ManageComplaintsCS.fxml";
+    /** Path to screen FXML */
+    public static final String EMPLOYEE_SCREEN = "Forms/Employees/EmployeeScreen.fxml";         /** Path to screen FXML */
+    public static final String PARKING_SPACES = "Forms/Employees/ManageParkingSpaces.fxml";     /** Path to screen FXML */
+    public static final String MANAGE_REPORTS = "Forms/Employees/ManageReports.fxml";           /** Path to screen FXML */
+    public static final String MANAGE_COMPLAINTS_CS = "Forms/Employees/ManageComplaintsCS.fxml";/** Path to screen FXML */
     public static final String VIEW_ALL_REPORTS = "Forms/Employees/ManageAllReports.fxml";
+    //endregion
 
+    /*
+     Public Finals
+     */
     /**
-     * Public Finals
+     * Default Timeout for queued operations.
      */
     public final static int DEFAULT_TIMEOUT = 10;
+
+    /**
+     * Default time to display success screens.
+     */
     public final static int DEFAULT_WAIT_TIME = 3;
 
 
+    /**
+     * Determines whether the program is running in DEBUG mode or not.<br>
+     * Can be toggled by using command line arguments.
+     * @see #main(String[])
+     */
     public static boolean IS_DEBUG;
 
+    /**
+     * The three states the connection can be in. RESET is so that the connection screen knows the connection was
+     * dropped intentionally and manually.
+     */
     public enum ConnectionStatus { CONNECTED, DISCONNECTED, RESET };
+
     private static ConnectionStatus _connectionStatus = ConnectionStatus.DISCONNECTED;
     private static String _lastConnectionIP;
 
     private static Stack<GUIController> _history = new Stack<GUIController>();
 
-    /**
-     * FXML decelerations
-     */
+    //region FXML Decelerations
     @FXML
     private AnchorPane pageRoot;
 
@@ -95,11 +113,12 @@ public class CPSClientGUI extends Application {
 
     @FXML
     private Button btnLogout;
+    //endregion
 
 
 
-    /**
-     * Static Accessors
+    /*
+     Static Accessors
      */
     private static AnchorPane _pageRoot;
     private static AnchorPane _guiRoot;
@@ -108,13 +127,13 @@ public class CPSClientGUI extends Application {
     private static Button _btnLogout;
     private static Stage _primaryStage;
 
-    /**
-     * The Active Client connection
+    /*
+     The Active Client connection
      */
     private static ClientController _client;
 
 
-    /**
+    /*
      * A two-dimensional message queue.
      * The first dimension identifies the SID of the message.
      * The second dimension is a queue for all messages with that SID.
@@ -123,13 +142,13 @@ public class CPSClientGUI extends Application {
     private static HashMap<Long, LinkedList<Message>> _incomingMessages = new HashMap<Long, LinkedList<Message>>();
 
     /**
-     * The current session.
+     The current session.
      */
     private static Session _session;
 
     /**
      * The main method of the application.
-     * @param args Command line arguments. Supports "debug" for debugging.
+     * @param args Command line arguments. Supports "-d" or "--debug" for debugging.
      */
     public static void main(String[] args) {
         Options options = new Options();
@@ -142,7 +161,7 @@ public class CPSClientGUI extends Application {
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
 
-        /**
+        /*
          * Parse Command Line Arguments
          */
 
@@ -165,7 +184,8 @@ public class CPSClientGUI extends Application {
 
     //region GUI Methods
     /**
-     * Starts the GUI session.
+     * Starts the GUI session. <br>
+     * Loads all relevant elements and inits everything for use.
      * @param primaryStage The primary stage for the application to display its GUI in.
      */
     @Override
@@ -191,6 +211,11 @@ public class CPSClientGUI extends Application {
             _primaryStage.setMinHeight(rootPane.getPrefHeight());
             _primaryStage.setMinWidth(rootPane.getPrefWidth());
 
+            primaryStage.getIcons().add(
+                    new Image(
+                            CPSClientGUI.class.getResourceAsStream( "images/car.png" )));
+            primaryStage.setTitle("CPS - Automated Car System");
+
             _btnExit.setOnAction(event ->
                     _primaryStage.getOnCloseRequest().handle(
                             new WindowEvent(_primaryStage,WindowEvent.WINDOW_CLOSE_REQUEST)));
@@ -213,8 +238,10 @@ public class CPSClientGUI extends Application {
     }
 
     /**
-     * Replaces the inner gui page with the supplied filename.
+     * Replaces the inner gui page with the supplied filename.<br>
+     * Also saves to history whatever screen is removed for use in the {@link #goBack(boolean)} method.
      * @param filename a local fxml filename to load.
+     * @param controller The GUI controller currently shown.
      */
     public static void changeGUI(String filename, GUIController controller) {
         try {
@@ -268,6 +295,10 @@ public class CPSClientGUI extends Application {
         AnchorPane.setRightAnchor(guiRoot, 0.0);
     }
 
+    /**
+     * Goes back to the Login screen.
+     * @throws IOException In case the loading of the screen fails.
+     */
     public static void backToLogin() throws IOException {
         //Loading Login GUI manually to not add to history
         URL guiURL = CPSClientGUI.class.getResource(LOGIN_SCREEN);
@@ -312,6 +343,7 @@ public class CPSClientGUI extends Application {
      * Send a message object to the server.
      * The method extracts the JSON string and sends that.
      * @param message A message object to send.
+     * @throws IOException in case the communication fails.
      */
     public static void sendToServer(Message message) throws IOException {
         String json = message.toJson();
@@ -322,6 +354,10 @@ public class CPSClientGUI extends Application {
         _client.sendToServer(json);
     }
 
+    /**
+     * Checks whether a connection from the client to the server exists and works.
+     * @return True if exists, works, and connected. False otherwise.
+     */
     public static boolean isConnected()
     {
         if (_client != null && _client.isConnected())
@@ -359,12 +395,20 @@ public class CPSClientGUI extends Application {
         }
     }
 
+    /**
+     * Returns the current connection {@link ConnectionStatus}
+     * @return the current connection {@link ConnectionStatus}
+     */
     public static ConnectionStatus getConnectionStatus()
     {
         return _connectionStatus;
     }
 
 
+    /**
+     * Handles the "Logout" button event.
+     * @param event The button event.
+     */
     @FXML
     void doLogout(ActionEvent event) {
         try {
@@ -382,6 +426,9 @@ public class CPSClientGUI extends Application {
         }
     }
 
+    /**
+     * Sends a logout message to the server.
+     */
     private void sendLogout()
     {
         try {
@@ -450,7 +497,7 @@ public class CPSClientGUI extends Application {
 
     //endregion
 
-    //region getters and setters
+    //region Getters and Setters
 
     public static Integer getLoggedInUserID()
     {
@@ -462,6 +509,10 @@ public class CPSClientGUI extends Application {
         }
     }
 
+    /**
+     * @see Session
+     * @return The current {@link Session} object.
+     */
     public static Session getSession()
     {
         return _session;

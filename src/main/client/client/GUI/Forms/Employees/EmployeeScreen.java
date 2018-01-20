@@ -27,6 +27,14 @@ import static entity.Message.DataType.PARKING_LOT_IMAGE;
 import static entity.Message.MessageType.CREATE;
 import static entity.Message.MessageType.QUERY;
 
+/**
+ * The main screen for Employees.
+ * Dynamically adds and removes panels based on access levels.
+ * Regular Employees will only see the "Employee Controls" Panel.
+ * Branch Managers will ALSO see the "Manager" Panel.
+ * A Customer Service employee will only see the "Employee Controls" and "Customer Service" Panels.
+ * The Company Manager will see ALL panels.
+ */
 public class EmployeeScreen extends GUIController implements Initializable{
 
     @FXML
@@ -66,6 +74,9 @@ public class EmployeeScreen extends GUIController implements Initializable{
 
     private User.UserType _type;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (CPSClientGUI.getSession() != null) {
@@ -101,6 +112,10 @@ public class EmployeeScreen extends GUIController implements Initializable{
                 status), Color.GREEN);
     }
 
+    /**
+     * Handles the "Init Parking Lot" request by employees by sending a request to the server with the currently
+     * logged on to Parking Lot ID.
+     */
     private void initParkingLot()
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -121,11 +136,10 @@ public class EmployeeScreen extends GUIController implements Initializable{
         waitScreen.run(taskInit);
     }
 
-    private void parkingLotStatus()
-    {
-
-    }
-
+    /**
+     * Handles the various button click events by redirecting to the relevant GUI screen.
+     * @param event The click events.
+     */
     @FXML
     void handleEmployeeButton(ActionEvent event) {
         if (event.getSource() == btnManageParkingSpaces)

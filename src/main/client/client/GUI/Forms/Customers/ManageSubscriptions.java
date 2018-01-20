@@ -23,6 +23,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+/**
+ * A GUI Controller for the Manage Subscriptions screen.
+ */
 public class ManageSubscriptions extends GUIController implements Initializable, Refreshable {
 
     @FXML
@@ -39,21 +42,24 @@ public class ManageSubscriptions extends GUIController implements Initializable,
 
     private ObservableList<Subscription> _subList = FXCollections.observableArrayList();
 
-    private ManageSubscriptions _this;
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        _this = this;
         listViewSubs.setCellFactory(new Callback<ListView<Subscription>, ListCell<Subscription>>() {
             @Override
             public ListCell<Subscription> call(ListView<Subscription> param) {
-                return new SubscriptionCell(_this);
+                return new SubscriptionCell();
             }
         });
         listViewSubs.setItems(_subList);
         querySubscriptions();
     }
 
+    /**
+     * Queries the server for any subscriptions this user has.
+     */
     private void querySubscriptions()
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -91,23 +97,37 @@ public class ManageSubscriptions extends GUIController implements Initializable,
         waitScreen.run(queryOrders);
     }
 
+    /**
+     * Handles the "New..." click event.
+     * @param event The click event.
+     */
     @FXML
     void addSubscription(ActionEvent event)
     {
         CPSClientGUI.changeGUI("Forms/Customers/NewSubscription.fxml", this); //For now, only this control should access this so it's not moved to the main.
     }
 
+    /**
+     * Handles the "Refresh" button click event.
+     * @param event The button click event.
+     */
     @FXML
     void refreshSubs(ActionEvent event) {
         querySubscriptions();
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         querySubscriptions();
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);

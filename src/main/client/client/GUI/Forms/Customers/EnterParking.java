@@ -71,6 +71,10 @@ public class EnterParking extends GUIController implements Initializable, Refres
 
     private ObservableList<Subscription> _subList = FXCollections.observableArrayList();
 
+    /**
+     * Inits all the elements. Binds the ComboBoxes and Reset buttons together.
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
@@ -88,6 +92,9 @@ public class EnterParking extends GUIController implements Initializable, Refres
         _exitDateTime = new DateTimeCombo(exitDate, cmbExitHour, cmbExitMinute);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh()
     {
@@ -166,6 +173,10 @@ public class EnterParking extends GUIController implements Initializable, Refres
     }
 
 
+    /**
+     * Resets the form.
+     * @param event The mouse click event.
+     */
     @FXML
     void resetForm(ActionEvent event) {
         cmbOrder.getSelectionModel().clearSelection();
@@ -185,16 +196,29 @@ public class EnterParking extends GUIController implements Initializable, Refres
     }
 
 
+    /**
+     * Goes to the {@link ManageCars} screen.
+     * @param event The Click event.
+     */
     @FXML
     void manageCars(ActionEvent event) {
         CPSClientGUI.changeGUI(CPSClientGUI.MANAGE_CARS, this);
     }
 
+    /**
+     * Goes to the {@link ManageSubscriptions} screen.
+     * @param event Handles the Click event.
+     */
     @FXML
     void manageSubs(ActionEvent event) {
         CPSClientGUI.changeGUI(CPSClientGUI.MANAGE_SUBSCRIPTIONS, this);
     }
 
+    /**
+     * Handles the "back" button click. (Name is remnant of an older GUI scheme.)
+     * @param event The Click event
+     * @throws IOException In case the loading fails.
+     */
     @FXML
     void returnToMain(ActionEvent event) throws IOException {
         CPSClientGUI.goBack(true);

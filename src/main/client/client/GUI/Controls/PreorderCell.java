@@ -18,8 +18,10 @@ import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 
+/**
+ * A single row in a ListView representing a {@link PreOrder}
+ */
 public class PreorderCell extends ListCell<PreOrder>{
-
 
     @FXML
     private BorderPane paneRow;
@@ -30,8 +32,12 @@ public class PreorderCell extends ListCell<PreOrder>{
     @FXML
     private Label lblText;
 
-    ManagePreorders _parent;
+    private ManagePreorders _parent;
 
+    /**
+     * Constructor which sets the screen that created the list as parent for refreshing purposes.
+     * @param parent The "Manage Preorders" view that created the list this cell populates.
+     */
     public PreorderCell(ManagePreorders parent)
     {
         _parent = parent;
@@ -44,6 +50,9 @@ public class PreorderCell extends ListCell<PreOrder>{
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void updateItem(PreOrder item, boolean empty) {
         super.updateItem(item, empty);
@@ -71,6 +80,10 @@ public class PreorderCell extends ListCell<PreOrder>{
         }
     }
 
+    /**
+     * Deletes the PreOrder represented by this row
+     * @param preOrder The PreOrder to delete (Technically redundant, but better safe than sorry).
+     */
     private void deletePreorder(PreOrder preOrder)
     {
         WaitScreen waitScreen = new WaitScreen();

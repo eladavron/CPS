@@ -4,7 +4,8 @@ import java.util.Date;
 import java.util.Objects;
 
 /**
- * A sample class of how an Order will look in the system.
+ * An "Order" entity.<br>
+ * Orders can either be Preorders (Ordering a space in advance) or an "Active Order" which is an active parking session.
  */
 
 public class Order {

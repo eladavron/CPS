@@ -20,7 +20,7 @@ import static entity.Message.DataType.PRIMITIVE;
 import static entity.Message.MessageType.PAYMENT;
 
 /**
- * A custom <code>Task</code> class that sends a message to the server with easy-to-set error and success screens.
+ * A custom extension to the {@link Task} class that sends a message to the server with easy-to-set error and success screens.<br>
  * Note that for the {@link #onFailedProperty()} to execute an exception must be thrown. If it's run manually without
  * an exception, the task will still be considered a "success".
  */
@@ -83,6 +83,9 @@ public class MessageTasker extends Task<Message> {
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Message call() throws Exception {
         updateMessage(_sendingMessage);
@@ -135,6 +138,12 @@ public class MessageTasker extends Task<Message> {
         }
     }
 
+    /**
+     * Called on when an incoming message says the customer needs to pay!
+     * If the customer pays, sends a message of payment to the server.
+     * @param message The incoming message
+     * @throws Exception An exception thrown in case anything fails in the process.
+     */
     private void handlePayment(Message message) throws Exception {
         if (_waitScreen != null)
             _waitScreen.cancelTimeout();

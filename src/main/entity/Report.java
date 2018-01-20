@@ -5,6 +5,10 @@ import java.util.Objects;
 
 import static controller.Controllers.employeeController;
 
+/**
+ * Represents a Report entity.<br>
+ * Can have multiple types denoted by an Enum.
+ */
 public class Report {
     /**
      * Private members.

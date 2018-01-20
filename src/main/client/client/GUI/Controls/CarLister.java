@@ -10,6 +10,12 @@ import javafx.scene.layout.FlowPane;
 
 import java.util.ArrayList;
 
+/**
+ * A class encompassing the controls required to create the "Add Car" flow in the registration menu.
+ * It displays a textfield for entering a car number, and if that field is filled with a valid number, adds another one.
+ * If a field is left empty, it's removed (unless it's the last one).
+ * Originally created to be used with "Manage Cars" as well but for consistency reasons currently only used in Registration.
+ */
 public class CarLister{
 
     private FlowPane _root;
@@ -44,13 +50,6 @@ public class CarLister{
         _root.getChildren().add(newCarID);
     }
 
-    public void addCar(Integer newNumber)
-    {
-        TextField carField = (TextField) _root.getChildren().get(_root.getChildren().size() - 1);
-        carField.setText(newNumber.toString());
-        validateCarTextField(carField);
-    }
-
     /**
      * Validates a car textfield.
      * If valid, asks to add another to the form.
@@ -77,6 +76,12 @@ public class CarLister{
         return true;
     }
 
+    /**
+     * Gets all the car numbers represented by this construct.
+     * Also validates them along the way and only returns valid ones.
+     * Invalid ones will be highlighted by the {@link Validation#carNumber(String)} method.
+     * @return An array list representing all the valid car numbers in the element.
+     */
     public ArrayList<Integer> getAllNumbers()
     {
         ArrayList<Integer> carList = new ArrayList<Integer>();
@@ -90,15 +95,10 @@ public class CarLister{
         return carList;
     }
 
-    public void setAllNumbers(Integer...numbers)
-    {
-        _root.getChildren().clear();
-        for (Integer number : numbers)
-        {
-            this.addCar(number);
-        }
-    }
-
+    /**
+     * Validates all the TextFields in the control for valid car numbers, and shows an error next to any offending fields.
+     * @return True if all are valid, false if ANY aren't.
+     */
     public boolean validateAll()
     {
         boolean validate = true;

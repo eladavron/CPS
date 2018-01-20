@@ -24,6 +24,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+/**
+ * A controller for the Customer Service GUI Controller.
+ */
 public class ManageComplaintsCS extends GUIController implements Initializable, Refreshable {
 
     @FXML
@@ -36,6 +39,9 @@ public class ManageComplaintsCS extends GUIController implements Initializable, 
 
     private ManageComplaintsCS _this;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         _this = this;
@@ -49,7 +55,10 @@ public class ManageComplaintsCS extends GUIController implements Initializable, 
         Platform.runLater(this::queryComplaints);
     }
 
-    public void queryComplaints()
+    /**
+     * Queries the server for all complaints.
+     */
+    private void queryComplaints()
     {
         WaitScreen waitScreen = new WaitScreen();
         Message queryComplaints = new Message(Message.MessageType.QUERY, Message.DataType.ALL_COMPLAINTS);
@@ -79,11 +88,18 @@ public class ManageComplaintsCS extends GUIController implements Initializable, 
         waitScreen.run(queryOrders);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         queryComplaints();
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);

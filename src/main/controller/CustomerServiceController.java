@@ -5,7 +5,6 @@ import Exceptions.CustomerNotificationFailureException;
 import java.sql.SQLException;
 import java.util.Date;
 
-
 import static controller.Controllers.orderController;
 import static controller.Controllers.parkingController;
 
@@ -37,6 +36,8 @@ public class CustomerServiceController {
      * @param carID Order's car ID.
      * @param estimatedExitTime Order's estimated exit time.
      * @param estimatedEntryTime Order's estimated entry time.
+     * @throws SQLException if something goes wrong with the SQL operations.
+     * @throws CustomerNotificationFailureException if something goes wrong in the controller.
      */
     public void reserveParking(Integer parkingLotNumber, Integer orderID, Integer x,
                                Integer y, Integer z, Integer customerID,
@@ -46,7 +47,4 @@ public class CustomerServiceController {
         parkingController.reserveParkingSpace(parkingLotNumber,orderID,x,y,z);
 
     }
-
-
-
 }

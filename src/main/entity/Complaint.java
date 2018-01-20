@@ -2,6 +2,9 @@ package entity;
 
 import java.util.Objects;
 
+/**
+ * An entity representing a complaint.
+ */
 public class Complaint {
     private Integer _customerServiceRepresentativeID = -1;
     private Integer _complaintID = -1;
@@ -28,7 +31,7 @@ public class Complaint {
     /**
      * New complaint creation (to be pushed to DB)
      * Use this when you create complaint.
-     * Later set the representative ID -> state to OPEN, refund, etc.
+     * Later set the representative ID state to OPEN, refund, etc.
      * @param customerID
      * @param relatedOrderID
      * @param description

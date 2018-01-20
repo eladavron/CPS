@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * A GUI controller for the "Manage Cars" screen.
+ */
 public class ManageCars extends GUIController implements Initializable, Refreshable{
     @FXML
     private Button btnBack;
@@ -39,6 +42,9 @@ public class ManageCars extends GUIController implements Initializable, Refresha
 
     private ManageCars _this;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         _this = this;
@@ -57,6 +63,9 @@ public class ManageCars extends GUIController implements Initializable, Refresha
         });
     }
 
+    /**
+     * Queries the server for the cars in this users' account.
+     */
     public void queryServerForCars()
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -90,21 +99,39 @@ public class ManageCars extends GUIController implements Initializable, Refresha
         waitScreen.run(tasker);
     }
 
+    /**
+     * Handles the "Back" button click. Doesn't go back to main - just goes back in history.
+     * The name is a remnant of older GUI scheme.
+     * @param event The click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);
     }
 
+    /**
+     * Handle the "Refresh" button click.
+     * Technically needless, but just in case.
+     * @param event The click event.
+     */
     @FXML
     void refreshList(ActionEvent event) {
         queryServerForCars();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         queryServerForCars();
     }
 
+    /**
+     * Handles the "New Car" button press.
+     * Displays a popup asking for a car number, which also validates upon attempted closing.
+     * @param event The click event.
+     */
     @FXML
     void newCar(ActionEvent event) {
         TextInputDialog newCarDialog = new TextInputDialog();

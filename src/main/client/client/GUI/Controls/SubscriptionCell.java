@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+/**
+ * Represents a single row in the {@link ManageSubscriptions} view's ListView.
+ */
 public class SubscriptionCell extends ListCell<Subscription> {
 
     @FXML
@@ -26,11 +29,12 @@ public class SubscriptionCell extends ListCell<Subscription> {
     @FXML
     private Label lblText;
 
-    private ManageSubscriptions _parent;
-
-    public SubscriptionCell(ManageSubscriptions parent)
+    /**
+     * Default Constructor.
+     * Loads the row body from the FXML.
+     */
+    public SubscriptionCell()
     {
-        _parent = parent;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("DeletableCell.fxml"));
             loader.setController(this);
@@ -41,6 +45,9 @@ public class SubscriptionCell extends ListCell<Subscription> {
         btnDelete.setText("Extend...");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void updateItem(Subscription item, boolean empty) {
         super.updateItem(item, empty);

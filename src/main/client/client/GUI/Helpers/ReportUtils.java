@@ -17,7 +17,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * Utilities for displaying and saving {@link entity.Report}s.
+ */
 public class ReportUtils {
+
+    /**
+     * Create a PDF document with a given report string and save it locally.
+     * @param content The content of the PDF to create.
+     * @param showAfter Whether or not to show the PDF after its creation.
+     */
     public static void createPDF(String content, boolean showAfter)
     {
         FileChooser fileChooser = new FileChooser();
@@ -64,6 +73,11 @@ public class ReportUtils {
         }
     }
 
+    /**
+     * Shows a popup displaying a given report.
+     * @param content The content of the report to display.
+     * @param header The header of the popup.
+     */
     public static void showReportPopup(String content, String header)
     {
         Alert popup = new Alert(Alert.AlertType.NONE);

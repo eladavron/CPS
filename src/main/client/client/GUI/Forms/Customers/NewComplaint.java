@@ -22,6 +22,9 @@ import java.util.ResourceBundle;
 import static entity.Message.DataType.COMPLAINT_PRE_CUSTOMER;
 import static entity.Message.MessageType.CREATE;
 
+/**
+ * A GUI controller for the "New Complaint"  screen.
+ */
 public class NewComplaint extends GUIController implements Initializable {
 
     //region FXML Decelerations
@@ -47,9 +50,7 @@ public class NewComplaint extends GUIController implements Initializable {
     //endregion
 
     /**
-     * Initialize GUI elements
-     * @param location Overridden Parameter
-     * @param resources Overridden Parameter
+     * {@inheritDoc}
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -118,12 +119,20 @@ public class NewComplaint extends GUIController implements Initializable {
         waitScreen.run(submitComplaintTask);
     }
 
+    /**
+     * Handles the "Clear" button click event.
+     * @param event The button click event/
+     */
     @FXML
     void clearOrder(ActionEvent event) {
         cmbParkingLot.setDisable(false);
         cmbParkingLot.getSelectionModel().clearSelection();
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(true);

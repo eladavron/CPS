@@ -26,6 +26,9 @@ import java.util.ResourceBundle;
 import static entity.Message.DataType.FINAL_REPORT;
 import static entity.Message.MessageType.QUERY;
 
+/**
+ * A GUI controller for the "View Reports" screen for the Company Manager.
+ */
 public class ManageAllReports extends GUIController implements Initializable, Refreshable {
 
     @FXML
@@ -37,6 +40,9 @@ public class ManageAllReports extends GUIController implements Initializable, Re
     @FXML
     private ListView<FinalReport> listViewAllReports;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         listViewAllReports.setCellFactory(new Callback<ListView<FinalReport>, ListCell<FinalReport>>() {
@@ -48,6 +54,9 @@ public class ManageAllReports extends GUIController implements Initializable, Re
         Platform.runLater(()->initReports());
     }
 
+    /**
+     * Queries the server for all reports.
+     */
     private void initReports()
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -77,17 +86,28 @@ public class ManageAllReports extends GUIController implements Initializable, Re
         waitScreen.run(taskQuery);
     }
 
+    /**
+     * Handles the "Refresh" button click.
+     * @param event The click event.
+     */
     @FXML
     void refreshReports(ActionEvent event) {
         initReports();
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         initReports();
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);

@@ -17,6 +17,9 @@ import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 
+/**
+ * A custom ListView Cell for Cars
+ */
 public class CarCell extends ListCell<Integer>{
 
     @FXML
@@ -28,8 +31,12 @@ public class CarCell extends ListCell<Integer>{
     @FXML
     private Label lblText;
 
-    ManageCars _parent;
+    private ManageCars _parent;
 
+    /**
+     * Constructor which sets the screen that created the list as parent for refreshing purposes.
+     * @param parent The "Manage Cars" view that created the list this cell populates.
+     */
     public CarCell(ManageCars parent)
     {
         _parent = parent;
@@ -42,6 +49,9 @@ public class CarCell extends ListCell<Integer>{
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void updateItem(Integer item, boolean empty) {
         super.updateItem(item, empty);
@@ -63,6 +73,10 @@ public class CarCell extends ListCell<Integer>{
         }
     }
 
+    /**
+     * Deletes the car represented by this row
+     * @param car The car number to delete (Technically redundant, but better safe than sorry).
+     */
     private void deleteCar(Integer car)
     {
         WaitScreen waitScreen = new WaitScreen();

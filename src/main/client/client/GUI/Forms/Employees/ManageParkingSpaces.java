@@ -27,6 +27,11 @@ import static entity.Message.DataType.PARKING_SPACE;
 import static entity.Message.MessageType.QUERY;
 import static entity.Message.MessageType.UPDATE;
 
+/**
+ * A GUI controller for the Employee "Manage Parking Spaces" screen.<br>
+ * Uses the {@link ParkingLotViewController} custom controller for actually displaying the parking lot,
+ * this is only the outer shell.
+ */
 public class ManageParkingSpaces extends GUIController implements Initializable, Refreshable {
 
     @FXML
@@ -50,6 +55,9 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
 
     private ManageParkingSpaces _this;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         _this = this;
@@ -60,6 +68,9 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
         Platform.runLater(this::queryParkingLot);
     }
 
+    /**
+     * Queries the server for all parking spaces in the logged on to parking lot.
+     */
     private void queryParkingLot(){
         WaitScreen waitScreen = new WaitScreen();
         Message queryParkingLot = new Message(QUERY, PARKING_LOT, CPSClientGUI.getSession().getParkingLot().getParkingLotID());
@@ -86,6 +97,10 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
         waitScreen.run(taskQuery);
     }
 
+    /**
+     * Initializes all the displays by querying the server and constructing the custom {@link ParkingLotViewController}
+     * controller.
+     */
     private void initController(){
         WaitScreen waitScreen = new WaitScreen();
         Task init = new Task() {
@@ -105,6 +120,10 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
     }
 
 
+    /**
+     * Handles the "Apply" button click event.
+     * @param event The Click Event.
+     */
     @FXML
     void applyChanges(ActionEvent event) {
         WaitScreen waitScreen = new WaitScreen();
@@ -130,7 +149,12 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
         waitScreen.run(updateTask);
     }
 
-
+    /**
+     * Handles the "Toggle Full" button press.
+     * Sends the server a message to change the parking lot status to whatever the new status of the button is.
+     * This is an immediate action - doesn't require refreshing.
+     * @param event the toggling event.
+     */
     @FXML
     void toggleFull(ActionEvent event) {
         boolean isFull = toggleFull.isSelected();
@@ -154,6 +178,10 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
         waitScreen.run(taskUpdate);
     }
 
+    /**
+     * Reverts the controller to display the parking spaces as they are in the server.
+     * @param event The button click event.
+     */
     @FXML
     void revertChanges(ActionEvent event) {
         if (isDirty())
@@ -173,26 +201,46 @@ public class ManageParkingSpaces extends GUIController implements Initializable,
         }
     }
 
+    /**
+     * Makes the controller know there were changes made to the parking spaces.
+     * @param dirty whether or not changes were made to the parking spaces.
+     */
     public void setDirty(boolean dirty)
     {
         _dirty.set(dirty);
     }
 
+    /**
+     * Checks whether or not changes were made to the parking spaces.
+     * @return whether or not changes were made to the parking spaces.
+     */
     public boolean isDirty()
     {
         return _dirty.get();
     }
 
+    /**
+     * Adds a "Floor" tab to the TabView controller.<br>
+     * Called on by the custom {@link ParkingLotViewController} controller.
+     * @param tab The new floor tab to add.
+     */
     public void addTab(Tab tab)
     {
         tabMain.getTabs().add(tab);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         queryParkingLot();
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(isDirty());

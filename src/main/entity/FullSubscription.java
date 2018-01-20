@@ -7,8 +7,8 @@ import java.util.Date;
 import static entity.Subscription.SubscriptionType.FULL;
 
 /**
- *  A simple class to notify that this Subscription is a full
- *  "Now you can park! Anytime&Anywhere"
+ *  A simple class to notify that this Subscription is of type "Full"
+ * "Now you can park! Anytime and Anywhere"
  */
 
 public class FullSubscription extends Subscription {

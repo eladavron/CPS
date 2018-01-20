@@ -4,6 +4,11 @@ import entity.Subscription;
 
 public class StringUtils {
 
+    /**
+     * Helps converts Enums of Subscription types to strings.
+     * @param type
+     * @return
+     */
     public static String SubscriptionTypeName(Subscription.SubscriptionType type)
     {
         switch (type) {
@@ -26,6 +31,11 @@ public class StringUtils {
         return input.replaceAll("`", "").replaceAll("'","''");
     }
 
+    /**
+     * Desanitizes strings after SQL retrieval.
+     * @param input
+     * @return
+     */
     public static String desanitizeFromSQL(String input)
     {
         return input.replaceAll("''", "'");

@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * A sample class of how a Parking Lot class will look like in the system.
- *
+ * A Parking Lot entity.<br>
+ * The bulk of it is a 3D matrix of parking spaces
  */
 public class ParkingLot {
 	/**

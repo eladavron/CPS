@@ -5,6 +5,9 @@ import ocsf.server.ConnectionToClient;
 
 import java.util.HashMap;
 
+/**
+ * Manages multiple {@link ConnectionToClient} sessions.
+ */
 public class SessionManager {
     /**
      * Sessions

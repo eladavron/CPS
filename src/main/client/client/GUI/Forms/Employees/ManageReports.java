@@ -24,6 +24,9 @@ import java.util.ResourceBundle;
 import static entity.Message.DataType.REPORT;
 import static entity.Message.MessageType.QUERY;
 
+/**
+ * A GUI controller for the Managers' report generation GUI.
+ */
 public class ManageReports extends GUIController implements Initializable {
 
     @FXML
@@ -47,6 +50,9 @@ public class ManageReports extends GUIController implements Initializable {
     @FXML
     private ComboBox<Report.ReportType> cmbReportType;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         cmbReportType.setItems(FXCollections.observableArrayList(Report.ReportType.values()));
@@ -81,6 +87,11 @@ public class ManageReports extends GUIController implements Initializable {
         vboxRoot.getChildren().remove(paneReport);
     }
 
+    /**
+     * Handles the "Generate Report" button click event.<br>
+     * Queries the server to generate the report type selected, then displays it in a text box.
+     * @param event the button click event.
+     */
     @FXML
     void generateReport(ActionEvent event) {
         Message queryMessage = new Message(QUERY, REPORT, CPSClientGUI.getSession().getUserId(), cmbReportType.getValue(), CPSClientGUI.getSession().getParkingLot().getParkingLotID());
@@ -105,12 +116,20 @@ public class ManageReports extends GUIController implements Initializable {
         waitScreen.run(tasker);
     }
 
+    /**
+     * Handles the "Save to PDF" event by calling the {@link ReportUtils#createPDF(String, boolean)} method.
+     * @param event The click event.
+     */
     @FXML
     void savePDF(ActionEvent event)
     {
         ReportUtils.createPDF(txtReport.getText(), true);
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event the click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);

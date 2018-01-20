@@ -3,12 +3,11 @@ package entity;
 import java.util.Objects;
 
 /**
- * A sample class of how a User class will look like in the system.
- *
+ * A "User" superclass which can be of any given number of types, denoted by an enum.
  */
 public class User {
 
-	public enum UserType{USER, CUSTOMER, MANAGER, EMPLOYEE, CUSTOMER_SERVICE, SUPERMAN } //SUPERMAN = Network Manager
+	public enum UserType{USER, CUSTOMER, MANAGER, EMPLOYEE, CUSTOMER_SERVICE, SUPERMAN } //SUPERMAN = Company Manager with ID==0
 
 	/**
      * Private attributes

@@ -17,8 +17,10 @@ import javafx.scene.layout.BorderPane;
 
 import java.io.IOException;
 
+/**
+ * A custom class representing a complaint in a ListView.
+ */
 public class ComplaintCell extends ListCell<Complaint>{
-
 
     @FXML
     private BorderPane paneRow;
@@ -29,8 +31,12 @@ public class ComplaintCell extends ListCell<Complaint>{
     @FXML
     private Label lblText;
 
-    ManageComplaints _parent;
+    private ManageComplaints _parent;
 
+    /**
+     * Constructor which sets the screen that created the list as parent for refreshing purposes.
+     * @param parent The {@link ManageComplaints} view that created the list this cell populates.
+     */
     public ComplaintCell(ManageComplaints parent)
     {
         _parent = parent;
@@ -43,6 +49,9 @@ public class ComplaintCell extends ListCell<Complaint>{
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void updateItem(Complaint item, boolean empty) {
         super.updateItem(item, empty);
@@ -69,6 +78,10 @@ public class ComplaintCell extends ListCell<Complaint>{
         }
     }
 
+    /**
+     * Cancels the complaint this row represents.
+     * @param complaint The complaint to cancel. Technically redundant.
+     */
     private void cancelComplaint(Complaint complaint)
     {
         WaitScreen waitScreen = new WaitScreen();

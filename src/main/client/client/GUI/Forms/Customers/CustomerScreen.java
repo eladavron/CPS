@@ -52,6 +52,9 @@ public class CustomerScreen extends GUIController implements Initializable {
 
     private Session _session;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 

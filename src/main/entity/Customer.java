@@ -7,7 +7,7 @@ import java.util.Map;
 
 
 /**
- * A sample class of how a Customer class will look like in the system.
+ * A "Customer" user entity.
  *
  */
 public class Customer extends User{

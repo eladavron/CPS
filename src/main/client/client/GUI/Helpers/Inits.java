@@ -4,7 +4,6 @@ import client.GUI.CPSClientGUI;
 import client.GUI.Controls.WaitScreen;
 import entity.*;
 import javafx.collections.FXCollections;
-import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -79,6 +78,11 @@ public class Inits {
         waitScreen.run(queryPreorders);
     }
 
+    /**
+     * Inits an "Orders" ComboBox with all the orders that belong to this user.
+     * If there aren't any, disables the control.
+     * @param comboBox The ComboBox to init.
+     */
     public static void initOrders(ComboBox<Order> comboBox)
     {
         comboBox.setConverter(new StringConverter<Order>() {
@@ -131,6 +135,11 @@ public class Inits {
         waitScreen.run(queryOrders);
     }
 
+    /**
+     * Inits a "Subscriptions" ComboBox with all the subscriptions that belong to this user.
+     * If there aren't any, disables the control.
+     * @param comboBox The ComboBox to init.
+     */
     public static void initSubscriptions(ComboBox<Subscription> comboBox)
     {
         comboBox.setConverter(new StringConverter<Subscription>() {
@@ -187,10 +196,10 @@ public class Inits {
 
 
     /**
-     * Inits a parkins apces tab pane with the parking spaces in the supplied parking lot.
-     * Each pane is a floor, and inside it is a table denoting the rows and columns of that floow.
-     * @param pane
-     * @param parkingLot
+     * Inits a {@link client.GUI.Forms.Employees.ManageParkingSpaces} tab pane with the parking spaces in the supplied parking lot.<br>
+     * Each tab is a floor, and inside it is a table denoting the rows and columns of that floow.
+     * @param pane The TabPane that displays the Parking Lot.
+     * @param parkingLot The Parking Lot that will be displayed.
      */
     public static void initParkingSpacesView(TabPane pane, ParkingLot parkingLot)
     {
@@ -201,6 +210,11 @@ public class Inits {
         }
     }
 
+    /**
+     * Inits a pair of ComboBoxes representing hours and minutes.
+     * @param hour The hours ComboBox.
+     * @param minutes The minutes ComboBox.
+     */
     public static void initTimeSelection(ComboBox<String> hour, ComboBox<String> minutes)
     {
         hour.getItems().clear();
@@ -221,6 +235,12 @@ public class Inits {
         minutes.getSelectionModel().select(0);
     }
 
+    /**
+     * Inits a "Cars" ComboBox with all the cars that belong to this user.
+     * If there aren't any, disables the control (though that shouldn't happen).
+     * If there's only one, selects it automatically.
+     * @param comboBox The ComboBox to init.
+     */
     public static void initCars(ComboBox<Integer> comboBox)
     {
         comboBox.getItems().clear();
@@ -298,14 +318,5 @@ public class Inits {
         Message query = new Message(Message.MessageType.QUERY, PARKING_LOT_LIST, user.getUID(), user.getUserType());
         MessageTasker queryParkinglots = new MessageTasker(query, onSuccess, onFailure);
         waitScreen.run(queryParkinglots);
-    }
-
-    public static Object getController(Node node) {
-        Object controller = null;
-        do {
-            controller = node.getProperties().get("foo");
-            node = node.getParent();
-        } while (controller == null && node != null);
-        return controller;
     }
 }

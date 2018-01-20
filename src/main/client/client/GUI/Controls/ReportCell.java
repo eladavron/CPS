@@ -15,6 +15,9 @@ import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
 
+/**
+ * Represents a single Report in teh ListView of the Company Manager's {@link client.GUI.Forms.Employees.ManageAllReports} view.
+ */
 public class ReportCell extends ListCell<FinalReport>{
 
     @FXML
@@ -29,6 +32,10 @@ public class ReportCell extends ListCell<FinalReport>{
     @FXML
     private AnchorPane paneRow;
 
+    /**
+     * Default Constructor.
+     * Loads the FXML for the body of the row.
+     */
     public ReportCell()
     {
         try
@@ -43,16 +50,27 @@ public class ReportCell extends ListCell<FinalReport>{
 
     }
 
+    /**
+     * Pops up a window displaying the report body in full (with an option to save as PDF).
+     * @param event The Mouse Click event.
+     */
     @FXML
     void showFullReport(ActionEvent event) {
         ReportUtils.showReportPopup(getItem().getFullContent(),getItem().getShortDescription());
     }
 
+    /**
+     * Saves the report as a PDF.
+     * @param event The Mouse Click event.
+     */
     @FXML
     void saveToPDF(ActionEvent event) {
         ReportUtils.createPDF(getItem().getFullContent(),true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void updateItem(FinalReport item, boolean empty) {
         super.updateItem(item, empty);
@@ -67,6 +85,5 @@ public class ReportCell extends ListCell<FinalReport>{
             });
             setGraphic(paneRow);
         }
-
     }
 }

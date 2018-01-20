@@ -25,6 +25,13 @@ public class TimeUtils {
         }
     };
 
+    /**
+     * Add time in a given unit to a Date.
+     * @param original The date to add the time to
+     * @param unit The units of time to add
+     * @param num How many to add
+     * @return The result.
+     */
     public static Date addTime(Date original, Units unit, int num)
     {
         Calendar cal = Calendar.getInstance();

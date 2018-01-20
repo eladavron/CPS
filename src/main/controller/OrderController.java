@@ -1,7 +1,7 @@
 package controller;
 
-import entity.Billing;
 import Exceptions.CustomerNotificationFailureException;
+import entity.Billing;
 import entity.Billing.priceList;
 import entity.Customer;
 import entity.Order;
@@ -17,9 +17,12 @@ import static controller.Controllers.*;
 import static entity.Order.OrderStatus.PRE_ORDER;
 import static utils.TimeUtils.HOURS_IN_MS;
 
+/**
+ * An Order Controller for Orders and Preorders.
+ * This is a Singleton class.
+ */
 public class OrderController {
 
-    //TODO: remove this or change thing to be taken from DB once its added to our system.
     /**
      * This holds either Order or Preorder, but we had to use "Object" as value because polymorphism doesn't work well.
      * To resolve this, only ever use the supplied "getOrder()" or "getPreOrder()" methods and never access this directly!
@@ -28,6 +31,10 @@ public class OrderController {
 
     private static OrderController instance;
 
+    /**
+     * Returns the map of orders mapped by their IDs.
+     * @return
+     */
     public Map<Integer, Object> getOrdersMap() {
         return _ordersList;
     }
@@ -66,6 +73,11 @@ public class OrderController {
         return (Order) _ordersList.get(orderID);
     }
 
+    /**
+     * Gets a preorder by its ID.
+     * @param orderID
+     * @return
+     */
     public PreOrder getPreOrder(Integer orderID)
     {
         Order thisOrder = (Order) _ordersList.get(orderID);
@@ -74,6 +86,10 @@ public class OrderController {
         return null;
     }
 
+    /**
+     * Returns a list of ALL Preorders.
+     * @return
+     */
     public ArrayList<PreOrder> getAllPreOrders()
     {
         ArrayList<PreOrder> allPreOrdersList = new ArrayList<PreOrder>();
@@ -84,6 +100,16 @@ public class OrderController {
         return allPreOrdersList;
     }
 
+    /**
+     * Creates a new "Simple" order (A Parking Session).
+     * @param customerID The ID of the customer creating the order.
+     * @param carID The car ID.
+     * @param estimatedExitTime The time they estimate the will leave.
+     * @param parkingLotNumber The parking lot ID it's in.
+     * @return
+     * @throws SQLException
+     * @throws CustomerNotificationFailureException
+     */
     public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) throws SQLException, CustomerNotificationFailureException {
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         newOrder.setEstimatedEntryTime(newOrder.getActualEntryTime());
@@ -243,7 +269,6 @@ public class OrderController {
         return newPreOrder;
     }
 
-    //TODO : Add different options to reach the specific order maybe using the customer's profile or so.
     /**
      *  When a customer wants to finish his order (and move the car out) this function is called,
      *  with the current time as the exitTime of the customer and the order's price is calculated.
@@ -258,7 +283,6 @@ public class OrderController {
         if (dbController.finishOrder(orderToFinish.getOrderID(),orderToFinish.getActualExitTime(), finalPrice))
         { //If finishUpdate successful
             _ordersList.remove(orderToFinish.getOrderID());
-            //TODO: IMPORTANT for today/tomorrow: Handle regular subscriptions so that cannot be used twice in same day
         }
         return orderToFinish;
     }
@@ -337,6 +361,10 @@ public class OrderController {
         return null;
     }
 
+    /**
+     * Puts all orders from a given map to the general Order List.
+     * @param activeOrders
+     */
     public void putAll(Map<Integer, Object> activeOrders)
     {
         for (Object obj : activeOrders.values())
@@ -352,7 +380,7 @@ public class OrderController {
     }
 
     /**
-     *
+     * Sets the Order's parking coordinates in the parking lot.
      * @param orderID
      * @param height
      * @param width
@@ -366,7 +394,7 @@ public class OrderController {
     }
 
     /**
-     *
+     * Get an order's parking coordinates in the lot.
      * @param orderID
      * @return
      */
@@ -377,5 +405,4 @@ public class OrderController {
         heightWidthDepth.add(getOrder(orderID).getParkingSpaceDepth());
         return heightWidthDepth;
     }
-
 }

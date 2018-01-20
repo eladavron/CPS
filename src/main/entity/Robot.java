@@ -1,5 +1,8 @@
 package entity;
 
+/**
+ * Beep boop beep.
+ */
 public class Robot {
 
 

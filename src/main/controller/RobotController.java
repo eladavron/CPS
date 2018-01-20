@@ -31,7 +31,7 @@ public class RobotController {
     }
 
     /**
-     * Insert car to parking lot -> algorithm
+     * Insert car to parking lot algorithm
      * @param carIDtoPut
      * @param parkingLotId
      * @param heightWidthDepthNewCarLocation
@@ -44,7 +44,7 @@ public class RobotController {
     }
 
     /**
-     * Extract car from parking lot and fix the state -> algorithm.
+     * Extract car from parking lot and fix the state algorithm.
      * @param carIDtoExtract
      * @param parkingLotId
      * @param heightWidthDepthCarLocation

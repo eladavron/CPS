@@ -15,11 +15,11 @@ import static utils.StringUtils.desanitizeFromSQL;
 import static utils.StringUtils.sanitizeForSQL;
 
 /**
- * A class that interfaces with the database.
+ * A class that interfaces with the database.<br>This is a Singleton class.
  */
 public class DBController {
     private static Connection db_conn; //The connection to the database.
-    private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database. //TODO: what for? OrB
+    private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database.
     public boolean isTest = false;
     public boolean firstRunOfServerToday = false;
 
@@ -32,10 +32,15 @@ public class DBController {
     static {
         instance = new DBController();
     }
-    /** Static 'instance' method */
+
+    /**
+     * Returns the Singleton instance.
+     * @return the Singleton instance.
+     */
     public static DBController getInstance() {
         return instance;
     }
+
     /**
      * A private Constructor prevents any other class from
      * instantiating.
@@ -465,6 +470,12 @@ public class DBController {
         }
     }
 
+    /**
+     * Gets a Timestamp object from the resultset
+     * @param rs The resultset
+     * @param columnLabel The column name with the timestamp
+     * @return A valid Timestamp object.
+     */
     private Timestamp returnTimeStampFromDB(ResultSet rs, String columnLabel)
     {
         try
@@ -478,6 +489,12 @@ public class DBController {
     }
 
 
+    /**
+     * Gets all order from the Database and return a map keyed by their Order IDs.
+     * @param rs The resultset to get orders from.
+     * @return A Map of orderes keyed by their IDs.
+     * @throws SQLException If something goes wrong.
+     */
     public Map<Integer, Object> parseOrdersFromDBToMap(ResultSet rs) throws SQLException{
         Map<Integer, Object>  myOrders = new HashMap<>();
         if (rs == null){
@@ -551,6 +568,12 @@ public class DBController {
         return myOrders;
     }
 
+    /**
+     * Returns the coordinates of the parking space reserved for an order.
+     * @param idOrder The ID of the order.
+     * @return A coordinate vector.
+     * @throws SQLException If something goes wrong.
+     */
     private ArrayList<Integer> getParkingSpaceForOrder(Integer idOrder) throws SQLException {
         ResultSet rs;
         ArrayList<Integer> myArrayList = new ArrayList<>(3);
@@ -632,11 +655,22 @@ public class DBController {
         return returnString;
     }
 
+    /**
+     * Gets all the parking lots int he DB
+     * @return A list of the parking lots.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     public ArrayList<Object> getParkingLots() throws SQLException{
         return  getParkingLotsByID(-1);
     }
 
 
+    /**
+     * Returns a specific parking lot by ID (in a list for use with {@link Message}.
+     * @param parkingLotID the parking lot ID to retrieve.
+     * @return The list with the single parking lot.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     public ArrayList<Object> getParkingLotsByID(Integer parkingLotID) throws SQLException{
         ResultSet rs;
 
@@ -646,11 +680,15 @@ public class DBController {
         } else { // get specific order
             rs = queryTable("ParkingLots", "idParkingLots", parkingLotID);
         }
-
         return parseParkingLotsFromDB(rs);
-
     }
 
+    /**
+     * Parse the results of a DB query for parking lots.
+     * @param rs The result set to parse
+     * @return The parking lot list.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     private ArrayList<Object> parseParkingLotsFromDB(ResultSet rs) throws SQLException{
         ArrayList<Object> myLots = new ArrayList<>();
         if (rs == null){
@@ -687,6 +725,12 @@ public class DBController {
         return parseParkingSpacesFromDB(rs);
     }
 
+    /**
+     * Gets all the parking spaces from a DB query into a list.
+     * @param rs The result set.
+     * @return A list of the parking spaces queried.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     private ArrayList<ParkingSpace> parseParkingSpacesFromDB(ResultSet rs) throws SQLException{
         ArrayList<ParkingSpace> myParkingSpaces = new ArrayList<>();
         if (rs == null){
@@ -770,18 +814,33 @@ public class DBController {
     }
 
 
-
+    /**
+     * Returns all the customers in the database.
+     * @return A list of all the users.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     public ArrayList<User> getCustomers() throws SQLException
     {
         return getUserByID(-1, User.UserType.CUSTOMER);
     }
 
+    /**
+     * Returns all the employees in the database.
+     * @return A list of employees.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     public ArrayList<User> getEmployees() throws SQLException
     {
         return getUserByID(-1, User.UserType.EMPLOYEE);
     }
 
-
+    /**
+     * Retrieve a user by its type and ID.
+     * @param userID The user ID.
+     * @param userType The user type.
+     * @return A list of all matching users (should really just be the one).
+     * @throws SQLException
+     */
     public ArrayList<User> getUserByID(Integer userID, User.UserType userType) throws SQLException{
         ResultSet rs;
 
@@ -812,6 +871,12 @@ public class DBController {
         return new ArrayList<>();
     }
 
+    /**
+     * Parse a ResultSet for employees.
+     * @param rs The result set.
+     * @return The employee in a list.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     private  ArrayList<User> parseEmployeeFromDB(ResultSet rs) throws SQLException {
         ArrayList<User> myEmployees = new ArrayList<>();
         if (rs == null){
@@ -863,6 +928,12 @@ public class DBController {
         return result;
     }
 
+    /**
+     * Prase a Customer from a resultset.
+     * @param rs The resultset.
+     * @return The customer in a list.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     private ArrayList<User> parseCustomerFromDB(ResultSet rs) throws SQLException {
         ArrayList<User> myCustomers = new ArrayList<>();
         if (rs == null){
@@ -1011,6 +1082,12 @@ public class DBController {
 
     //region Subscriptions
 
+    /**
+     * Adds a subscription to a customer's account.
+     * @param subs The subscription to add. The customer is a field in the subscription so we know who to add it to.
+     * @return True if successful, false if not.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     public boolean insertSubscription(Subscription subs) throws SQLException{
         if (this.isTest){
             subs.setSubscriptionID(1);
@@ -1065,6 +1142,13 @@ public class DBController {
         }
     }
 
+    /**
+     * Binds a car to a subscription.
+     * @param idSubscription The subscription ID.
+     * @param carsID The car Id.
+     * @return True if successful, false otherwise.
+     * @throws SQLException If something goes wrong with the SQL query.
+     */
     private boolean insertSubscriptionCarsToDB(Integer idSubscription, ArrayList<Integer> carsID) throws SQLException{
         String query;
         int results;
@@ -1149,6 +1233,12 @@ public class DBController {
         }
     }
 
+    /**
+     * Get all cars associated with a subscription.
+     * @param idSubscription
+     * @return
+     * @throws SQLException
+     */
     private ArrayList<Integer> getCarsForSubscriptionFromDB(Integer idSubscription) throws SQLException{
         ResultSet rs;
         ArrayList<Integer> carList = new ArrayList<>();
@@ -1288,6 +1378,12 @@ public class DBController {
 
     //endregion
 
+    /**
+     * Parse an order status enum from a string.
+     * @param str
+     * @return
+     * @throws SQLException
+     */
     private Order.OrderStatus parseOrderStatus(String str) throws SQLException{
         Order.OrderStatus ret;
         switch (str){
@@ -1311,9 +1407,7 @@ public class DBController {
 
 
     //region Complaints
-    /**
-     * Complaints
-     */
+
     /**
      * Insert new complaint to DB
      * @param complaint object to insert
@@ -1348,6 +1442,7 @@ public class DBController {
             throw e;
         }
     }
+
     /**
      * Update  complaint in DB
      * @param complaint object to insert
@@ -1402,6 +1497,12 @@ public class DBController {
     }
 
 
+    /**
+     * Parse complaints from a resultset of queries.
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     public Map<Integer, Object> parseComplaintsFromDBToMap(ResultSet rs) throws SQLException{
         Map<Integer, Object>  myComplaints = new HashMap<>();
         if (rs == null){
@@ -1454,6 +1555,12 @@ public class DBController {
         }
     }
 
+    /**
+     * Parse ComplainStatus enums from Strings.
+     * @param status
+     * @return
+     * @throws SQLException
+     */
     private Complaint.ComplaintStatus parseComplaintStatus(String status) throws SQLException{
         Complaint.ComplaintStatus ret;
         switch (status) {
@@ -1481,9 +1588,9 @@ public class DBController {
 
     //Making Reports Section:
     /**
-     * WIP will add one report at a time prob so we can test it with Rami.
+     * Makes a new report from the DataBase and saves it to the "All Reports" table.
      * @param reportType the type of report to be returned to the Manager/Tasker.
-     * @return the report. (null if wrong type or not implementd yet.
+     * @return the report.
      */
     public String makeReportFromDB(Report.ReportType reportType, Integer managerID, Integer parkingLotID) throws SQLException
     {
@@ -1541,6 +1648,11 @@ public class DBController {
         return reportToReturn;
     }
 
+    /**
+     * Returns all reports generated in the past.
+     * @return A list of all the reports.
+     * @throws SQLException If something goes wrong.
+     */
     public ArrayList<FinalReport> queryAllReports() throws SQLException {
         ArrayList<FinalReport> resultList = new ArrayList<FinalReport>();
         ResultSet rs = queryTable("AllReports");
@@ -1556,6 +1668,12 @@ public class DBController {
         return resultList;
     }
 
+    /**
+     * Generates a Quarterly Orders report
+     * @param parkingLotID
+     * @return
+     * @throws SQLException
+     */
     private String makeQuarterlyOrdersReport(Integer parkingLotID) throws SQLException {
         Integer countRows = 0;
         String rowLine = "|___________________________________________________"
@@ -1613,6 +1731,16 @@ public class DBController {
         return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
     }
 
+    /**
+     * Adds rows to the quarterly report.
+     * @param countRows
+     * @param rowLine
+     * @param report
+     * @param daysInOneQuarter
+     * @param objArray
+     * @return
+     * @throws SQLException
+     */
     private Integer addRowsToQuarterlyReport(Integer countRows, String rowLine, StringBuilder report, double daysInOneQuarter, Collection<Object> objArray) throws SQLException {
         for (Object orderObj : objArray)
         {
@@ -1704,6 +1832,13 @@ public class DBController {
         return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
     }
 
+    /**
+     * Adds rows to an Order report
+     * @param order
+     * @param rowLine
+     * @return
+     * @throws SQLException
+     */
     private String addOrderRow(Order order, String rowLine) throws SQLException
     {
         Order.OrderStatus status = order.getOrderStatus();
@@ -1790,7 +1925,6 @@ public class DBController {
      * @param year
      * @return
      */
-    //TODO: thats just a starter func
     private Map<Integer, Object> getDailyReportFromDbByDate(Integer day, Integer month, Integer year) throws SQLException {
         Map<Integer, Object> map = new HashMap<>();
         ResultSet rs;

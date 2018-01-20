@@ -22,15 +22,20 @@ import static entity.Order.OrderStatus.IN_PROGRESS;
 import static entity.Report.ReportType;
 
 /**
- * Handles messages from client GUI:
- *  1. Query
- *  2. Create
- *  3. Update
- *  4. Delete
+ * Handles messages from client GUI by parsing the {@link Message} received from the client and handling it accordingly.
+ * The server can handle requests from multiple clients by differentiating their {@link ConnectionToClient} instances,
+ * and also multiple requests from the SAME client by differentiating their Transaction IDs (each new request from a
+ * client has a new Transaction ID, and all communication related to a single request will have the same TransID).
  */
 public class MessageHandler {
     private static ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Send a message back to the client.
+     * @param message The message to send.
+     * @param clientConnection The client to send the message to.
+     * @throws IOException In case something goes wrong.
+     */
     public static void sendToClient(Message message, ConnectionToClient clientConnection) throws IOException {
         String json = message.toJson();
         if (CPSServer.IS_DEBUG)
@@ -40,6 +45,13 @@ public class MessageHandler {
         clientConnection.sendToClient(json);
     }
 
+    /**
+     * Handle incoming messages.
+     * @param json A Json string received from the client.
+     * @param clientConnection The client to send the response to.
+     * @return True if successful, false otherwise.
+     * @throws IOException If something goes wrong, but handles any other exception by sending the client an Error message.
+     */
     public static boolean handleMessage(String json, ConnectionToClient clientConnection) throws IOException {
         try {
             Message msg = new Message(json);
@@ -111,6 +123,12 @@ public class MessageHandler {
         return true;
     }
 
+    /**
+     * Handles an "End Parking" request.
+     * @param endParkingMsg The message requesting to end the parking session.
+     * @param clientConnection The client making the request.
+     * @throws Exception If ANYTHING goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static void handleEndParking(Message endParkingMsg, ConnectionToClient clientConnection) throws Exception {
 
         Message endParkingResponse = new Message();
@@ -153,6 +171,12 @@ public class MessageHandler {
         }
     }
 
+    /**
+     * Handle a payment sent from the client.
+     * @param paymentNeededMsg The message that originally required the payment.
+     * @param clientConnection The client sending the payment.
+     * @throws Exception If ANYTHING goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws Exception {
         Message response            = new Message();
         Message.DataType orderType  = SessionManager.getSession(clientConnection).getTransMap().get(paymentNeededMsg.getTransID());
@@ -216,6 +240,13 @@ public class MessageHandler {
         sendToClient(response, clientConnection);
     }
 
+    /**
+     * Handles a logout request by the client.
+     * @param msg
+     * @param clientConnection
+     * @throws IOException
+     * @throws SQLException
+     */
     private static void handleLogout(Message msg, ConnectionToClient clientConnection) throws IOException, SQLException {
         Message logoutResponse = new Message();
         ArrayList<Object> data = new ArrayList<Object>();
@@ -226,6 +257,13 @@ public class MessageHandler {
         SessionManager.dropSession(clientConnection);
     }
 
+    /**
+     * Handles a login request by a client.
+     * @param msg
+     * @param clientConnection
+     * @throws IOException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     * @throws SQLException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static void handleLogin(Message msg, ConnectionToClient clientConnection) throws IOException, SQLException{
         Message loginResponse;
         String email =(String) msg.getData().get(0);
@@ -275,6 +313,11 @@ public class MessageHandler {
         sendToClient(loginResponse, clientConnection);
     }
 
+    /**
+     * Checks if a client is already logged in.
+     * @param email
+     * @return
+     */
     private static boolean isUserAlreadyLoggedIn(String email) {
         for (Session session : SessionManager.getSessionsMap().values())
         {
@@ -286,6 +329,13 @@ public class MessageHandler {
         return false;
     }
 
+    /**
+     * Handle all User related queries.
+     * In all USER queries, the first data object in the request will be the user requesting the query.
+     * @param queryMsg The original message by the user
+     * @param response The response to be sent to the user. Populated by this method but executed by the calling method.
+     * @throws SQLException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static void handleUserQueries(Message queryMsg, Message response) throws SQLException
     {
         int userID = (int) queryMsg.getData().get(0);
@@ -334,12 +384,15 @@ public class MessageHandler {
         }
     }
 
+    /**
+     * Handles all queries by the client.
+     * @param queryMsg The query message.
+     * @param clientConnection The querying client.
+     * @return True if successful, false otherwise.
+     * @throws IOException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     * @throws SQLException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static boolean handleQueries(Message queryMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
-
-        /**
-         * Important!
-         * In all queries, the first data object in the request will be the user requesting the query.
-         */
 
         Message response = new Message();
         response.setDataType(queryMsg.getDataType());
@@ -389,6 +442,13 @@ public class MessageHandler {
         return true;
     }
 
+    /**
+     * Handles delete requests by the client.
+     * @param deleteMsg The request message.
+     * @param clientConnection The client.
+     * @throws IOException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     * @throws SQLException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static void handleDeletion(Message deleteMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
 
         Message response = new Message();
@@ -444,6 +504,13 @@ public class MessageHandler {
         sendToClient(response,clientConnection);
     }
 
+    /**
+     * Handles "Create" messages by the client.
+     * @param createMsg The creation request message.
+     * @param clientConnection The requesting client.
+     * @return True if successful, false otherwise.
+     * @throws Exception If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static boolean handleCreation(Message createMsg, ConnectionToClient clientConnection) throws Exception {
         Message createMsgResponse;
         switch(createMsg.getDataType())
@@ -563,6 +630,14 @@ public class MessageHandler {
         return true;
     }
 
+    /**
+     * Handles "Update" requests by the client.
+     * @param updateMsg The update request message.
+     * @param clientConnection The client making the request.
+     * @return True if successful, False otherwise.
+     * @throws IOException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     * @throws SQLException If anything goes wrong. Handled by the main {@link #handleMessage(String, ConnectionToClient)} method.
+     */
     private static boolean handleUpdate(Message updateMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
         Message returnMessage = new Message();
         switch (updateMsg.getDataType()) {

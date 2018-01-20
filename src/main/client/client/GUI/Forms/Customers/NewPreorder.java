@@ -19,8 +19,7 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
- * A controller for creating new Preorders.
- * @author Elad Avron
+ * A GUI controller for creating new Preorders.
  */
 public class NewPreorder extends GUIController implements Initializable {
 
@@ -60,6 +59,9 @@ public class NewPreorder extends GUIController implements Initializable {
     private DateTimeCombo _entryDateTime;
     private DateTimeCombo _exitDateTime;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnBack.setTooltip(new Tooltip("Back"));
@@ -126,17 +128,30 @@ public class NewPreorder extends GUIController implements Initializable {
         waitScreen.run(createOrder, 10);
     }
 
+    /**
+     * Refreshes the Parking Lots view.<br>
+     * This is needed in case the user cancelled the part where the program queries the server for parking lots.
+     * @param event the button click event.
+     */
     @FXML
     private void refreshLots(ActionEvent event)
     {
         Inits.initParkingLots(cmbParkingLot);
     }
 
+    /**
+     * Handles the "Manage..." click next to car by redirecting to the {@link ManageCars} screen.
+     * @param event The click event.
+     */
     @FXML
     void manageCars(ActionEvent event) {
         CPSClientGUI.changeGUI(CPSClientGUI.MANAGE_CARS, this);
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event The click event.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(true);

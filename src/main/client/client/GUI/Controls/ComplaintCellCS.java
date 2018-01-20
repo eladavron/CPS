@@ -25,6 +25,9 @@ import static entity.Complaint.ComplaintStatus.CANCELLED;
 import static entity.Complaint.ComplaintStatus.OPEN;
 import static entity.Message.MessageType.UPDATE;
 
+/**
+ * Represents a single complaint row in the Customer Service "Handle Complaint" ListView
+ */
 public class ComplaintCellCS extends ListCell<Complaint> implements Initializable{
 
     @FXML
@@ -41,6 +44,10 @@ public class ComplaintCellCS extends ListCell<Complaint> implements Initializabl
 
     private Complaint.ComplaintStatus _originalStatus;
 
+    /**
+     * Constructor that references the parent ListView for refreshing purposes.
+     * @param parent The {@link ManageComplaintsCS} view that owns the ListView this row is a part of.
+     */
     public ComplaintCellCS(ManageComplaintsCS parent)
     {
         try {

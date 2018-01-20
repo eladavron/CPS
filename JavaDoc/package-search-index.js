@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"client.GUI"}]
+packageSearchIndex = [{"l":"client"},{"l":"client.GUI"},{"l":"client.GUI.Controls"},{"l":"client.GUI.Forms"},{"l":"client.GUI.Forms.Customers"},{"l":"client.GUI.Forms.Employees"},{"l":"client.GUI.Helpers"},{"l":"controller"},{"l":"entity"},{"l":"Exceptions"},{"l":"scheduledTasks"},{"l":"server"},{"l":"utils"}]

@@ -9,8 +9,7 @@ import java.util.Objects;
 import static utils.TimeUtils.addTime;
 
 /**
- * A sample class of how a Subscription class will look like in the system.
- *
+ * Represents a Subscription entity, denoted by a Subscription Type enum and an array of Cars registered to it.
  */
 public class Subscription {
 	/**

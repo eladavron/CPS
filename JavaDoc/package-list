@@ -1,1 +1,13 @@
+client
 client.GUI
+client.GUI.Controls
+client.GUI.Forms
+client.GUI.Forms.Customers
+client.GUI.Forms.Employees
+client.GUI.Helpers
+controller
+entity
+Exceptions
+scheduledTasks
+server
+utils

@@ -1,12 +1,10 @@
 package controller;
 
 import Exceptions.EmployeeNotificationFailureException;
-import com.itextpdf.text.DocumentException;
 import entity.Employee;
 import entity.ParkingSpace;
 import entity.User;
 
-import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +13,10 @@ import java.util.Map;
 import static controller.Controllers.dbController;
 import static controller.Controllers.parkingController;
 
+/**
+ * An Employee Controller class.
+ * This is a Singleton class.
+ */
 public class EmployeeController {
     private Map<Integer, Employee> _employeeList = new HashMap<>();
     private static EmployeeController ourInstance;
@@ -28,6 +30,9 @@ public class EmployeeController {
         }
     }
 
+    /**
+     * @return the Singleton instance.
+     */
     public static EmployeeController getInstance() {
         return ourInstance;
     }
@@ -100,7 +105,6 @@ public class EmployeeController {
     // manager is an Employee.
     /**
      * Get the current status map of the parking lot as a pdf file.
-     * TODO: Maybe show the pdf after creation (idk maybe).
      * @param parkingLotNumber The number of the parking lot to export its status map.
      */
     public void getParkingLotSpacesImage(Integer parkingLotNumber) throws Exception {
@@ -112,11 +116,11 @@ public class EmployeeController {
         }
     }
 
-    //TODO: This function will work when we add the ReportController... Unitl then it will be commented.
-//    public Report getReport(Integer reportID){
-//        return reportController.getReport(reportID);
-//    }
-
+    /**
+     * Checks if an employee is the general manager of the company
+     * @param employeeID The employee ID
+     * @return True if they are, false if not.
+     */
     public boolean isGeneralManager(Integer employeeID ){
         if(employeeID == 0){
             return true;
@@ -124,6 +128,12 @@ public class EmployeeController {
         return false;
     }
 
+    /**
+     * Checks if an employee is the manager of a given parking lot.
+     * @param parkingLotNumber
+     * @param employeeID
+     * @return
+     */
     public boolean isParkingLotManager(Integer parkingLotNumber, Integer employeeID ){
         if(parkingController.getParkingLotByID(parkingLotNumber).getParkingLotManagerID().equals(employeeID)){
             return true;
@@ -131,6 +141,11 @@ public class EmployeeController {
         return false;
     }
 
+    /**
+     * Get an Employee by their ID
+     * @param employeeID
+     * @return
+     */
     public Employee getEmployeeByID(Integer employeeID){
         return  this._employeeList.get(employeeID);
     }

@@ -9,9 +9,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static controller.Controllers.billingController;
-import static entity.Billing.priceList.MONTHLY_FULL_SUBSCRIPTION;
-import static entity.Billing.priceList.MONTHLY_REGULAR_MULTIPLE_CARS_PER_SUBSCRIPTION;
-import static entity.Billing.priceList.MONTHLY_REGULAR_SUBSCRIPTION;
+import static entity.Billing.priceList.*;
 
 /**
  *  A controller Class to handle all of the Billings.
@@ -26,17 +24,20 @@ public class BillingController {
     private BillingController() {
     }
 
-    /**
-     * The Static initializer constructs the instance at class
-     * loading time; this is to simulate a more involved
-     * construction process (it it were really simple, you'd just
-     * use an initializer)
+    /*
+      The Static initializer constructs the instance at class
+      loading time; this is to simulate a more involved
+      construction process (it it were really simple, you'd just
+      use an initializer)
      */
     static {
         instance = new BillingController();
     }
 
-    /** Static 'instance' method */
+    /**
+     * Static method to get the Singleton's instance.
+     * @return The Singleton Instance.
+     */
     public static BillingController getInstance() {
         return instance;
     }
@@ -46,7 +47,7 @@ public class BillingController {
      * @param entryTime The entry time of the car
      * @param exitTime The exit time of the car
      * @param priceType The hourly price according to the customer/order type
-     * @return
+     * @return The price in Shekels.
      */
     public double calculateParkingCharge(Date entryTime, Date exitTime, Billing.priceList priceType){
         double minutes = TimeUnit.MILLISECONDS.toMinutes(Math.abs(exitTime.getTime() - entryTime.getTime()));
@@ -54,23 +55,20 @@ public class BillingController {
         return minutes * priceType.getPrice() / 60;
     }
 
+    /**
+     * Returns the cost of a given subscription type.
+     * @param subscriptionType The subscription type.
+     * @return The cost to make that subscription.
+     */
     public double getSubscriptionCost(Billing.priceList subscriptionType){
         return subscriptionType.getPrice();
     }
 
     /**
-     *  'Empty Shell' of credit card payment system
-     * @param creditCardType
-     * @param expDate
-     * @param creditNumber
-     * @param NumberOfPayments
-     * @param ID
-     * @return
+     * Calculates and sets the charge required to make a subscription.
+     * @param subscription The subscription object to calculate the charge for.
+     * @return The price that was set to it.
      */
-    public Boolean payCharge(String creditCardType, Date expDate, Integer creditNumber,Integer NumberOfPayments, Integer ID){
-        return true;
-    }
-
     public double calculateChargeForSubscription(Subscription subscription)
     {
         if (subscription instanceof FullSubscription)

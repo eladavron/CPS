@@ -1,9 +1,6 @@
 package client.GUI.Helpers;
 
-import client.GUI.CPSClientGUI;
 import client.GUI.Controls.DateTimeCombo;
-import entity.Subscription;
-import entity.User;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
@@ -11,7 +8,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import org.apache.commons.validator.routines.EmailValidator;
-import utils.TimeUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,15 +15,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
-import static entity.Subscription.SubscriptionType.FULL;
-
 /**
- * A class for common validators
+ * A suite of validators for different GUI elements.
  */
 public class Validation {
     //region GUI Helpers
     private static HashMap<Node, Tooltip> _errorControls = new HashMap<>();
 
+    /**
+     * Validates car numbers to be valid (7 or 8 digits).
+     * @param number The number to validate.
+     * @return True if valid, false if not.
+     */
     public static boolean carNumber(String number)
     {
         return number.matches("\\d{7,8}");
@@ -64,12 +63,12 @@ public class Validation {
         }
 
         /*
-            Now we have to check that the selection aren't in the past or in the wrong order.
+         Now we have to check that the selection aren't in the past or in the wrong order.
          */
         if (validate)
         {
             /*
-                Validated passed, now check dates are in order.
+            Validated passed, now check dates are in order.
              */
             if (entry != null && entryDate.before(new Date())) //Entry for preorder is in the past
             {
@@ -120,6 +119,7 @@ public class Validation {
     /**
      * Highlights a control in red and sets it to revert to its previous form once clicked on.
      * @param control The control to highlight.
+     * @param tooltip The tooltip associated with this error (if any)
      */
     public static void highlightControl(Node control, Tooltip tooltip) {
         control.setStyle("-fx-border-color: red; -fx-border-width: 2px; -fx-border-radius: 10px");
@@ -176,29 +176,9 @@ public class Validation {
     }
 
     /**
-     * Makes sure you don't plan to park for more than 14 days.
-     * For now only checks if the selected car number has a full subscription.
-     * @param entryTime A DateTimeCombo denoting entry time. Can be null (if entering now).
-     * @param exitTime A DateTimeCombo denoting the estimated exit time. Can't be null!
-     * @param carID The car ID for the parking request. Will be checked against the logged in user.
-     * @return True if valid, false if not - while highlighting the error.
+     * Remove any highlights (red warnings) from the given control.
+     * @param control The control to remove highlights from.
      */
-    public static boolean validateParkingLength(DateTimeCombo entryTime, DateTimeCombo exitTime, Integer carID, Subscription subscription)
-    {
-        Date entry = (entryTime == null) ? new Date() : entryTime.getDateTime();
-        Date exit = exitTime.getDateTime();
-        if (CPSClientGUI.getSession().getUserType().equals(User.UserType.CUSTOMER))
-        {
-            if (subscription != null && subscription.getSubscriptionType().equals(FULL) //Has full subscription
-                    && TimeUtils.timeDifference(entry, exit, TimeUtils.Units.DAYS) > 14) //Full subscription asks to park for more than 14 days
-            {
-                exitTime.showError("You can't park for more than 14 days with a full subscription!");
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static void removeHighlight(Node control)
     {
         control.setStyle("");
@@ -211,6 +191,9 @@ public class Validation {
 
     }
 
+    /**
+     * Removes all highlights currently registered.
+     */
     public static void clearAllHighlighted()
     {
         ArrayList<Node> allErrors = new ArrayList<Node>(_errorControls.keySet());
@@ -221,6 +204,12 @@ public class Validation {
         _errorControls.clear();
     }
 
+    /**
+     * Validates TextFields for valid Email addresses.<br>
+     * In case they fail, also highlights them and shows a warning.
+     * @param email The TextField to validate
+     * @return True if valid, false if not.
+     */
     public static boolean emailValidation(TextField email)
     {
         if (email.getText().equals("u") || email.getText().isEmpty()) //MASTER USER or empty
@@ -236,7 +225,12 @@ public class Validation {
         return true;
     }
 
-
+    /**
+     * Validates that the provided controls aren't empty based on their type.<br>
+     * Highlights and shows an error next to invalid controls.
+     * @param fields A collection of controls to validate.
+     * @return True if ALL are valid, false if ANY are invalid.
+     */
     public static boolean notEmpty(Node...fields) {
         boolean validate = true;
         for (Node node : fields) {

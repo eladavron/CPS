@@ -17,9 +17,14 @@ import java.util.regex.Pattern;
 import static entity.Message.MessageType.CREATE;
 
 /**
- * A message object between client and server
- * @author Elad Avron
- * @author Aviad Bar-David
+ * A Message object between client and server<br>
+ * A Message has three essential parts: The{@link MessageType} which denotes what type of operation we're performing,
+ * a {@link DataType} field which denotes what type of data we're making the operation on, and an ArrayList of Objects
+ * which are the bulk of the data. The array list can be empty or transfer multiple types of different objects, and the
+ * Message constructor and Message Handlers on both the client AND the server will know how to parse them according to
+ * the combination of MessageType and DataType.
+ * A Message object also has a Transaction ID, which allows the Server and Client to keep track which messages belong to
+ * which request in cases of multiple requests made at the same time by the same client.
  */
 public class Message {
     public enum MessageType {
@@ -67,6 +72,11 @@ public class Message {
         _data = new ArrayList<>();
     }
 
+    /**
+     * Creates a message instance given a type and datatype.
+     * @param type
+     * @param dataType
+     */
     public Message(MessageType type, DataType dataType)
     {
         Random rnd = new Random();
@@ -76,12 +86,23 @@ public class Message {
         _data = new ArrayList<>();
     }
 
+    /**
+     * Creates a Message instance given a type, a data type and data.
+     * @param type
+     * @param dataType
+     * @param data
+     */
     public Message(MessageType type, DataType dataType, Object...data) {
         this(type, dataType);
         _data = new ArrayList<Object>();
         Collections.addAll(_data, data);
     }
 
+    /**
+     * Converts a Json String to a Message object based on its type and content.
+     * @param json
+     * @throws InvalidMessageException
+     */
     public Message(String json) throws InvalidMessageException {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -277,6 +298,11 @@ public class Message {
         }
     }
 
+    /**
+     * Extracts the Transaction ID from the Json for use in case of errors.
+     * @param json The JSON string.
+     * @return Transaction ID
+     */
     public static Long getSidFromJson(String json)
     {
         Pattern pattern = Pattern.compile("\\\"transID\\\"\\:(\\-?\\d*)");
@@ -291,6 +317,10 @@ public class Message {
         }
     }
 
+    /**
+     * Returns the ArrayList representing the message data.
+     * @return
+     */
     public ArrayList<Object> getData() {
         return _data;
     }
@@ -325,6 +355,11 @@ public class Message {
 
     public void setTransID(long transactionID) { this._transactionID = transactionID ;}
 
+    /**
+     * Returns a Json string representing the message.
+     * @return
+     * @throws JsonProcessingException
+     */
     public String toJson() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(this);

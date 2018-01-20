@@ -15,7 +15,6 @@ import java.util.Date;
  * A container class for functions on date-time pickers which are panes with a datetimepicker and two combo boxes.
  * Basically, whenever you have a DatePicker, a ComboBox for Hours and one for Minutes, use this class to encompass them.
  * Unfortunately this has no GUI elements - it's just a container for existing elements.
- * @author Elad Avron
  */
 public class DateTimeCombo {
 
@@ -40,14 +39,23 @@ public class DateTimeCombo {
 
     //region Getters and setters
 
+    /**
+     * @return The DatePicker element of this construct.
+     */
     public DatePicker getDatePicker() {
         return _datePicker;
     }
 
+    /**
+     * @return The Hours ComboBox of this construct.
+     */
     public ComboBox<String> getComboHours() {
         return _cmbHours;
     }
 
+    /**
+     * @return The Minutes ComboBox of this construct.
+     */
     public ComboBox<String> getComboMinutes() {
         return _cmbMinutes;
     }
@@ -88,6 +96,10 @@ public class DateTimeCombo {
         _cmbMinutes.getSelectionModel().select(cal.get(Calendar.MINUTE));
     }
 
+    /**
+     * Sets the hour of this construct.
+     * @param hour Hour to set.
+     */
     public void setHours(int hour)
     {
         if (hour < 0 || hour > 23)
@@ -97,6 +109,10 @@ public class DateTimeCombo {
         _cmbHours.getSelectionModel().select(hour);
     }
 
+    /**
+     * Sets the minutes of this construct.
+     * @param minutes Minute to set.
+     */
     public void setMinutes(int minutes)
     {
         if (minutes < 0 || minutes > 59)

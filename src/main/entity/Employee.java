@@ -3,7 +3,7 @@ package entity;
 import java.util.Date;
 
 /**
- * A sample class of how an Employee class will look in the system.
+ * An "Employee" user entity.
  */
 public class Employee extends User{
     /**

@@ -28,6 +28,9 @@ import java.util.ResourceBundle;
 
 import static entity.Order.OrderStatus.PRE_ORDER;
 
+/**
+ * A GUI controller for the "Manage Preorders" screen.
+ */
 public class ManagePreorders extends GUIController implements Initializable, Refreshable {
 
     @FXML
@@ -49,6 +52,9 @@ public class ManagePreorders extends GUIController implements Initializable, Ref
 
     private ManagePreorders _this;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         _this = this;
@@ -67,6 +73,9 @@ public class ManagePreorders extends GUIController implements Initializable, Ref
         });
     }
 
+    /**
+     * Queries the server for all open Preorders by this user.
+     */
     public void queryPreorders()
     {
         WaitScreen waitScreen = new WaitScreen();
@@ -95,21 +104,36 @@ public class ManagePreorders extends GUIController implements Initializable, Ref
         waitScreen.run(queryOrders);
     }
 
+    /**
+     * Handles the "Refresh" button click.
+     * @param event The button click.
+     */
     @FXML
     void refreshList(ActionEvent event) {
         queryPreorders();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void refresh() {
         queryPreorders();
     }
 
+    /**
+     * Handles the "New..." button click event.
+     * @param event the button click.
+     */
     @FXML
     void createOrder(ActionEvent event) {
         CPSClientGUI.changeGUI(CPSClientGUI.NEW_PREORDER, this);
     }
 
+    /**
+     * Goes back to the previous screen. The name is remnant of an older GUI scheme.
+     * @param event The button click.
+     */
     @FXML
     void returnToMain(ActionEvent event) {
         CPSClientGUI.goBack(false);

@@ -4,7 +4,8 @@ import java.util.Objects;
 
 
 /**
- * A sample class of how a Parking Space class will look like in the system.
+ * A single Parking Space entity.
+ * Represented by a ParkingStatus and its coordinates in its parent Parking Lot.
  *
  */
 public class ParkingSpace {
