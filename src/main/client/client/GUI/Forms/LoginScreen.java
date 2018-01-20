@@ -137,7 +137,7 @@ public class LoginScreen {
      */
     @FXML
     void attemptRegister(ActionEvent event) {
-        if (!Validation.notEmpty(txtRegisterName, txtRegisterEmail) || !Validation.emailValidation(txtRegisterEmail))
+        if (!Validation.notEmpty(txtRegisterName, txtRegisterEmail) || !Validation.emailValidation(txtRegisterEmail) || !(_carLister.validateAll()))
             return;
 
         WaitScreen waitScreen = new WaitScreen();

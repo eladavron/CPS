@@ -159,8 +159,7 @@ public class CustomerController {
         try {
             _customersList.get(customerID).getActiveOrders().remove(orderID);
         } catch (Exception e) {
-            if (Controllers.IS_DEBUG_CONTROLLER)
-            {
+            if (Controllers.IS_DEBUG_CONTROLLER) {
                 e.printStackTrace();
             }
             throw new CustomerNotificationFailureException("There was a problem with your request, please contact support");

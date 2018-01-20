@@ -78,7 +78,7 @@ public class DBController {
             cal.setTime(new Date());
             // Update server Login to DB
             String query = String.format("SELECT * FROM ServerLogins WHERE YEAR = %s AND MONTH = %s AND DAY = %s",
-                    cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_WEEK));
+                    cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
             Statement stmt = db_conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             if (!rs.next()) {
@@ -86,7 +86,7 @@ public class DBController {
                 // insert today's login to server
                 stmt = db_conn.createStatement();
                 query = String.format("INSERT INTO ServerLogins (YEAR, MONTH, DAY) VALUES (%s, %s, %s)",
-                        cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_WEEK));
+                        cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
                 int result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
                 if (result != 1) {
                     throw new SQLException("Failed inserting today's login to server");
@@ -1009,6 +1009,8 @@ public class DBController {
     }
 
 
+    //region Subscriptions
+
     public boolean insertSubscription(Subscription subs) throws SQLException{
         if (this.isTest){
             subs.setSubscriptionID(1);
@@ -1170,7 +1172,7 @@ public class DBController {
         try {
             Statement stmt = db_conn.createStatement();
             String query;
-            if (renewedSubs.getSubscriptionType() == Subscription.SubscriptionType.REGULAR)
+            if ((renewedSubs.getSubscriptionType() == Subscription.SubscriptionType.REGULAR) || (renewedSubs.getSubscriptionType() == Subscription.SubscriptionType.REGULAR_MULTIPLE)) //TODO: "bugfix", plz verify
                 query = String.format("UPDATE SubscriptionToUser SET endDate=ADDDATE(endDate, 28), regularExitTime = '%s' WHERE  idSubscription = %s",
                         ((RegularSubscription)renewedSubs).getRegularExitTime(), renewedSubs.getSubscriptionID());
             else
@@ -1184,6 +1186,107 @@ public class DBController {
             throw e;
         }
     }
+
+    /**
+     * Sets Subscription lastUsed for regular subscription
+     * @param rsubs RegularSubscription to update
+     * @return True if Successful, false if failed
+     * @throws SQLException
+     */
+    public boolean updateSubscriptionLastUsed(RegularSubscription rsubs) throws  SQLException {
+        return updateSubscriptionLastUsed(rsubs, -1);
+    }
+
+    /**
+     * sets subscription last used, multiple and regular
+     * @param rsubs RegularSubscription to update
+     * @param carID
+     * @return  True if Successful, false if failed
+     * @throws SQLException
+     */
+    public boolean updateSubscriptionLastUsed(RegularSubscription rsubs, Integer carID) throws  SQLException{
+        try {
+            Statement stmt = db_conn.createStatement();
+            String query;
+            if (rsubs.getSubscriptionType() == Subscription.SubscriptionType.REGULAR_MULTIPLE){
+                // update actual car
+                query = String.format("UPDATE CarToSubscription SET lastUsed = '%s' WHERE idSubscription = %s AND idCar = %s", _simpleDateFormatForDb.format(new Date()), rsubs.getSubscriptionID(), carID);
+            }else { // REGULAR
+                query = String.format("UPDATE SubscriptionToUser SET lastUsed = '%s' WHERE idSubscription = %s",  _simpleDateFormatForDb.format(new Date()),rsubs.getSubscriptionID());
+            }
+
+            Integer result = stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            if (result == 1)
+                return true;
+            return false;
+        } catch (SQLException e) {
+            if (IS_DEBUG_CONTROLLER) {
+                System.err.printf("An error occurred setting lastUsed for subscription: %s\n%s", rsubs.getSubscriptionID(), e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * gets subscription last used (regular)
+     * @param rsubs RegularSubscription to check
+     * @return
+     * @throws SQLException
+     */
+    public boolean isSubscriptionFirstUseForToday(RegularSubscription  rsubs)throws  SQLException{
+        return isSubscriptionFirstUseForToday(rsubs, -1);
+    }
+
+    /**
+     * gets subscription last used (regular and multiple)
+     * @param rsubs RegularSubscription to check
+     * @param carID car id to check, -1 for single car subscription
+     * @return
+     * @throws SQLException
+     */
+    public boolean isSubscriptionFirstUseForToday(RegularSubscription  rsubs, Integer carID)throws  SQLException{
+        try {
+            Statement stmt = db_conn.createStatement();
+            String query;
+            if (rsubs.getSubscriptionType() == Subscription.SubscriptionType.REGULAR_MULTIPLE){
+                if (carID == -1) // protection.
+                    throw new SQLException("Wrong car id for subscription");
+                // update actual car
+                query = String.format("SELECT lastUsed FROM CarToSubscription WHERE idSubscription = %s AND idCar = %s", rsubs.getSubscriptionID(), carID);
+            }else { // REGULAR
+                query = String.format("SELECT lastUsed FROM SubscriptionToUser WHERE idSubscription = %s",  rsubs.getSubscriptionID());
+            }
+
+            ResultSet rs = stmt.executeQuery(query);
+            if (!rs.next()){
+                throw  new SQLException("Car or subscription not found");
+            }
+            Date lastUsed = rs.getDate("lastUsed");
+            if (lastUsed == null)
+                return true; //
+            Calendar calLastUsed = Calendar.getInstance();
+            calLastUsed.setTime(lastUsed);
+            Calendar calToday = Calendar.getInstance();
+            calToday.setTime(new Date());
+            if (calLastUsed.get(calLastUsed.YEAR) ==  calToday.get(calToday.YEAR)){
+                if (calLastUsed.get(calLastUsed.MONTH) ==  calToday.get(calToday.MONTH)){
+                    if (calLastUsed.get(calLastUsed.DAY_OF_MONTH) ==  calToday.get(calToday.DAY_OF_MONTH)){
+                            return false;
+                    }else
+                        return true;
+                }else
+                    return true;
+            }else
+                return true;
+        } catch (SQLException e) {
+            if (IS_DEBUG_CONTROLLER) {
+                System.err.printf("An error occurred checking lastUsed for subscription: %s\n%s", rsubs.getSubscriptionID(), e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    //endregion
 
     private Order.OrderStatus parseOrderStatus(String str) throws SQLException{
         Order.OrderStatus ret;
