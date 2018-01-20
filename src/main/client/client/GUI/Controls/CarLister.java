@@ -98,4 +98,22 @@ public class CarLister{
             this.addCar(number);
         }
     }
+
+    public boolean validateAll()
+    {
+        boolean validate = true;
+        for (Node txtCar : _root.getChildren())
+        {
+            if (txtCar instanceof TextField)
+            {
+                validate = validate && validateCarTextField((TextField) txtCar);
+            }
+        }
+        if (getAllNumbers().size() <= 0)
+        {
+            Validation.showError(_root.getChildren().get(0), "You must register at least 1 car to your account.");
+            validate = false;
+        }
+        return validate;
+    }
 }
