@@ -152,7 +152,7 @@ public class CustomerController {
 
     /**
      * Deletes an order from active orders list
-     * @param customer Customer from which to delete the active order
+     * @param customerID Customer from which to delete the active order
      * @param orderID The order ID
      */
     public void removeOrderFromCustomerList(int customerID, int orderID) throws CustomerNotificationFailureException {
@@ -174,7 +174,7 @@ public class CustomerController {
      * @param estimatedExitTime
      * @param parkingLotNumber
      */
-    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) throws SQLException{
+    public Order addNewOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) throws SQLException, CustomerNotificationFailureException {
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewSimpleOrder(customerID, carID, estimatedExitTime,  parkingLotNumber);
         Map<Integer, Object> activeOrders = customer.getActiveOrders();
@@ -187,7 +187,7 @@ public class CustomerController {
      * OverLoading function for a given template of an Order.
      * @param newOrder
      */
-    public Order addNewOrder(Order newOrder) throws SQLException{
+    public Order addNewOrder(Order newOrder) throws SQLException, CustomerNotificationFailureException {
         return addNewOrder(newOrder.getCostumerID(), newOrder.getCarID(), newOrder.getEstimatedExitTime(), newOrder.getParkingLotNumber());
     }
 
@@ -200,7 +200,7 @@ public class CustomerController {
      * @param estimatedEntryTime
      * @return order
      */
-    public Order addNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime)throws SQLException{
+    public Order addNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime) throws SQLException, CustomerNotificationFailureException {
         Customer customer = getCustomer(customerID);
         Order newOrder = orderController.makeNewPreOrder(customerID, carID, estimatedExitTime,  parkingLotNumber, estimatedEntryTime);
         Map<Integer, Object> activeOrders = customer.getActiveOrders();
@@ -214,7 +214,7 @@ public class CustomerController {
      * @param newPreOrder
      * @return Order new PreOrder
      */
-    public Order addNewPreOrder(PreOrder newPreOrder) throws SQLException{
+    public Order addNewPreOrder(PreOrder newPreOrder) throws SQLException, CustomerNotificationFailureException {
         return addNewPreOrder(newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
     }
 
@@ -246,7 +246,6 @@ public class CustomerController {
         if (activeOrders.containsKey(orderID)) {
             orderToFinish = (Order) activeOrders.get(orderID);
             // The order was found...need to check the client's cost for this order.
-            Integer carID = orderToFinish.getCarID();
             orderController.finishOrder(orderToFinish.getOrderID(), finalPrice);
             removeOrderFromCustomerList(customer.getUID(), orderID);
             return orderToFinish.getPrice();

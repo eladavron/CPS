@@ -62,7 +62,6 @@ public class PreOrder extends Order {
 
     public void setMarkedLate() { this._isMarkedLate = true; }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

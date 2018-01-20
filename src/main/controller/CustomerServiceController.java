@@ -1,5 +1,7 @@
 package controller;
 
+import Exceptions.CustomerNotificationFailureException;
+
 import java.sql.SQLException;
 import java.util.Date;
 
@@ -39,7 +41,7 @@ public class CustomerServiceController {
     public void reserveParking(Integer parkingLotNumber, Integer orderID, Integer x,
                                Integer y, Integer z, Integer customerID,
                                Integer carID, Date estimatedExitTime,
-                               Date estimatedEntryTime) throws SQLException {
+                               Date estimatedEntryTime) throws SQLException, CustomerNotificationFailureException {
         orderController.makeNewPreOrder(customerID,carID,estimatedExitTime,parkingLotNumber,estimatedEntryTime);
         parkingController.reserveParkingSpace(parkingLotNumber,orderID,x,y,z);
 
