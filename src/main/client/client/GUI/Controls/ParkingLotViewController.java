@@ -58,18 +58,18 @@ public class ParkingLotViewController {
      * {@link ParkingSpace}s in it. Each Parking Space is initialized by {@link #parkingSpaceNode(ParkingSpace)}.
      */
     public void init(){
-        for (int h = 1; h <= _parkingLot.getHeight(); h++) //Get all spaces in a floor
+        for (int d = 1; d <= _parkingLot.getDepth(); d++) //Get all spaces in a floor
         {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("ParkingLotFloor.fxml"));
                 Tab newTab = loader.load();
-                newTab.setText("Floor " + h);
+                newTab.setText("Floor " + d);
                 GridPane parkingGrid = (GridPane) loader.getNamespace().get("gridFloor");
                 for (int w = 1; w <= _parkingLot.getWidth(); w++) {
-                    for (int d = 1; d <= _parkingLot.getDepth(); d++) {
+                    for (int h = 1; h <= _parkingLot.getHeight(); h++) {
                         ParkingSpace thisSpace = _parkingLot.getParkingSpaceMatrix()[d][w][h];
                         Node thisNode = parkingSpaceNode(thisSpace);
-                        parkingGrid.add(thisNode, w, d);
+                        parkingGrid.add(thisNode, w, h);
                         GridPane.setHgrow(thisNode, Priority.ALWAYS);
                         GridPane.setVgrow(thisNode, Priority.ALWAYS);
                     }
