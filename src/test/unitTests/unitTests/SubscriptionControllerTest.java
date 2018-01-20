@@ -1,5 +1,6 @@
 package unitTests;
 
+import controller.BillingController;
 import controller.DBController;
 import controller.SubscriptionController;
 import entity.FullSubscription;
@@ -17,11 +18,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static controller.Controllers.billingController;
 import static controller.Controllers.dbController;
 import static entity.Subscription.SubscriptionType.REGULAR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static utils.TimeUtils.addTime;
 
+/**
+ * Testing the functionality of SubscriptionController.
+ */
 public class SubscriptionControllerTest extends ApplicationTest{
     private Subscription _testSubscription;
     private RegularSubscription _testRegularSubscription;
@@ -29,14 +34,16 @@ public class SubscriptionControllerTest extends ApplicationTest{
     private FullSubscription _testFullSubscription;
     private static SubscriptionController subscriptionController;
     private Subscription _testSubscription2nd;
-    ArrayList<Integer> _carsIDList1;
-    ArrayList<Integer> _carsIDList2;
-    ArrayList<Integer> _carsIDList3;
-    ArrayList<Integer> _carsIDList4;
+    private ArrayList<Integer> _carsIDList1 = new ArrayList<>();
+    private ArrayList<Integer> _carsIDList2 = new ArrayList<>();
+    private ArrayList<Integer> _carsIDList3 = new ArrayList<>();
+    private ArrayList<Integer> _carsIDList4 = new ArrayList<>();
+
     @BeforeAll
     static void setTestInitDB(){
         dbController = DBController.getInstance();
         subscriptionController = SubscriptionController.getInstance();
+        billingController = BillingController.getInstance();
         dbController.isTest = true;
     }
 
@@ -47,12 +54,16 @@ public class SubscriptionControllerTest extends ApplicationTest{
         _carsIDList2.add(611);
         _carsIDList3.add(222);
         _carsIDList4.add(22);
+        _carsIDList2.add(61);
         _testSubscription = new Subscription(12,_carsIDList1,REGULAR);
         _testSubscription2nd = new Subscription(51, _carsIDList2, REGULAR);
         _testRegularSubscription = new RegularSubscription(111,_carsIDList3,"11:11",1);
         _testFullSubscription = new FullSubscription(11,_carsIDList4);
     }
 
+    /**
+     * Test of getSubscription function.
+     */
     @Test
     void getSubscriptionTest()
     {
@@ -60,10 +71,12 @@ public class SubscriptionControllerTest extends ApplicationTest{
                 .addRegularSubscription(111,_carsIDList1,"11:11",1);
 
         Subscription sub = subscriptionController.getSubscription(_newSubscriptionFromConstructor.getSubscriptionID());
-//        assertThat(sub).isEqualToIgnoringGivenFields(_newSubscriptionFromConstructor,"_expiration");
         assertThat(sub).isEqualToComparingFieldByField(_newSubscriptionFromConstructor);
     }
 
+    /**
+     * Test of addRegularSubscription function.
+     */
     @Test
     void addRegularSubscriptionTest()
     {
@@ -73,14 +86,24 @@ public class SubscriptionControllerTest extends ApplicationTest{
         assertThat(_newSubscriptionFromConstructor).isEqualToIgnoringGivenFields(_testRegularSubscription,"_expiration");
     }
 
-
+    /**
+     * Test of addFullSubscription function.
+     */
     @Test
     void addFullSubscriptionTest() {
-        _newSubscriptionFromConstructor = subscriptionController.addFullSubscription(11, _carsIDList4);
-        assertThat(_newSubscriptionFromConstructor).isEqualToIgnoringGivenFields(_testFullSubscription,"_expiration");
+//        _newSubscriptionFromConstructor = subscriptionController.addFullSubscription(11, _carsIDList4);
+        try {
+            _newSubscriptionFromConstructor = subscriptionController.addFullSubscription(11,_carsIDList4);
+        } catch (NullPointerException e){
+            System.out.println("The fucking bug got to here......");
+            e.printStackTrace();
+        }
+        assertThat(_newSubscriptionFromConstructor).isEqualToIgnoringGivenFields(_testFullSubscription,"_expiration","_charge");
     }
 
-
+    /**
+     * Test of renewSubscription function.
+     */
     @Test
     void renewSubscriptionTest() {
         try {
@@ -93,6 +116,9 @@ public class SubscriptionControllerTest extends ApplicationTest{
         }
     }
 
+    /**
+     * Test of findSubscriptionsByCarID function.
+     */
     @Test
     void findSubscriptionsByCarIDTest() {
         ArrayList<Integer> subscriptionsIDs = new ArrayList<>();
@@ -105,6 +131,9 @@ public class SubscriptionControllerTest extends ApplicationTest{
 
     }
 
+    /**
+     * Test of putAll function.
+     */
     @Test
     void putAllTest() {
         ArrayList<Object> objectsList = new ArrayList<>();

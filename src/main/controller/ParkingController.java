@@ -437,4 +437,13 @@ public class ParkingController {
         ParkingLot parkingLot = _parkingLotList.get(parkingLotNumber);
         return  parkingLot.getDepth() * parkingLot.getHeight() * parkingLot.getWidth();
     }
+
+    /**
+     * A function the get the current list of parking lots.
+     * @return the list.
+     */
+    public Map<Integer, ParkingLot> getParkingLotList()
+    {
+        return _parkingLotList;
+    }
 }

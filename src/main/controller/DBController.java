@@ -22,6 +22,8 @@ public class DBController {
     private ArrayList<String> listTables = new ArrayList<>(); //The list of tables in the database.
     public boolean isTest = false;
     public boolean firstRunOfServerToday = false;
+    public Integer fakeID = 1;
+    public Integer fakeOrderID = 1;
 
     // Date formatter for DB insertions
     private java.text.SimpleDateFormat _simpleDateFormatForDb =
@@ -351,7 +353,7 @@ public class DBController {
      */
     public boolean insertOrder(Order order, Billing.priceList priceType) throws SQLException{
         if (isTest) {
-            order.setOrderID(1);
+            order.setOrderID(fakeOrderID++);
             return true;
         }
         try {
@@ -405,7 +407,9 @@ public class DBController {
      */
     public boolean deleteOrder(int orderId, double charged) throws SQLException
     {
-
+        if(isTest){
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             int result = stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED', price= '%s' WHERE  idOrders=%s",
@@ -453,7 +457,10 @@ public class DBController {
      */
     public boolean finishOrder (int orderId, Date exitTimeActual, double charged) throws SQLException, NullPointerException
     {
-
+        if(isTest)
+        {
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             int result = stmt.executeUpdate(String.format("UPDATE Orders SET orderType='FINISHED', price= '%s', exitTimeActual = '%s'  WHERE  idOrders=%s",
@@ -675,6 +682,10 @@ public class DBController {
      * @return all orders in list
      */
     public Map<Integer, Object> getAllOrders() throws SQLException {
+        if(isTest){
+            Map<Integer, Object> map = new HashMap<>();
+            return map;
+        }
         return getOrdersByID(-1);
     }
 
@@ -685,7 +696,10 @@ public class DBController {
      */
     public Map<Integer, Object> getOrdersByID(int orderId) throws SQLException{
         ResultSet rs;
-
+        if(isTest){
+            Map<Integer, Object> map = new HashMap<>();
+            return map;
+        }
         if (orderId == -1) { // get all rows
             //rs = queryTable("Orders");
             rs = queryTable("Orders", "orderType", "'PRE_ORDER'", "OR", "orderType", "'IN_PROGRESS'");
@@ -737,6 +751,12 @@ public class DBController {
      * @throws SQLException If something goes wrong with the SQL query.
      */
     public ArrayList<Object> getParkingLots() throws SQLException{
+        if(isTest)
+        {
+            ArrayList<Object> fakeParkingLots = new ArrayList<>();
+            fakeParkingLots.add(new ParkingLot(3,3,3,"Tel-Fakes"));
+            return fakeParkingLots;
+        }
         return  getParkingLotsByID(-1);
     }
 
@@ -797,6 +817,14 @@ public class DBController {
      * @return empty if none found, null on exception.
      */
     public ArrayList<ParkingSpace> getParkingSpaces(Integer parkingLotNumber) throws SQLException{
+        if(isTest)
+        {
+            ArrayList<ParkingSpace> parkingFAKE = new ArrayList<>();
+            parkingFAKE.add((new ParkingSpace()));
+            parkingFAKE.add((new ParkingSpace()));
+            parkingFAKE.add((new ParkingSpace()));
+            return parkingFAKE;
+        }
         ResultSet rs = queryTable("ParkingSpace", "idParkingLot", parkingLotNumber);
         return parseParkingSpacesFromDB(rs);
     }
@@ -897,6 +925,10 @@ public class DBController {
      */
     public ArrayList<User> getCustomers() throws SQLException
     {
+        if(isTest){
+            ArrayList<User> array = new ArrayList<>();
+            return array;
+        }
         return getUserByID(-1, User.UserType.CUSTOMER);
     }
 
@@ -907,6 +939,10 @@ public class DBController {
      */
     public ArrayList<User> getEmployees() throws SQLException
     {
+        if(isTest){
+            ArrayList<User> array = new ArrayList<>();
+            return array;
+        }
         return getUserByID(-1, User.UserType.EMPLOYEE);
     }
 
@@ -1076,7 +1112,7 @@ public class DBController {
      */
     public boolean insertCustomer(Customer customer) throws SQLException{
         if (this.isTest){
-            customer.setUID(1);
+            customer.setUID(customer.getUID());
             return true;
         }
         try {
@@ -1119,7 +1155,11 @@ public class DBController {
      * @param carID carId inserted
      * @return True if successful, False otherwise.
      */
-    public boolean addCarToCustomer(Integer customerID, Integer carID) throws SQLException{
+    public boolean addCarToCustomer(Integer customerID, Integer carID) throws SQLException
+    {
+        if(isTest){
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             String query = String.format("INSERT INTO CarToUser (idCars, idUser) VALUES ('%s', '%s')" +
@@ -1140,7 +1180,11 @@ public class DBController {
      * @param carID carId removed
      * @return True if successful, False otherwise.
      */
-    public boolean removeCarFromCustomer(Integer customerID, Integer carID) throws SQLException{
+    public boolean removeCarFromCustomer(Integer customerID, Integer carID) throws SQLException
+    {
+        if(isTest){
+            return true;
+        }
         try {
             Statement stmt = db_conn.createStatement();
             stmt.executeUpdate(String.format("UPDATE CarToUser SET isActive=0 WHERE  idCars=%s AND idUser=%s",
@@ -1166,7 +1210,7 @@ public class DBController {
      */
     public boolean insertSubscription(Subscription subs) throws SQLException{
         if (this.isTest){
-            subs.setSubscriptionID(1);
+            subs.setSubscriptionID(fakeID++);
             return true;
         }
         String params = "idUser, endDate";
@@ -2107,6 +2151,9 @@ public class DBController {
 
     public ArrayList<Integer> getAllParkedCars() throws SQLException{
         ArrayList<Integer> parkedCarList = new ArrayList<>();
+        if(isTest){
+            return new ArrayList<>();
+        }
         try {
             Statement stmt = db_conn.createStatement();
             String query = "SELECT idParkedCar FROM ParkedCars";
