@@ -569,6 +569,82 @@ public class DBController {
     }
 
     /**
+     * Given a valid Result set of Orders will parse it into the correct order, and return as an array.
+     * @param rs the result set
+     * @return array of orders.
+     * @throws SQLException
+     */
+    public ArrayList<Order> parseOrdersForReports(ResultSet rs) throws SQLException
+    {
+        ArrayList<Order>  myOrders = new ArrayList<>();
+        if (rs == null)
+        {//System.err.println("No orders were read from db");
+            return myOrders;
+        }
+        else {
+            try {
+                while (rs.next()) {
+                    Order.OrderStatus _orderStatus = parseOrderStatus(rs.getString("OrderType"));
+                    if (null == _orderStatus){
+                        System.err.printf("Error occurred getting OrderStatus from table \"%s\"", "Orders");
+                        return myOrders;
+                    }
+                    /*
+                    getting the right Orders for the wanted report.
+                     */
+                    switch (_orderStatus)
+                    {
+                        case PRE_ORDER:
+                            PreOrder rowOrder = new PreOrder(
+                                    rs.getInt("idCustomer"),
+                                    rs.getInt("idCar"),
+                                    returnTimeStampFromDB(rs, "exitTimeEstimated"),
+                                    rs.getInt("idParkingLot"),
+                                    rs.getDouble("price"),
+                                    returnTimeStampFromDB(rs, "entryTimeEstimated")
+                            );
+                            rowOrder.setOrderID(rs.getInt("idOrders"));
+                            myOrders.add(rowOrder);
+                            break;
+                        case FINISHED: //this is now a valid parsing options.
+                        case DELETED: //this is now a valid parsing options.
+                        case IN_PROGRESS:
+                            Order activeOrder = new Order(
+                                    rs.getInt("idOrders"),
+                                    rs.getInt("idCustomer"),
+                                    rs.getInt("idCar"),
+                                    rs.getInt("idParkingLot"),
+                                    _orderStatus,
+                                    returnTimeStampFromDB(rs, "entryTimeEstimated"),
+                                    returnTimeStampFromDB(rs, "entryTimeActual"),
+                                    returnTimeStampFromDB(rs, "exitTimeEstimated"),
+                                    returnTimeStampFromDB(rs, "exitTimeActual"),
+                                    rs.getDouble("price"),
+                                    returnTimeStampFromDB(rs, "orderCreationTime")
+                            );
+
+                            // querying the Parking space table here, to make sure order is filled correctly and on time.
+                            ArrayList<Integer> myParkingSpace = getParkingSpaceForOrder(rs.getInt("idOrders"));
+                            if (myParkingSpace.size() == 3) {
+                                activeOrder.setParkingSpaceHeight(myParkingSpace.get(0));
+                                activeOrder.setParkingSpaceWidth(myParkingSpace.get(1));
+                                activeOrder.setParkingSpaceDepth(myParkingSpace.get(2));
+                            }
+                            myOrders.add(activeOrder);
+                            break;
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.printf("Error occurred getting data from table \"%s\":\n%s", "Orders", e.getMessage());
+                throw e;
+            }
+        }
+        return myOrders;
+    }
+
+
+
+    /**
      * Returns the coordinates of the parking space reserved for an order.
      * @param idOrder The ID of the order.
      * @return A coordinate vector.
@@ -1702,8 +1778,8 @@ public class DBController {
                         + parsePriceTypeToColumnName(Billing.priceList.ONE_TIME_PARKING) + "'")
                 , "Orders"
         );
-        Collection<Object> objArray = parseOrdersFromDBToMap(rs).values();
-        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, objArray);
+        ArrayList<Order> ordersArray = parseOrdersForReports(rs);
+        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, ordersArray);
         //Adding pre-orders:
 
         report.append("\n").append(rowLine).append("\n")
@@ -1712,8 +1788,8 @@ public class DBController {
                         + parsePriceTypeToColumnName(Billing.priceList.PRE_ORDER_ONE_TIME_PARKING) + "'")
                 , "Orders"
         );
-        objArray = parseOrdersFromDBToMap(rs).values();
-        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, objArray);
+        ordersArray = parseOrdersForReports(rs);
+        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, ordersArray);
 
         //Adding Subscriptions:
         report.append("\n").append(rowLine).append("\n")
@@ -1723,8 +1799,8 @@ public class DBController {
                         + parsePriceTypeToColumnName(Billing.priceList.NO_CHARGE_DUE_TO_SUBSCRIPTION) + "'")
                 , "Orders"
         );
-        objArray = parseOrdersFromDBToMap(rs).values();
-        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, objArray);
+        ordersArray = parseOrdersForReports(rs);
+        countRows = addRowsToQuarterlyReport(countRows, rowLine, report, daysInOneQuarter, ordersArray);
 
         report.append("\n").append(rowLine);
 
@@ -1737,14 +1813,13 @@ public class DBController {
      * @param rowLine
      * @param report
      * @param daysInOneQuarter
-     * @param objArray
+     * @param OrdersArray
      * @return
      * @throws SQLException
      */
-    private Integer addRowsToQuarterlyReport(Integer countRows, String rowLine, StringBuilder report, double daysInOneQuarter, Collection<Object> objArray) throws SQLException {
-        for (Object orderObj : objArray)
+    private Integer addRowsToQuarterlyReport(Integer countRows, String rowLine, StringBuilder report, double daysInOneQuarter, ArrayList<Order> OrdersArray) throws SQLException {
+        for (Order order : OrdersArray)
         {
-            Order order = (Order) orderObj;
             if (TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
                     TimeUtils.Units.DAYS) <= daysInOneQuarter)
 
@@ -1791,11 +1866,10 @@ public class DBController {
         }
         //Then we start going through the orders and decided if this order should be inserted into the Report,
         // according to the dayToValidate.
-        Collection<Object> objArray = parseOrdersFromDBToMap(rs).values();
+        ArrayList<Order> ordersArray = parseOrdersForReports(rs);
         Integer countRows = 0;
-        for (Object orderObj : objArray)
+        for (Order order : ordersArray )
         {
-            Order order = (Order) orderObj;
             if (orderType == null)
             { //Then we are just checking for the cars who got late!
                 if ((TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
