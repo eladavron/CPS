@@ -169,10 +169,9 @@ public class ParkingController {
         initCurrentParkingValues(parkingLotNumber);
 
         if (_heightNumOccupied > 1)
-        {
+        {//this is just in case someone tried to exit before entering(somehow)
             _heightNumOccupied--;
         }
-
         ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
         currentParkingSpace.setStatus(FREE);
         currentParkingSpace.setOccupyingOrderID(null);
@@ -195,13 +194,6 @@ public class ParkingController {
     private String checkAndUpdateBoundaries(Integer parkingLotNumber){
 
         initCurrentParkingValues(parkingLotNumber);
-
-        if (_heightNumOccupied == 1 && _widthNumOccupied == 1 && _depthNumOccupied == 1)
-        {
-            this._parkingLotList.get(parkingLotNumber)
-                    .setHeightNumOccupied(2);
-            return "VALID";
-        }
 
         if(this._heightNumOccupied > this._parkingLotList.get(parkingLotNumber).getHeight())
         {
@@ -229,11 +221,6 @@ public class ParkingController {
                         .setHeightNumOccupied(1);
             }
         }
-//        else
-//        { //Then we didnt reach max height yet.
-//            this._parkingLotList.get(parkingLotNumber)
-//                    .setHeightNumOccupied(_heightNumOccupied + 1);
-//        }
         //After updating the occupied spaces we want to continue with the new values so we call init again!
         initCurrentParkingValues(parkingLotNumber);
         return "VALID";
@@ -276,8 +263,6 @@ public class ParkingController {
             this._parkingLotList.get(parkingLotNumber)
                     .setHeightNumOccupied(_heightNumOccupied -1 );
         }
-        //After updating the occupied spaces we want to continue with the new values so we call init again!
-        initCurrentParkingValues(parkingLotNumber);
     }
 
     /**
@@ -301,6 +286,7 @@ public class ParkingController {
 
         for(int i=1; i <= this._parkingLotList.get(parkingLotNumber).getDepth(); i++){
             result[i] += "Depth " + Integer.toString((i));
+
             finalString.append("\n").append(result[i]);
             result[i]="";
             for(int j = 1; j <= this._parkingLotList.get(parkingLotNumber).getWidth(); j++){
@@ -440,4 +426,15 @@ public class ParkingController {
         throw new NotImplementedException();
     }
 
+    /**
+     * This function is used in order to determine the actual size of the parking lot and return it.
+     * this function is used in our controllers and will always use a real parking lot number.
+     * @param parkingLotNumber - the parking lot in question
+     * @return it's size.
+     */
+    public Integer getParkingLotSize(Integer parkingLotNumber)
+    {
+        ParkingLot parkingLot = _parkingLotList.get(parkingLotNumber);
+        return  parkingLot.getDepth() * parkingLot.getHeight() * parkingLot.getWidth();
+    }
 }

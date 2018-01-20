@@ -1,5 +1,6 @@
 package unitTests;
 
+import Exceptions.CustomerNotificationFailureException;
 import controller.DBController;
 import controller.OrderController;
 import entity.Billing.priceList;
@@ -33,7 +34,7 @@ class OrderTest extends ApplicationTest {
         Order actual = null;
         try {
             actual = OrderController.getInstance().makeNewSimpleOrder(0, 777, estimated, parkingTemp);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         Order expected = simpleOrder;
@@ -54,7 +55,7 @@ class OrderTest extends ApplicationTest {
         Order actual = null;
         try {
             actual = OrderController.getInstance().makeNewPreOrder(1, 776, estimatedExit, parkingTemp, estimatedEntry);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         Order expected = new PreOrder(1, 776, estimatedExit, parkingTemp, 5.533333333333333, estimatedEntry);

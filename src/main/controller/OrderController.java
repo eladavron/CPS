@@ -1,6 +1,7 @@
 package controller;
 
 import entity.Billing;
+import Exceptions.CustomerNotificationFailureException;
 import entity.Billing.priceList;
 import entity.Customer;
 import entity.Order;
@@ -65,7 +66,7 @@ public class OrderController {
         return (Order) _ordersList.get(orderID);
     }
 
-    public PreOrder getPreorder(Integer orderID)
+    public PreOrder getPreOrder(Integer orderID)
     {
         Order thisOrder = (Order) _ordersList.get(orderID);
         if (thisOrder.getOrderStatus().equals(PRE_ORDER))
@@ -83,15 +84,120 @@ public class OrderController {
         return allPreOrdersList;
     }
 
-    // TODO: for testing purposes makeNewSimpleOrder will send back the order...needs to be a void function once there is a database.
-    public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber)throws SQLException {
+    public Order makeNewSimpleOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber) throws SQLException, CustomerNotificationFailureException {
         Order newOrder = new Order(customerID, carID, estimatedExitTime, parkingLotNumber);
         newOrder.setEstimatedEntryTime(newOrder.getActualEntryTime());
+        //First we check if the Customer can actually park this car in the parking in the wanted hours:
         //UID is select within the dbController and then set in it as well.
         newOrder.setOrderStatus(Order.OrderStatus.IN_PROGRESS);
+        if (!checkIfAvailable(newOrder))
+        {
+            throw new CustomerNotificationFailureException("Sorry, we can not park this car at this time on this parking lot," +
+                    "due to lack of space.\n" +
+                    "you should try some other time or a different parking-lot.");
+        }
         dbController.insertOrder(newOrder, priceList.ONE_TIME_PARKING);
         _ordersList.put(newOrder.getOrderID(), newOrder);
         return newOrder;
+    }
+
+    /**
+     * function will validate that there is indeed a space for this order
+     * or if someone tries to enter with an order of his for this car.
+     * @param orderToValidate to validate.
+     * @return true, can continue...false otherwise.
+     */
+    private boolean checkIfAvailable(Order orderToValidate)
+    {
+        Order currentOrder;
+        System.out.println("is order to validate is:" + orderToValidate);
+
+       //First we check if this car has an order already. (trying to enter right now!:
+        if (isThereAnOrderForThisEntrance(orderToValidate))
+        {
+            return true;
+        }
+        else
+        { //Trying to make a future Order.
+            Integer takenSpaces = 0;
+            for (Object obj : _ordersList.values())
+            {
+                currentOrder = (Order) obj;
+                if (currentOrder.getParkingLotNumber().equals(orderToValidate.getParkingLotNumber()))
+                {//Then this order on the order list belong to the the wanted parking lot.
+                    //now we need to check if the Time collides.
+                    if (currentOrder.getOrderStatus().equals(Order.OrderStatus.IN_PROGRESS))
+                    {//order is in use and has actual entry.
+                        if(currentOrder.getEstimatedExitTime().getTime() >= (orderToValidate.getEstimatedEntryTime().getTime()))
+                        { //Since we are always after the actual time, if we enter before his exit time...we collide otherwise we defently dont!.
+                            takenSpaces++;
+                        }
+                    }
+                    else
+                    {
+                        if (currentOrder.getOrderStatus().equals(Order.OrderStatus.PRE_ORDER))
+                        {//Order is also a PreOrder.
+                             if (validateWithPreOrder(currentOrder, orderToValidate))
+                            {
+                                takenSpaces++;
+                            }
+                        }
+                    }
+                }
+            }
+            //Reaching here means we have all the takenSpaces of orders that collide with us:
+            if (parkingController.getParkingLotSize(orderToValidate.getParkingLotNumber()) > takenSpaces)
+                return true;
+        }
+        return  false;
+    }
+
+    /**
+     * private method to validate that the incoming Order is just a little adjustment to an existing one.
+     * so we can change it to progress and tell the man he can go on and enter our lot.
+     * @param orderToValidate - the order.
+     * @return true- if changed to IN_PROGRESS and can continue, false - this order does not fit our existing orders.
+     */
+    private Boolean isThereAnOrderForThisEntrance(Order orderToValidate)
+    {
+        //We will only make sure the order is here and change his status,
+        //If the time doesn't fit we will let the ParkingLotController decide if he actually has space,
+        //Since we know for sure he does on his right times (from the function that uses this).
+        if ( _ordersList.containsKey(orderToValidate.getOrderID()))
+        {
+            Order thisOrder = (Order)_ordersList.get(orderToValidate.getOrderID());
+            if (thisOrder.getOrderStatus().equals(Order.OrderStatus.PRE_ORDER))
+            {
+                thisOrder.setOrderStatus(Order.OrderStatus.IN_PROGRESS);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * private method to shorten the length of the whole validate of incoming order.
+     * @param currentOrder - an existing  pre-order in our list.
+     * @param orderToValidate - the new "wanted" order.
+     * @return true if collides.
+     */
+    private Boolean validateWithPreOrder(Order currentOrder, Order orderToValidate)
+    {
+        if(
+                // Enters before but, also Exits after I enter.
+                    currentOrder.getEstimatedEntryTime().getTime() <= (orderToValidate.getEstimatedEntryTime().getTime())
+                    && currentOrder.getEstimatedExitTime().getTime() >= (orderToValidate.getEstimatedEntryTime().getTime())
+                || // Enters after but, also Exits after I enter.
+                    currentOrder.getEstimatedEntryTime().getTime() >= (orderToValidate.getEstimatedEntryTime().getTime())
+                            && currentOrder.getEstimatedExitTime().getTime() <= (orderToValidate.getEstimatedExitTime().getTime())
+
+                || //Enters after, exits after ,but also I enter before he exits.
+                    currentOrder.getEstimatedEntryTime().getTime() >= (orderToValidate.getEstimatedEntryTime().getTime())
+                            && currentOrder.getEstimatedExitTime().getTime() >= (orderToValidate.getEstimatedExitTime().getTime())
+                            && currentOrder.getEstimatedEntryTime().getTime() <= orderToValidate.getEstimatedExitTime().getTime())
+            return true;
+        else
+            return false;
     }
 
 
@@ -100,7 +206,7 @@ public class OrderController {
      * @param preOrder preorder object which includes needed params
      * @return A new order
      */
-    public Order makeNewPreOrder(PreOrder preOrder) throws SQLException {
+    public Order makeNewPreOrder(PreOrder preOrder) throws SQLException, CustomerNotificationFailureException {
         return makeNewPreOrder(preOrder.getCostumerID(),
                 preOrder.getCarID(),
                 preOrder.getEstimatedExitTime(),
@@ -117,10 +223,16 @@ public class OrderController {
      * @param estimatedEntryTime Estimated entry time to parking lot
      * @return A new order
      */
-    //TODO : After entering with the car into the parking lot the entry time of Order (super) should be set!)
-    public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime)throws SQLException{
+    public Order makeNewPreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, Date estimatedEntryTime) throws SQLException, CustomerNotificationFailureException {
         PreOrder newPreOrder = new PreOrder(customerID, carID, estimatedExitTime ,parkingLotNumber, 0, estimatedEntryTime);
-        //First we check with the CustomerController if this customer has some special price for this parking.
+        //First we check if the Customer can acctualy park this car in the parking in the wanted hours:
+        if (!checkIfAvailable(newPreOrder))
+        {
+            throw new CustomerNotificationFailureException("Sorry, we can not Pre-Order at this time on this parking lot," +
+                    "due to lack of space.\n" +
+                    "you should try some other time or a different parking-lot.");
+        }
+        //Then we check with the CustomerController if this customer has some special price for this parking.
         priceList priceType = customerController.getHourlyParkingCost(customerID, newPreOrder);
         // Then we calculate the amount to be payed using the billingController and add it to the order.
         Double charge = billingController.calculateParkingCharge(estimatedEntryTime, estimatedExitTime, priceType);
@@ -129,17 +241,6 @@ public class OrderController {
         dbController.insertOrder(newPreOrder, priceType);
         _ordersList.put(newPreOrder.getOrderID(), newPreOrder);
         return newPreOrder;
-    }
-
-    // TODO: someone uses this?
-    public Order makeOrderFromDb(int orderID, int customerID, Integer carID, Integer parkingLotNumber, Order.OrderStatus orderStatus, Date entryTimeEstimated, Date entryTimeActual, Date estimatedExitTime, Date actualExitTime, double price, Date creationTime){
-        Order orderFromDb = new Order(orderID, customerID,  carID,  parkingLotNumber, orderStatus, entryTimeEstimated,  entryTimeActual,  estimatedExitTime,  actualExitTime,  price,  creationTime);
-        _ordersList.put(orderFromDb.getOrderID(), orderFromDb);
-        return orderFromDb;
-    }
-
-    public void getOrdersFromDb() throws SQLException {
-        this._ordersList.putAll(dbController.getAllOrders());
     }
 
     //TODO : Add different options to reach the specific order maybe using the customer's profile or so.
@@ -199,7 +300,7 @@ public class OrderController {
     {
         final long THREE_HOURS      = 3*HOURS_IN_MS;
         final long ONE_HOUR         = 1*HOURS_IN_MS;
-        PreOrder orderToDelete      = getPreorder(orderID);
+        PreOrder orderToDelete      = getPreOrder(orderID);
         final long REMAINING_TIME   = orderToDelete.getEstimatedEntryTime().getTime() - new Date().getTime() ;
         double refund;
         double actualPayment;

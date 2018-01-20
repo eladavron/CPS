@@ -52,6 +52,7 @@ public class Order {
         this._estimatedEntryTime = this._actualEntryTime;
         this._parkingLotNumber = parkingLotNumber;
         this._orderStatus = OrderStatus.PRE_ORDER;
+        this._orderID = 0;
 
     }
 
@@ -249,7 +250,8 @@ public class Order {
     @Override
     public String toString() {
         return "Order's details are:\n" +
-                "user's Id=" + _customerID +
+                "user's ID=" + _customerID +
+                "Order's ID=" + _orderID +
                 ", car's ID=" + _carID +
                 ", Actual entry time=" + _actualEntryTime +
                 ", Estimated entry time=" + _estimatedEntryTime +

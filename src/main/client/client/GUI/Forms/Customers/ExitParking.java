@@ -45,6 +45,7 @@ public class ExitParking {
                 else //More than one active order
                 {
                     waitScreen.cancelTimeout();
+                    waitScreen.setText("Multiple cars found in our lots.");
                     HashMap<Integer, Order> orderMap = new HashMap<Integer, Order>(); //Map the car number to the order
                     ArrayList<Integer> choices = new ArrayList<>();
                     for (Object order : orders)
@@ -86,7 +87,7 @@ public class ExitParking {
             @Override
             public void run() {
                 String exitMsg = "Thank you for using CPS car parking service!\nYour car is waiting for you.";
-                if (getMessage().getData() != null && getMessage().getData().get(0) != null && getMessage().getDataType().equals(Message.DataType.PRIMITIVE))
+                if (getMessage().getData() != null  && getMessage().getData().size() > 0 && getMessage().getData().get(0) != null && getMessage().getDataType().equals(Message.DataType.PRIMITIVE))
                 {
                     exitMsg+="\nBy the way, you've been refunded for " + getMessage().getData().get(0) + " NIS.";
                 }

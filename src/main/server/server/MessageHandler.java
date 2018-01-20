@@ -132,8 +132,8 @@ public class MessageHandler {
             }
             else
             {
-                customerController.finishOrder(departingCustomer,orderToFinish.getOrderID(),orderToFinish.getPrice());
                 parkingController.exitParkingLot(orderToFinish.getOrderID());
+                customerController.finishOrder(departingCustomer,orderToFinish.getOrderID(),orderToFinish.getPrice());
                 orderToFinish.setOrderStatus(Order.OrderStatus.FINISHED);
                 endParkingResponse.setMessageType(FINISHED);
                 endParkingResponse.setDataType(PRIMITIVE);
@@ -167,7 +167,7 @@ public class MessageHandler {
                 response.setDataType(orderType);
                 response.addData(newPreOrder);
                 break;
-            case ORDER:
+            case ORDER: //this is actually a payment for exiting with the car.
                 Order    orderInNeedOfPayment  = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
                 Customer payingCustomer        = SessionManager.getSession(clientConnection).getCustomer();
 
