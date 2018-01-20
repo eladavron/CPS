@@ -1,6 +1,8 @@
 package controller;
 
+import entity.Billing;
 import entity.Billing.priceList;
+import entity.Customer;
 import entity.Order;
 import entity.PreOrder;
 
@@ -145,29 +147,49 @@ public class OrderController {
      *  When a customer wants to finish his order (and move the car out) this function is called,
      *  with the current time as the exitTime of the customer and the order's price is calculated.
      * @param orderID : the customer's order to be finished
-     * @param priceType : The price this order will charge per hour for.
+     * @param finalPrice : The price this order will charge per hour for.
      * @return order : the finished order with the final price updated
      */
-    public Order finishOrder(Integer orderID, priceList priceType){
-        Order order = getOrder(orderID);
-        order.setActualExitTime(new Date());
-        double finalPrice = billingController.calculateParkingCharge(order.getActualEntryTime(), order.getActualExitTime(), priceType);
-        if(order.getEstimatedEntryTime().compareTo(order.getActualEntryTime()) < 0 )
+    public Order finishOrder(Integer orderID, double finalPrice) throws SQLException {
+        Order orderToFinish = getOrder(orderID);
+        orderToFinish.setActualExitTime(new Date());
+
+        if (dbController.finishOrder(orderToFinish.getOrderID(),orderToFinish.getActualExitTime(), finalPrice))
+        { //If finishUpdate successful
+            _ordersList.remove(orderToFinish.getOrderID());
+            //TODO: IMPORTANT for today/tomorrow: Handle regular subscriptions so that cannot be used twice in same day
+        }
+        return orderToFinish;
+    }
+
+    /**
+     * handles estimated billing for charing upon placing a future order
+     * @param customerID customer ID
+     * @param preorder preorder
+     * @return estimated parking price
+     */
+    public Double handleBillingUponPreOrderPlacement(Integer customerID, PreOrder preorder)
+    {
+        Billing.priceList priceType = customerController.getHourlyParkingCost(customerID, preorder);
+        return billingController.calculateParkingCharge(preorder.getEstimatedEntryTime(), preorder.getEstimatedExitTime(), priceType);
+    }
+
+    /**
+     * Handles final billing upon car departure
+     * @param customer Customer object
+     * @param orderToFinish order object
+     * @return final order price
+     */
+    public Double handleFinalBillingUponDeparture(Customer customer, Order orderToFinish) throws SQLException {
+        Billing.priceList priceType = customerController.getHourlyParkingCost(customer.getUID(), orderToFinish);
+        double finalPrice = billingController.calculateParkingCharge(orderToFinish.getActualEntryTime(), orderToFinish.getActualExitTime(), priceType);
+        if(orderToFinish.getEstimatedEntryTime().compareTo(orderToFinish.getActualEntryTime()) < 0 )
         {
             finalPrice = finalPrice*1.2;
         }
-        if (order instanceof PreOrder)
-        {
-            order.setPrice(finalPrice - ((PreOrder) order).getCharge());
-        }
-
-
-        order.setOrderStatus(Order.OrderStatus.FINISHED);
-        //TODO : update order params to match final order. ->DBController
-        //TODO: _ordersList.remove(order.getOrderID()); will stay on the list (for today) in order to make sure Regulars arent used twice.
-        return order;
+        orderToFinish.setPrice(finalPrice);
+        return finalPrice - orderToFinish.getCharge();
     }
-
     /**
      *
      * @param orderID Order ID

@@ -41,9 +41,17 @@ public class BillingController {
         return instance;
     }
 
+    /**
+     * Calculates price for parking according to type of parking and entry/exit times
+     * @param entryTime The entry time of the car
+     * @param exitTime The exit time of the car
+     * @param priceType The hourly price according to the customer/order type
+     * @return
+     */
     public double calculateParkingCharge(Date entryTime, Date exitTime, Billing.priceList priceType){
         double minutes = TimeUnit.MILLISECONDS.toMinutes(Math.abs(exitTime.getTime() - entryTime.getTime()));
-        return (minutes * priceType.getPrice()) / 60 ;
+        minutes = (minutes < 60) ? 60 : minutes; //minimum is 1 hour
+        return minutes * priceType.getPrice() / 60;
     }
 
     public double getSubscriptionCost(Billing.priceList subscriptionType){

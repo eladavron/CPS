@@ -10,6 +10,7 @@ import utils.TimeUtils;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static controller.Controllers.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes;
@@ -17,6 +18,7 @@ import static controller.CustomerController.SubscriptionOperationReturnCodes.QUE
 import static entity.Message.DataType.*;
 import static entity.Message.MessageType;
 import static entity.Message.MessageType.*;
+import static entity.Order.OrderStatus.IN_PROGRESS;
 import static entity.Report.ReportType;
 
 /**
@@ -85,20 +87,20 @@ public class MessageHandler {
                     throw new InvalidMessageException("Unknown message type: " + msgType);
             }
         } catch (EmployeeNotificationFailureException e) {
-            Message employeeNotification = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE,"AN ERROR HAS OCCURRED )-:\n" + e.getMessage());
+            Message employeeNotification = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE,"\nAN ERROR HAS OCCURRED )-:\n" + e.getMessage());
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
                 employeeNotification.setTransID(SID);
             sendToClient(employeeNotification, clientConnection);
         } catch (CustomerNotificationFailureException e) {
-            Message customerNotification = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE,"Dear valued customer:\n\n" + e.getMessage());
+            Message customerNotification = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE,"\n\nDear valued customer:\n" + e.getMessage());
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
                 customerNotification.setTransID(SID);
             sendToClient(customerNotification, clientConnection);
             return false;
         } catch (Exception e) {
-            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "Exception: " + e.getMessage());
+            Message replyInvalid = new Message(MessageType.ERROR_OCCURRED, PRIMITIVE, "\nException: " + e.getMessage());
             Long SID = Message.getSidFromJson(json);
             if (SID != null)
                 replyInvalid.setTransID(SID);
@@ -113,52 +115,71 @@ public class MessageHandler {
 
         Message endParkingResponse = new Message();
         endParkingResponse.setTransID(endParkingMsg.getTransID());
-        Order order = (Order)endParkingMsg.getData().get(0);
-        parkingController.exitParkingLot(order.getOrderID());
-        Customer departingCustomer = customerController.getCustomer(order.getCostumerID());
-
+        Integer orderId = ((Order)endParkingMsg.getData().get(0)).getOrderID();
         try{
+            Order orderToFinish = orderController.getOrder(orderId);
+            orderId = orderToFinish.getOrderID();
 
-            Double neededPayment = customerController.finishOrder(departingCustomer,order.getOrderID());
-            if (neededPayment.equals((double)0))
+            Customer departingCustomer = customerController.getCustomer(orderToFinish.getCostumerID());
+            orderToFinish.setActualExitTime(new Date());
+            Double remainingCharge = orderController.handleFinalBillingUponDeparture(departingCustomer,orderToFinish);
+            if (remainingCharge > 0.0)
             {
-                endParkingResponse.setMessageType(FINISHED);
+                SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(orderToFinish);
+                endParkingResponse.setMessageType(NEED_PAYMENT);
                 endParkingResponse.setDataType(PRIMITIVE);
+                endParkingResponse.addData(remainingCharge);
             }
             else
             {
-                SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(order);
-                endParkingResponse.setMessageType(NEED_PAYMENT);
-                endParkingResponse.setMessageType(NEED_PAYMENT);
+                customerController.finishOrder(departingCustomer,orderToFinish.getOrderID(),orderToFinish.getPrice());
+                parkingController.exitParkingLot(orderToFinish.getOrderID());
+                orderToFinish.setOrderStatus(Order.OrderStatus.FINISHED);
+                endParkingResponse.setMessageType(FINISHED);
                 endParkingResponse.setDataType(PRIMITIVE);
-                endParkingResponse.addData(neededPayment);
+                if (remainingCharge < 0)
+                {
+                    endParkingResponse.addData(Math.abs(remainingCharge));
+                }
             }
 
             sendToClient(endParkingResponse, clientConnection);
 
         }catch (OrderNotFoundException e){
-            endParkingResponse.setMessageType(FAILED);
+            endParkingResponse.setMessageType(MessageType.FAILED);
             endParkingResponse.setDataType(PRIMITIVE);
-            endParkingResponse.addData("Order ID " + order.getOrderID() + " was not found, please contact CPS personnel");
+            endParkingResponse.addData("Order ID " + orderId + " was not found, please contact CPS personnel");
             sendToClient(endParkingResponse, clientConnection);
         }
-
     }
 
-    private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws IOException, SQLException {
-        Message response = new Message();
-        switch(SessionManager.getSession(clientConnection).getTransMap().get(paymentNeededMsg.getTransID())) {
+    private static void handlePayment(Message paymentNeededMsg, ConnectionToClient clientConnection) throws Exception {
+        Message response            = new Message();
+        Message.DataType orderType  = SessionManager.getSession(clientConnection).getTransMap().get(paymentNeededMsg.getTransID());
+        switch(orderType) {
             case PREORDER:
-                Order orderInNeedOfPayment = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
-                Customer payingCustomer = SessionManager.getSession(clientConnection).getCustomer();
+                PreOrder preorderInNeedOfPayment = (PreOrder) SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
+                SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(null);
+
+                Order newPreOrder = customerController.addNewPreOrder(preorderInNeedOfPayment);
+
+                response.setMessageType(FINISHED);
+                response.setDataType(orderType);
+                response.addData(newPreOrder);
+                break;
+            case ORDER:
+                Order    orderInNeedOfPayment  = SessionManager.getSession(clientConnection).getOrderInNeedOfPayment();
+                Customer payingCustomer        = SessionManager.getSession(clientConnection).getCustomer();
+
                 if (orderInNeedOfPayment != null) {
-                    customerController.finishOrder(payingCustomer, orderInNeedOfPayment.getOrderID());
+                    parkingController.exitParkingLot(orderInNeedOfPayment.getOrderID());
+                    customerController.finishOrder(payingCustomer, orderInNeedOfPayment.getOrderID(),orderInNeedOfPayment.getPrice());
                     SessionManager.getSession(clientConnection).setOrderInNeedOfPayment(null);
                     response.setMessageType(FINISHED);
-                    response.setDataType(PREORDER);
+                    response.setDataType(orderType);
                     response.addData(orderInNeedOfPayment);
                 } else {
-                    response.setMessageType(FAILED);
+                    response.setMessageType(MessageType.FAILED);
                     response.setDataType(PRIMITIVE);
                     response.addData("Are we feeling generous today?");
                 }
@@ -268,6 +289,7 @@ public class MessageHandler {
     private static void handleUserQueries(Message queryMsg, Message response) throws SQLException
     {
         int userID = (int) queryMsg.getData().get(0);
+        User.UserType type = (User.UserType) queryMsg.getData().get(1);
         switch (queryMsg.getDataType())
         {
             case PREORDER:
@@ -275,8 +297,9 @@ public class MessageHandler {
                 response.setData(customerController.getCustomersPreOrders(userID));
                 break;
             case ORDER:
+                Integer parkingLotID = (Integer) queryMsg.getData().get(2);
                 response.setDataType(Message.DataType.ORDER);
-                response.setData(customerController.getCustomersActiveOrders(userID));
+                response.setData(customerController.getCustomersActiveOrdersInLot(userID, parkingLotID));
                 break;
             case CARS:
                 for (Integer car : (customerController.getCustomer((userID))).getCarIDList())
@@ -302,13 +325,13 @@ public class MessageHandler {
             case REPORT:
                 response.setDataType(PRIMITIVE);
                 ReportType reportType = (ReportType) queryMsg.getData().get(1);
-                Integer parkingLotID = (Integer) queryMsg.getData().get(2);
-                response.addData(reportController.generateReport(reportType,userID,parkingLotID));
+                Integer parkingLotID2 = (Integer) queryMsg.getData().get(2);
+                response.addData(reportController.generateReport(reportType,userID,parkingLotID2));
                 break;
             case SESSION:
                 break;
             default:
-                response = new Message(FAILED, PRIMITIVE, "Unknown query type " + queryMsg.getDataType());
+                response = new Message(MessageType.FAILED, PRIMITIVE, "Unknown query type " + queryMsg.getDataType());
         }
     }
 
@@ -358,21 +381,6 @@ public class MessageHandler {
             default:
                 if (queryMsg.getData().get(0) != null && queryMsg.getData().get(1) != null) //It's a user-based query
                 {
-                    User user = new User();
-                    int userID = (int) queryMsg.getData().get(0);
-                    User.UserType type = (User.UserType) queryMsg.getData().get(1);
-                    switch (type)
-                    {
-                        case CUSTOMER:
-                            user = customerController.getCustomer(userID);
-                            break;
-                        case SUPERMAN:
-                        case CUSTOMER_SERVICE:
-                        case MANAGER:
-                        case EMPLOYEE:
-                            user = employeeController.getEmployeeByID(userID);
-                            break;
-                    }
                     handleUserQueries(queryMsg, response);
                 }
         }
@@ -448,6 +456,7 @@ public class MessageHandler {
                 break;
             case ORDER:
                 Order order = mapper.convertValue(createMsg.getData().get(0),Order.class);
+
                 /*
                 Check that the user isn't trying to order a 14-day long parking with a full subscription
                  */
@@ -459,9 +468,26 @@ public class MessageHandler {
                     createMsgResponse = new Message(FAILED, PRIMITIVE, "You can't park for more than 14 days with a Full Subscription!");
                     break;
                 }
-                Order newOrder = customerController.addNewOrder(order);
-                parkingController.enterParkingLot(newOrder.getOrderID());
-                createMsgResponse = new Message(FINISHED, Message.DataType.ORDER, newOrder);
+                Order entrance;
+                Integer orderID = order.getOrderID();
+                if (parkingController.checkCarAlreadyParked(order.getCarID()))
+                {
+                    throw new CustomerNotificationFailureException("You car is already parked in one of our lots!");
+                }
+                if (orderID == 0)//Entering parking normally
+                {
+                    entrance = customerController.addNewOrder(order);
+                    orderID = entrance.getOrderID();
+                }
+                else
+                {
+                    entrance = orderController.getOrder(orderID);
+                    entrance.setActualEntryTime(new Date());
+                    customerController.updatePreOrderEntranceToParking(entrance);
+                    entrance.setOrderStatus(IN_PROGRESS);
+                }
+                parkingController.enterParkingLot(orderID);
+                createMsgResponse = new Message(FINISHED, Message.DataType.ORDER, entrance);
                 break;
             case PREORDER:
                 PreOrder preorder = mapper.convertValue(createMsg.getData().get(0), PreOrder.class);
@@ -476,15 +502,17 @@ public class MessageHandler {
                     createMsgResponse = new Message(FAILED, PRIMITIVE, "You can't park for more than 14 days with a Full Subscription!");
                     break;
                 }
-                Order newPreOrder = customerController.addNewPreOrder(preorder);
-                double estimatedCharge = newPreOrder.getPrice();
+
+                double estimatedCharge = orderController.handleBillingUponPreOrderPlacement(preorder.getCostumerID(), preorder);
                 if (estimatedCharge > 0)
                 {
-                    SessionManager.getSession(clientConnection).setOrderInNeedOfPayment((Order) newPreOrder);
+                    preorder.setCharge(estimatedCharge);
+                    SessionManager.getSession(clientConnection).setOrderInNeedOfPayment((PreOrder) preorder);
                     createMsgResponse = new Message(NEED_PAYMENT, PRIMITIVE, estimatedCharge);
                 }
                 else
                 {
+                    Order newPreOrder = customerController.addNewPreOrder(preorder);
                     createMsgResponse = new Message(FINISHED, PREORDER, newPreOrder);
                 }
                 break;

@@ -119,7 +119,7 @@ public class ParkingController {
         // first check if car already parked.
         if (checkCarAlreadyParked(order.getCarID()))
         {
-            throw new CustomerNotificationFailureException("Your car is already parking in this parking lot!");
+            throw new CustomerNotificationFailureException("Your car is already parked in our lot!");
         }
 
         if(this._parkingLotList.get(parkingLotNumber).getIsFullState()){
@@ -168,7 +168,11 @@ public class ParkingController {
 
         initCurrentParkingValues(parkingLotNumber);
 
-        _heightNumOccupied--;
+        if (_heightNumOccupied > 1)
+        {
+            _heightNumOccupied--;
+        }
+
         ParkingSpace currentParkingSpace = this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[_depthNumOccupied][_widthNumOccupied][_heightNumOccupied];
         currentParkingSpace.setStatus(FREE);
         currentParkingSpace.setOccupyingOrderID(null);
@@ -178,6 +182,7 @@ public class ParkingController {
         }
         updateAfterExit(parkingLotNumber);
         robotController.extractCarFromParkingLot(order.getCarID(), order.getParkingLotNumber(), null, null);
+
         return dbController.updateParkingSpace(parkingLotNumber,currentParkingSpace);
     }
 
@@ -395,7 +400,7 @@ public class ParkingController {
         }
     }
 
-    private boolean checkCarAlreadyParked(Integer carID) throws CustomerNotificationFailureException {
+    public boolean checkCarAlreadyParked(Integer carID) throws CustomerNotificationFailureException {
         return _parkedCarList.contains(carID);
     }
 
@@ -408,9 +413,9 @@ public class ParkingController {
         return true;
     }
 
-    private boolean unsetCarAsParked(Integer carID) throws SQLException{
+    private boolean unsetCarAsParked(Integer carID) throws SQLException, CustomerNotificationFailureException {
         if (!dbController.unsetCarAsParked(carID))
-            return false; // TOOD: maybe redundant. i'm tired. Orb.
+            throw new CustomerNotificationFailureException("Your request cannot be currently processed, please contact customer service at Oops@iDidItAgain.com!");
         _parkedCarList.remove(carID);
         return true;
     }

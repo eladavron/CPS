@@ -142,7 +142,7 @@ public class MessageTasker extends Task<Message> {
         Alert requestPayment = new Alert(Alert.AlertType.INFORMATION);
         requestPayment.setTitle("Payment");
         requestPayment.setHeaderText("Please insert exactly " + amount + " NIS into the machine!");
-        requestPayment.setContentText("No change, insert the exact amount!\nFake bills will be returned!");
+        requestPayment.setContentText("Please insert " + amount + "NIS into the machine!\nNo change will be given, insert the exact amount!\nFake bills will be returned!");
         requestPayment.getDialogPane().getButtonTypes().setAll(ButtonType.OK, ButtonType.CANCEL);
         Optional<ButtonType> result = requestPayment.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK)

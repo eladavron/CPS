@@ -6,7 +6,6 @@ import client.GUI.Helpers.MessageRunnable;
 import client.GUI.Helpers.MessageTasker;
 import entity.Message;
 import entity.Order;
-import entity.User;
 import javafx.scene.control.ChoiceDialog;
 
 import java.util.ArrayList;
@@ -26,17 +25,18 @@ public class ExitParking {
     public static void exitParkingStart()
     {
         WaitScreen waitScreen = new WaitScreen();
-        User user = CPSClientGUI.getSession().getUser();
-        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.ORDER, user.getUID(), user.getUserType());
+        Integer UID = CPSClientGUI.getSession().getUserId();
+        Integer parkingLotID = CPSClientGUI.getSession().getParkingLotID();
+        Message queryOrdersMsg = new Message(Message.MessageType.QUERY, Message.DataType.ORDER, UID, CPSClientGUI.getSession().getUserType(), parkingLotID);
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
                 ArrayList orders = getMessage().getData();
                 if (orders == null || orders.size() <= 0) //No active orders.
                 {
-                    waitScreen.showError("No cars parked!", "We didn't find your car(s) in our system.");
+                    waitScreen.showError("No cars parked!", "We didn't find your car(s) in this parking lot.");
                 }
-                else if (orders.size() == 1) //One active order
+                else if (orders. size() == 1) //One active order
                 {
                     waitScreen.hide();
                     Order foundOrder = (Order) orders.get(0);
@@ -85,7 +85,12 @@ public class ExitParking {
         MessageRunnable onSuccess = new MessageRunnable() {
             @Override
             public void run() {
-                waitScreen.showSuccess("Thank you!","Thank you for using CPS car parking service!\nYour car is waiting for you.");
+                String exitMsg = "Thank you for using CPS car parking service!\nYour car is waiting for you.";
+                if (getMessage().getData() != null && getMessage().getData().get(0) != null && getMessage().getDataType().equals(Message.DataType.PRIMITIVE))
+                {
+                    exitMsg+="\nBy the way, you've been refunded for " + getMessage().getData().get(0) + " NIS.";
+                }
+                waitScreen.showSuccess("Thank you!",exitMsg);
             }
         };
         MessageRunnable onFailed = new MessageRunnable() {

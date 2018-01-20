@@ -250,6 +250,15 @@ public class CPSServer extends AbstractServer {
                         SessionManager.getSessionsMap().clear();
                         System.out.println("Done!");
                         break;
+                    case "debug on":
+                        Controllers.IS_DEBUG_CONTROLLER = true;
+                        System.out.println("Debug mode activated!");
+                        break;
+                    case "debug off":
+                        Controllers.IS_DEBUG_CONTROLLER = false;
+                        System.out.println("Debug mode deactivated!");
+
+
                     case "exit":
                         //TODO: Handle orderly exit?
                         System.out.println("So long, and thanks for all the fish!");

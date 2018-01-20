@@ -398,16 +398,65 @@ public class DBController {
      * @param orderId
      * @return True upon success, false otherwise
      */
-    public boolean deleteOrder (int orderId, double charged) throws SQLException
+    public boolean deleteOrder(int orderId, double charged) throws SQLException
     {
 
         try {
             Statement stmt = db_conn.createStatement();
-            stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED', price= '%s' WHERE  idOrders=%s",
+            int result = stmt.executeUpdate(String.format("UPDATE Orders SET orderType='DELETED', price= '%s' WHERE  idOrders=%s",
                     charged,
                     orderId),
                     Statement.RETURN_GENERATED_KEYS);
-            return true;
+            return result == 1;
+
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred deleting order with id: %s \n%s\n", orderId, e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Updates status to preorder  and entry time
+     * @param orderId
+     * @param actualEntryTime the actual entry time
+     * @return True upon success, false otherwise
+     */
+    public boolean changeOrderToInProgress(int orderId, Date actualEntryTime) throws SQLException
+    {
+
+        try {
+            Statement stmt = db_conn.createStatement();
+            int result = stmt.executeUpdate(String.format("UPDATE Orders SET orderType='IN_PROGRESS', entryTimeActual='%s' WHERE  idOrders=%s",
+                    _simpleDateFormatForDb.format(actualEntryTime),
+                    orderId),
+                    Statement.RETURN_GENERATED_KEYS);
+            return result == 1;
+
+
+        } catch (SQLException e) {
+            System.err.printf("An error occurred while updating preorder to order id: %s \n%s\n", orderId, e.getMessage());
+            throw e;
+        }
+    }
+
+
+    /**
+     * "Delete" order by setting its type to 'FINISH'
+     * @param orderId
+     * @return True upon success, false otherwise
+     */
+    public boolean finishOrder (int orderId, Date exitTimeActual, double charged) throws SQLException, NullPointerException
+    {
+
+        try {
+            Statement stmt = db_conn.createStatement();
+            int result = stmt.executeUpdate(String.format("UPDATE Orders SET orderType='FINISHED', price= '%s', exitTimeActual = '%s'  WHERE  idOrders=%s",
+                    charged,
+                    _simpleDateFormatForDb.format(exitTimeActual),
+                    orderId),
+                    Statement.RETURN_GENERATED_KEYS);
+            return result == 1;
 
 
         } catch (SQLException e) {
@@ -924,20 +973,16 @@ public class DBController {
      * @return True if successful, False otherwise.
      */
     public boolean addCarToCustomer(Integer customerID, Integer carID) throws SQLException{
-
-        //TODO: Check if user-car is already inserted and show msg / if not active Set to active.
         try {
             Statement stmt = db_conn.createStatement();
-            //int uid;
-            stmt.executeUpdate(String.format("INSERT INTO CarToUser (idCars, idUser)"
-                            + " VALUES ('%s', '%s')",
-                    carID, customerID),
-                    Statement.RETURN_GENERATED_KEYS);
+            String query = String.format("INSERT INTO CarToUser (idCars, idUser) VALUES ('%s', '%s')" +
+                    " ON DUPLICATE KEY UPDATE isActive=1", carID, customerID);
+            stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             return true;
-
-
         } catch (SQLException e) {
-            System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
+            if (Controllers.IS_DEBUG_CONTROLLER) {
+                System.err.printf("An error occurred inserting car: %s to customer: %s:\n%s\n", carID, customerID, e.getMessage());
+            }
             throw e;
         }
     }

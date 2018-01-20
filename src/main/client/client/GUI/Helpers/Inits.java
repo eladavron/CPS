@@ -50,7 +50,8 @@ public class Inits {
                 {
                     if (object instanceof PreOrder && ((PreOrder) object).getOrderStatus().equals(PRE_ORDER))
                     {
-                        comboBox.getItems().add((PreOrder) object);
+                        if (((PreOrder) object).getParkingLotNumber().equals(CPSClientGUI.getSession().getParkingLotID()))
+                            comboBox.getItems().add((PreOrder) object);
                     }
                 }
                 if (comboBox.getItems().size() == 0) //Empty list

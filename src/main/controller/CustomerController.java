@@ -1,6 +1,7 @@
 package controller;
 
 import Exceptions.CustomerAlreadyExists;
+import Exceptions.CustomerNotificationFailureException;
 import Exceptions.LastCarRemovalException;
 import Exceptions.OrderNotFoundException;
 import entity.*;
@@ -11,7 +12,7 @@ import java.util.*;
 import static controller.Controllers.*;
 import static controller.CustomerController.SubscriptionOperationReturnCodes.*;
 import static entity.Billing.priceList.*;
-import static entity.Order.OrderStatus.FINISHED;
+import static entity.Order.OrderStatus.*;
 import static entity.Subscription.SubscriptionType.FULL;
 import static entity.Subscription.SubscriptionType.REGULAR;
 
@@ -124,11 +125,46 @@ public class CustomerController {
     }
 
     public ArrayList<Object> getCustomersPreOrders(int customerID) throws SQLException{
-        return new ArrayList<>(dbController.getOrdersByUserID(customerID).values());
+        ArrayList<Object> returnList = new ArrayList<>();
+        for (Object obj : dbController.getOrdersByUserID(customerID).values())
+        {
+            if (obj instanceof Order && ((Order) obj).getOrderStatus().equals(PRE_ORDER))
+            {
+                returnList.add(obj);
+            }
+        }
+        return returnList;
     }
 
-    public ArrayList<Object> getCustomersActiveOrders(int customerID){
-        return new ArrayList<>(_customersList.get(customerID).getActiveOrders().values());
+    public ArrayList<Object> getCustomersActiveOrdersInLot(int customerID, int parkingLotID) throws SQLException {
+        ArrayList<Object> returnList = new ArrayList<>();
+        for (Object obj : dbController.getOrdersByUserID(customerID).values())
+        {
+            if (obj instanceof Order
+                && ((Order) obj).getOrderStatus().equals(IN_PROGRESS)
+                && ((Order) obj).getParkingLotNumber().equals(parkingLotID))
+            {
+                returnList.add(obj);
+            }
+        }
+        return returnList;
+    }
+
+    /**
+     * Deletes an order from active orders list
+     * @param customer Customer from which to delete the active order
+     * @param orderID The order ID
+     */
+    public void removeOrderFromCustomerList(int customerID, int orderID) throws CustomerNotificationFailureException {
+        try {
+            _customersList.get(customerID).getActiveOrders().remove(orderID);
+        } catch (Exception e) {
+            if (Controllers.IS_DEBUG_CONTROLLER)
+            {
+                e.printStackTrace();
+            }
+            throw new CustomerNotificationFailureException("There was a problem with your request, please contact support");
+        }
     }
 
     /**
@@ -176,6 +212,7 @@ public class CustomerController {
     /**
      * OverLoading function for a given template of a PreOrder.
      * @param newPreOrder
+     * @return Order new PreOrder
      */
     public Order addNewPreOrder(PreOrder newPreOrder) throws SQLException{
         return addNewPreOrder(newPreOrder.getCostumerID(), newPreOrder.getCarID(), newPreOrder.getEstimatedExitTime(), newPreOrder.getParkingLotNumber(), newPreOrder.getEstimatedEntryTime());
@@ -190,19 +227,28 @@ public class CustomerController {
     }
 
     /**
+     * Calls DBController to update order status to be in progress + actual entry time. to be used when fulfilling a preorder
+     * @param orderToUpdate
+     * @throws SQLException
+     */
+    public void updatePreOrderEntranceToParking(Order orderToUpdate) throws SQLException {
+        dbController.changeOrderToInProgress(orderToUpdate.getOrderID(),orderToUpdate.getActualEntryTime());
+    }
+
+    /**
      * Finish an order (exiting with the car)
      * Throws order not found if we cant find it.
      * Return: the price for the Customer to pay (by calling BillingController)
      */
-    public double finishOrder(Customer customer,Integer orderID) throws OrderNotFoundException {
+    public double finishOrder(Customer customer,Integer orderID, double finalPrice) throws OrderNotFoundException, SQLException, CustomerNotificationFailureException {
         Map<Integer, Object> activeOrders = customer.getActiveOrders();
         Order orderToFinish;
         if (activeOrders.containsKey(orderID)) {
             orderToFinish = (Order) activeOrders.get(orderID);
             // The order was found...need to check the client's cost for this order.
             Integer carID = orderToFinish.getCarID();
-            Billing.priceList checkedPrice = getHourlyParkingCost(customer.getUID(), orderToFinish);
-            orderController.finishOrder(orderToFinish.getOrderID(), checkedPrice);
+            orderController.finishOrder(orderToFinish.getOrderID(), finalPrice);
+            removeOrderFromCustomerList(customer.getUID(), orderID);
             return orderToFinish.getPrice();
         }
         else{ throw new OrderNotFoundException(orderID);}

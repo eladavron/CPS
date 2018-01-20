@@ -110,7 +110,11 @@ public class Message {
                             _data.add(reportType);
                             _data.add(msg.getData().get(2)); //Copy parking lot ID;
                             break;
-                        default: //User queries
+                        case ORDER:
+                            _data.add(msg.getData().get(0)); //copy User ID
+                            _data.add(mapper.convertValue(msg.getData().get(1), User.UserType.class)); //Copy User Type
+                            _data.add(msg.getData().get(2)); //Copy Parking Lot ID
+                        default: //Other User queries
                             User.UserType userType = mapper.convertValue(msg.getData().get(1), User.UserType.class);
                             _data.add(msg.getData().get(0)); //Copy UserID
                             _data.add(userType);

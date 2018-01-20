@@ -82,6 +82,16 @@ public class Session {
             return null;
     }
 
+    public Integer getParkingLotID()
+    {
+        if (_parkingLot != null)
+        {
+            return _parkingLot.getParkingLotID();
+        }
+        else
+            return null;
+    }
+
     public void setUser(User user) {
         this._user = user;
     }

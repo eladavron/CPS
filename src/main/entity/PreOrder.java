@@ -12,8 +12,6 @@ public class PreOrder extends Order {
      * Private properties
      */
 
-    private double _charge;
-    private Date _estimatedEntryTime;
     private boolean _isMarkedLate;
     private boolean _isLateArrivalConfirmedByCustomer;
 
@@ -32,8 +30,8 @@ public class PreOrder extends Order {
      */
     public PreOrder(Integer customerID, Integer carID, Date estimatedExitTime, Integer parkingLotNumber, double charge, Date estimatedEntryTime) {
         super(customerID, carID, estimatedExitTime, parkingLotNumber);
-        this._charge = charge;
-        this._estimatedEntryTime =  estimatedEntryTime;
+        super.setEstimatedEntryTime(estimatedEntryTime);
+        this.setCharge(charge);
         this._isMarkedLate = false;
         this._isLateArrivalConfirmedByCustomer = false;
     }
@@ -44,8 +42,8 @@ public class PreOrder extends Order {
      */
     public PreOrder(PreOrder other) {
         super(other.getCostumerID(), other.getCarID(), other.getEstimatedExitTime(), other.getParkingLotNumber());
-        this._charge = other.getCharge();
-        this._estimatedEntryTime = other.getEstimatedEntryTime();
+        super.setEstimatedEntryTime(other.getEstimatedEntryTime());
+        this.setCharge(other.getCharge());
     }
 
 
@@ -53,8 +51,7 @@ public class PreOrder extends Order {
     public String toString() {
         return super.toString() +
                 ", " +
-                "charge=" + _charge +
-                ", estimated entry time=" + _estimatedEntryTime;
+                "charge=" + getCharge();
     }
 
     public boolean isLateArrivalConfirmedByCustomer() { return _isLateArrivalConfirmedByCustomer; }
@@ -65,22 +62,6 @@ public class PreOrder extends Order {
 
     public void setMarkedLate() { this._isMarkedLate = true; }
 
-    public Date getEstimatedEntryTime() {
-        return _estimatedEntryTime;
-    }
-
-    public void setEstimatedEntryTime(Date estimatedEntryTime) {
-        this._estimatedEntryTime = estimatedEntryTime;
-    }
-
-    public double getCharge() {
-        return _charge;
-    }
-
-    public void setCharge(double charge) {
-        this._charge = charge;
-    }
-
 
     @Override
     public boolean equals(Object o) {
@@ -88,13 +69,12 @@ public class PreOrder extends Order {
         if (!(o instanceof PreOrder)) return false;
         if (!super.equals(o)) return false;
         PreOrder preOrder = (PreOrder) o;
-        return Double.compare(preOrder._charge, _charge) == 0 &&
-                Objects.equals(_estimatedEntryTime, preOrder._estimatedEntryTime);
+        return Double.compare(preOrder.getCharge(), this.getCharge()) == 0;
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(super.hashCode(), _charge, _estimatedEntryTime);
+        return Objects.hash(super.hashCode(), getCharge());
     }
 }

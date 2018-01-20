@@ -25,6 +25,7 @@ public class Order {
     private Integer _customerID;
     private Date _creationTime;
     private double _price;
+    private double _charge;
 
     private Integer _parkingSpaceHeight = -1;
     private Integer _parkingSpaceWidth = -1;
@@ -48,6 +49,7 @@ public class Order {
         this._carID = carID;
         this._estimatedExitTime = estimatedExitTime;
         this._actualEntryTime = new Date();
+        this._estimatedEntryTime = this._actualEntryTime;
         this._parkingLotNumber = parkingLotNumber;
         this._orderStatus = OrderStatus.PRE_ORDER;
 
@@ -211,6 +213,14 @@ public class Order {
 
     public void setOrderStatus(OrderStatus orderStatus) {
         this._orderStatus = orderStatus;
+    }
+
+    public double getCharge() {
+        return _charge;
+    }
+
+    public void setCharge(double charge) {
+        this._charge = charge;
     }
 
     @Override
