@@ -25,6 +25,7 @@ public class Report {
      * Report different types.
      */
     public enum ReportType{
+        ACTIVITY_REPORT,
         DAILY_FINISHED_ORDERS,
         DAILY_CANCELED_ORDERS,
         DAILY_LATED_ORDERS,

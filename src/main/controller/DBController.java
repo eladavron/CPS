@@ -1719,6 +1719,11 @@ public class DBController {
         String shortDescription;
         switch(reportType)
         {
+            case ACTIVITY_REPORT:
+                shortDescription = "Activity Report" ;
+                reportToReturn += "Current activity report, Created by " + manager + "\n" + makeActivityReport();
+                break;
+
             case DAILY_FINISHED_ORDERS:
             {
                 shortDescription = "Daily Finished Orders";
@@ -1766,6 +1771,60 @@ public class DBController {
             throw e;
         }
         return reportToReturn;
+    }
+
+    /**
+     * Returns a report of the current Subscriptions. (can support more tables to report!).
+     * @return the report.
+     */
+    private String makeActivityReport() throws SQLException {
+        String rowLine = "|___________________________________________________"
+                + "______________________________________________________"
+                + "________________|";
+        StringBuilder report = new StringBuilder(
+                " _______________________________________________________________________________________________________"
+                        +"_________________"
+                        +"\n"
+                        +"|SubscriptionID | customer ID | type | carID | expireDate | Charge |"
+                        + "| parking lot number | regular exitTime | extra cars |");
+        ;
+        Integer countRows = 0;
+        //First we get the subscriptions from the db.
+        Map<Integer, Subscription> subscriptionList = getAllSubscriptions();
+        for (Subscription subs : subscriptionList.values())
+        {
+            //Then we check if the subs is still valid and not expired
+            if ((subs.getExpiration().getTime() >= new Date().getTime()))
+            {
+                countRows++;
+                switch(subs.getSubscriptionType())
+                {
+                    case FULL:
+                        report.append(addSubscriptionRow(subs, rowLine));
+                        break;
+                    case REGULAR:
+                        report.append(addSubscriptionRow(subs, rowLine));
+                        report.append(((RegularSubscription)subs).getParkingLotNumber().toString());
+                        report.append(" | ");
+                        report.append(((RegularSubscription)subs).getRegularExitTime());
+                        report.append(" | ");
+                        break;
+                    case REGULAR_MULTIPLE:
+                        report.append(addSubscriptionRow(subs, rowLine));
+                        report.append(((RegularSubscription)subs).getParkingLotNumber().toString());
+                        report.append(" | ");
+                        report.append(((RegularSubscription)subs).getRegularExitTime())
+                        .append(" | ");
+                        for (Integer car : (subs).getCarsID())
+                        {
+                            report.append(car.toString()).append(" , ");
+                        }
+                        report.append(" | ");
+                }
+            }
+        }
+        report.append("\n").append(rowLine);
+        return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
     }
 
     /**
@@ -1977,6 +2036,32 @@ public class DBController {
                 .append(" | ")
         );
     }
+
+
+    /**
+     * Adds rows to a sub report
+     * @param subs
+     * @param rowLine
+     * @return the row with all the wanted params.
+     * @throws SQLException
+     */
+    private String addSubscriptionRow(Subscription subs, String rowLine) throws SQLException
+    {
+        Subscription.SubscriptionType type = subs.getSubscriptionType();
+        StringBuilder orderRow = new StringBuilder();
+        return String.valueOf(orderRow
+                .append("\n")
+                .append(rowLine)
+                .append(" \n| ").append(subs.getSubscriptionID())
+                .append(" | ").append(subs.getUserID())
+                .append(" | ").append(type.toString())
+                .append(" | ").append(subs.getCarsID().get(0).toString())
+                .append(" | ").append(subs.getExpiration())
+                .append(" | ").append(subs.getCharge())
+                .append(" | ")
+        );
+    }
+
 
     /**
      * used only above^
