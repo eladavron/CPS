@@ -32,6 +32,7 @@ public class Report {
         QUARTERLY_ORDERS,
         QUARTERLY_COMPLAINTS,
         QUARTERLY_UNAVAILABLE_PARKING_SPACES,
+        WEEKLY_DAILY
     }
 
     /**

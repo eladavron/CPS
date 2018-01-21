@@ -1723,6 +1723,11 @@ public class DBController {
                 reportToReturn += "Current activity report, Created by " + manager + "\n" + makeActivityReport();
                 break;
 
+            case WEEKLY_DAILY:
+                shortDescription = "Weekly - Daily Average Report" ;
+                reportToReturn += "Current weekly - daily average report, for a week, Created by " + manager + "\n" + makeWeeklyReport();
+                break;
+
             case DAILY_FINISHED_ORDERS:
             {
                 shortDescription = "Daily Finished Orders";
@@ -1759,6 +1764,13 @@ public class DBController {
                         + "Created by :" + manager + "\n" + makeQuarterlyUnavailableSpacesReport(parkingLotID);
                 break;
             }
+            case QUARTERLY_COMPLAINTS:
+            {
+                shortDescription = "Quarterly Complaints";
+                reportToReturn += "Quarterly complaints report of parking lot number: " + parkingLotID + ", "
+                        + "Created by :" + manager + "\n" + makeQuarterlyComplaintsReport(parkingLotID);
+                break;
+            }
 
             default:
                 throw new NotImplementedException();
@@ -1778,6 +1790,40 @@ public class DBController {
             throw e;
         }
         return reportToReturn;
+    }
+
+    /**
+     * Returns the report of complaint in the parking lot
+     * @param parkingLotID the parking lot of the report.
+     * @return the report
+     */
+    private String makeQuarterlyComplaintsReport(Integer parkingLotID) throws SQLException {
+
+
+        String rowLine = "|_________________________________________________________________________"
+                + "________________|";
+        StringBuilder report = new StringBuilder(
+                " ________________________________________________________________________"
+                        +"_________________"
+                        +"\n"
+                        +"| Complaint ID  |\tStatus\t|\tUserID\t|\tRefund\t| Description |"
+        );
+        ResultSet rs;
+
+        rs = queryTable("Complaints", "idParkingLot", parkingLotID);
+        while(rs.next()) {
+            report.append("\n")
+                    .append(rowLine)
+                    .append(" \n|\t ").append(rs.getInt("idComplaints"))
+                    .append(" \t\t|\t ").append(rs.getString("status"))
+                    .append(" \t|\t ").append(rs.getInt("idUser"))
+                    .append(" \t|\t ").append(rs.getInt("refund"))
+                    .append(" \t|\t ").append(desanitizeFromSQL(rs.getString("description")))
+                    .append(" | ")
+            ;
+            report.append("\n").append(rowLine);
+        }
+        return String.valueOf(report);
     }
 
     /**
@@ -1856,7 +1902,7 @@ public class DBController {
                         report.append(((RegularSubscription)subs).getParkingLotNumber().toString());
                         report.append(" | ");
                         report.append(((RegularSubscription)subs).getRegularExitTime())
-                        .append(" | ");
+                                .append(" | ");
                         for (Integer car : (subs).getCarsID())
                         {
                             report.append(car.toString()).append(" , ");
@@ -1867,6 +1913,219 @@ public class DBController {
         }
         report.append("\n").append(rowLine);
         return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
+    }
+
+
+    /**
+     * Returns a report of the current Subscriptions. (can support more tables to report!).
+     * @return the report.
+     */
+    private String makeWeeklyReport() throws SQLException {
+        String rowLine = "|___________________________________________________"
+                + "______________________________________________________"
+                + "_______________________________________________|";
+        StringBuilder report = new StringBuilder(
+                " _______________________________________________________________________________________________________"
+                        + "________"
+                        +"________________________________________"
+                        + "\n"
+                        + "| Parking lot | Parameter | Weekly Average | Weekly Median |" +
+                        " 0..10 | 10..20 | 20..30 |"
+                        + " 30..40 | 40..50 | 50..60 | 60..70 | 70..80 | 80..90 | 90.. 100 |\n");
+
+        // parameters = numberOfCancelledOrders , numberOfCompletedOrders, numberOfLateEntranceOrders
+        Integer countRows = 0;
+        //First we get the subscriptions from the db.
+        ResultSet rs = queryTable("DailyReports");
+        Map<Integer, Map<Report.ReportType,ArrayList<Double>>> resultMap = parseDailyReportsForWeekly(rs);
+
+        // loop parking lots
+        for (Integer parkingLotID : resultMap.keySet()) {
+            // loop reportTypes
+            for (Report.ReportType rType : resultMap.get(parkingLotID).keySet()) {
+                report.append("| ");
+                report.append(parkingLotID);
+                report.append(" |");
+                switch (rType) {
+                    // print
+                    case DAILY_CANCELED_ORDERS:
+                        report.append(" | " + "Daily cancelled orders" + " \t| ");
+                        break;
+                    case DAILY_FINISHED_ORDERS:
+                        report.append(" | " + "Daily finished orders" + " | ");
+                        break;
+                    case DAILY_LATED_ORDERS:
+                        report.append(" | " + "Daily lated orders" + " \t| ");
+                        break;
+                }
+                for (Double doub : resultMap.get(parkingLotID).get(rType)) {
+                    report.append(" | ");
+                    report.append(String.format("%.2f", doub));
+                    report.append(" | ");
+                }
+                report.append("\n");
+                countRows++;
+            }
+            report.append("\n");
+            report.append(rowLine);
+            report.append("\n");
+
+        }
+        report.append("\n").append(rowLine);
+        return String.valueOf(report + "\n\t\t" + "Total of " + countRows + " Rows.");
+    }
+
+    /**
+     *  parses weekly reports
+     * @param rs Result set from DB
+     * @return
+     * @throws SQLException
+     */
+    private Map<Integer, Map<Report.ReportType,ArrayList<Double>>> parseDailyReportsForWeekly(ResultSet rs) throws SQLException {
+        Map<Integer, Map<Report.ReportType,ArrayList<Double>>>  myResult = new HashMap<>();
+        Map<Integer, ArrayList<ArrayList<Integer>>>  dataPerParkingLot = new HashMap<>();
+        // parameters = numberOfCancelledOrders , numberOfCompletedOrders, numberOfLateEntranceOrders
+
+        Date date = new Date();
+
+        while (rs.next()){
+            Integer year = rs.getInt("year");
+            Integer month = rs.getInt("month");
+            Integer day = rs.getInt("day");
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.YEAR, year);
+            cal.set(Calendar.MONTH, month-1);
+            cal.set(Calendar.DAY_OF_MONTH, day);
+            Date dateToCheck;
+            dateToCheck = cal.getTime();
+            long timeDiff = TimeUtils.timeDifference(date, dateToCheck, TimeUtils.Units.DAYS);
+            if (timeDiff>7)
+                continue;
+            Integer parkingLot =  rs.getInt("parkingLotID");
+            if (!dataPerParkingLot.containsKey(parkingLot))
+                dataPerParkingLot.put(parkingLot, new ArrayList<>());
+            //numberOfCancelledOrders, numberOfCompletedOrders, numberOfLateEntranceOrders
+            ArrayList<Integer> perDay = new ArrayList<>(3);
+            perDay.add(0, rs.getInt("numberOfCancelledOrders"));
+            perDay.add(1, rs.getInt("numberOfCompletedOrders"));
+            perDay.add(2, rs.getInt("numberOfLateEntranceOrders"));
+            dataPerParkingLot.get(parkingLot).add(perDay);
+        }
+        // "| Parking lot | Parameter | Weekly Average | Weekly Median |" +
+        //                        " Distribution -> | 0..10 | 10..20 | 20..30 |"
+        //                        + " 30..40 | 40..50 | 50..60 | 60..70 | 70..80 | 80..90 | 90.. 100
+
+
+        // loop on parking lots
+        for (Integer parkingLot : dataPerParkingLot.keySet()){
+            Map<Integer,ArrayList<Integer>> distributionPerWeek = new HashMap<>();
+            distributionPerWeek.put(0, new ArrayList<>(10));
+            distributionPerWeek.put(1, new ArrayList<>(10));
+            distributionPerWeek.put(2, new ArrayList<>(10));
+            ArrayList<ArrayList<Integer>> arrayForMedianPerParkingLot = new ArrayList<>(3);
+            arrayForMedianPerParkingLot.add(0, new ArrayList<>());
+            arrayForMedianPerParkingLot.add(1, new ArrayList<>());
+            arrayForMedianPerParkingLot.add(2, new ArrayList<>());
+
+            for (ArrayList<Integer> day : distributionPerWeek.values()){
+                for (int i = 0; i<10; i++)
+                    day.add(i, 0);
+            }
+
+            Double avgCancelled = 0.0;
+            Double avgFinshed = 0.0;
+            Double avgLate = 0.0;
+            Integer numOfDaysInReport = dataPerParkingLot.get(parkingLot).size();
+            // loop on days
+            Integer day = 0; // 0..7
+            for (ArrayList<Integer> eachDay : dataPerParkingLot.get(parkingLot)){
+                // loop params each day
+                Integer paramId = 0; // total 3
+                for (Integer param :eachDay){
+                    arrayForMedianPerParkingLot.get(paramId).add(param);
+                    switch (param / 10){
+                        case (0):
+                            distributionPerWeek.get(paramId).set(0, distributionPerWeek.get(paramId).get(0)+1);
+                            break;
+                        case (1):
+                            distributionPerWeek.get(paramId).set(1, distributionPerWeek.get(paramId).get(1)+1);
+                            break;
+                        case (2):
+                            distributionPerWeek.get(paramId).set(2, distributionPerWeek.get(paramId).get(2)+1);
+                            break;
+                        case (3):
+                            distributionPerWeek.get(paramId).set(3, distributionPerWeek.get(paramId).get(3)+1);
+                            break;
+                        case (4):
+                            distributionPerWeek.get(paramId).set(4, distributionPerWeek.get(paramId).get(4)+1);
+                            break;
+                        case (5):
+                            distributionPerWeek.get(paramId).set(5, distributionPerWeek.get(paramId).get(5)+1);
+                            break;
+                        case (6):
+                            distributionPerWeek.get(paramId).set(6, distributionPerWeek.get(paramId).get(6)+1);
+                            break;
+                        case (7):
+                            distributionPerWeek.get(paramId).set(7, distributionPerWeek.get(paramId).get(7)+1);
+                            break;
+                        case (8):
+                            distributionPerWeek.get(paramId).set(8, distributionPerWeek.get(paramId).get(8)+1);
+                            break;
+                        case(10):
+                        case (9):
+                            distributionPerWeek.get(paramId).set(9, distributionPerWeek.get(paramId).get(9)+1);
+                            break;
+                    }
+                    paramId++;
+                } // end loop params
+                // avg
+                avgCancelled += eachDay.get(0);
+                avgFinshed += eachDay.get(1);
+                avgLate += eachDay.get(2);
+                day++;
+            } // end loop days
+            //avg
+            avgCancelled /= numOfDaysInReport;
+            avgFinshed /= numOfDaysInReport;
+            avgLate /= numOfDaysInReport;
+            Collections.sort(arrayForMedianPerParkingLot.get(0));
+            Collections.sort(arrayForMedianPerParkingLot.get(1));
+            Collections.sort(arrayForMedianPerParkingLot.get(2));
+            ArrayList<Integer> arrayForMedianCancelled = arrayForMedianPerParkingLot.get(0);
+            ArrayList<Integer> arrayForMedianFinished = arrayForMedianPerParkingLot.get(1);
+            ArrayList<Integer> arrayForMedianLate = arrayForMedianPerParkingLot.get(2);
+            Double medianCancelled = arrayForMedianCancelled.size() % 2 == 1 ? arrayForMedianCancelled.get(arrayForMedianCancelled.size()/2) * 1.0 :
+                    (arrayForMedianCancelled.get(arrayForMedianCancelled.size()/2) + arrayForMedianCancelled.get(arrayForMedianCancelled.size()/2 -1))/2;
+            Double medianFinished = arrayForMedianFinished.size() % 2 == 1 ? arrayForMedianFinished.get(arrayForMedianFinished.size()/2) * 1.0 :
+                    (arrayForMedianFinished.get(arrayForMedianFinished.size()/2) + arrayForMedianFinished.get(arrayForMedianFinished.size()/2 -1))/2;
+            Double medianLate = arrayForMedianLate.size() % 2 == 1 ? arrayForMedianLate.get(arrayForMedianLate.size()/2) * 1.0 :
+                    (arrayForMedianLate.get(arrayForMedianLate.size()/2) + arrayForMedianLate.get(arrayForMedianLate.size()/2 -1))/2;
+
+
+            myResult.put(parkingLot, new HashMap<>());
+            myResult.get(parkingLot).put(Report.ReportType.DAILY_CANCELED_ORDERS, new ArrayList<>());
+            myResult.get(parkingLot).get(Report.ReportType.DAILY_CANCELED_ORDERS).add(avgCancelled);
+            myResult.get(parkingLot).get(Report.ReportType.DAILY_CANCELED_ORDERS).add(medianCancelled);
+            for (int i = 0 ; i<10; i++){
+                myResult.get(parkingLot).get(Report.ReportType.DAILY_CANCELED_ORDERS).add(distributionPerWeek.get(0).get(i)*1.0);
+            }
+            myResult.get(parkingLot).put(Report.ReportType.DAILY_FINISHED_ORDERS, new ArrayList<>());
+            myResult.get(parkingLot).get(Report.ReportType.DAILY_FINISHED_ORDERS).add(avgFinshed);
+            myResult.get(parkingLot).get(Report.ReportType.DAILY_FINISHED_ORDERS).add(medianFinished);
+            for (int i = 0 ; i<10; i++){
+                myResult.get(parkingLot).get(Report.ReportType.DAILY_FINISHED_ORDERS).add(distributionPerWeek.get(1).get(i)*1.0);
+            }
+            myResult.get(parkingLot).put(Report.ReportType.DAILY_LATED_ORDERS, new ArrayList<>());
+            myResult.get(parkingLot).get(Report.ReportType.DAILY_LATED_ORDERS).add(avgLate);
+            myResult.get(parkingLot).get(Report.ReportType.DAILY_LATED_ORDERS).add(medianLate);
+            for (int i = 0 ; i<10; i++){
+                myResult.get(parkingLot).get(Report.ReportType.DAILY_LATED_ORDERS).add(distributionPerWeek.get(2).get(i)*1.0);
+            }
+        } // end parking lot loop
+
+
+        return myResult;
+
     }
 
     /**
@@ -1899,7 +2158,7 @@ public class DBController {
         Integer countRows = 0;
         String rowLine = "|___________________________________________________"
                 + "___________________________________________________"
-                + "____________________________________________________|";;
+                + "____________________________________________________|";
         String columns = "|OrderID | customer ID | status | car ID | price | parking lot number |"
                 + " | actual entry time | actual exit time | estimated entry time | estimated exit time|";
         StringBuilder report = new StringBuilder(
@@ -1991,7 +2250,7 @@ public class DBController {
         ResultSet rs;
         String rowLine = "|___________________________________________________"
                 + "___________________________________________________"
-                + "____________________________________________________|";;
+                + "____________________________________________________|";
         StringBuilder report = new StringBuilder(
                 " _________________________________________________________________________________________________________"
                         +"_________________________________________________"
@@ -2017,7 +2276,7 @@ public class DBController {
         {
             if (orderType == null)
             { //Then we are just checking for the cars who got late!
-                if ((TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
+                if((TimeUtils.timeDifference(order.getActualEntryTime(), new Date(),
                         TimeUtils.Units.DAYS) <= dayToValidate) &&
                         (TimeUtils.timeDifference(order.getActualEntryTime(), order.getEstimatedEntryTime(),
                                 TimeUtils.Units.MINUTES) >= 30))
@@ -2117,9 +2376,10 @@ public class DBController {
     }
 
 
-    /**
+    /*
      * REPORTS - DB Stuff
      */
+
     /**
      * update or insert report for a specific date and parking lot
      * @param day
@@ -2162,6 +2422,7 @@ public class DBController {
             throw e;
         }
     }
+
 
     /**
      *

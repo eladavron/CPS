@@ -75,6 +75,8 @@ public class ManageReports extends GUIController implements Initializable {
                         return "Quarterly Unavailable Parking Spaces";
                     case ACTIVITY_REPORT:
                         return  "Activity Report";
+                    case WEEKLY_DAILY:
+                        return  "Weekly Daily statistics";
                     default:
                         return object.toString();
                 }
