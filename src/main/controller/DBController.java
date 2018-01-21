@@ -703,7 +703,6 @@ public class DBController {
         if (orderId == -1) { // get all rows
             //rs = queryTable("Orders");
             rs = queryTable("Orders", "orderType", "'PRE_ORDER'", "OR", "orderType", "'IN_PROGRESS'");
-            // TODO: (maybe). workaround Ma'afan i know.. but it works for now, to filter only active orders from db.
 
         } else { // get specific order
             rs = queryTable("Orders", "idOrders", orderId);
@@ -1753,6 +1752,14 @@ public class DBController {
                         + "Created by :" + manager  + "\n" + makeQuarterlyOrdersReport(parkingLotID);
                 break;
             }
+            case QUARTERLY_UNAVAILABLE_PARKING_SPACES:
+            {
+                shortDescription = "Quarterly Unavailable Parking Spaces";
+                reportToReturn += "Quarterly unavailable parking spaces report of parking lot number: " + parkingLotID + ", "
+                        + "Created by :" + manager + "\n" + makeQuarterlyUnavailableSpacesReport(parkingLotID);
+                break;
+            }
+
             default:
                 throw new NotImplementedException();
         }
@@ -1771,6 +1778,41 @@ public class DBController {
             throw e;
         }
         return reportToReturn;
+    }
+
+    /**
+     * Returns the report of unavailable spaces in the parking lot
+     * @param parkingLotID the parking lot of the report.
+     * @return the report
+     */
+    private String makeQuarterlyUnavailableSpacesReport(Integer parkingLotID) throws SQLException {
+
+
+        String rowLine = "|_________________________________________________________________________"
+                + "________________|";
+        StringBuilder report = new StringBuilder(
+                " ________________________________________________________________________"
+                        +"_________________"
+                        +"\n"
+                        +"| Parking Lot Number | ManagerID | location | rows | columns | depth |  Unavailable count |"
+        );
+        ResultSet rs;
+
+        rs = queryTable("ParkingLots", "idParkingLots", parkingLotID);
+        rs.next();
+        report.append("\n")
+                .append(rowLine)
+                .append(" \n|\t\t ").append(rs.getInt("idParkingLots"))
+                .append(" \t|\t ").append(rs.getInt("parkingLotManagerId"))
+                .append(" \t|\t ").append(desanitizeFromSQL(rs.getString("location")))
+                .append(" \t|\t ").append(rs.getInt("rows"))
+                .append(" \t|\t ").append(rs.getInt("columns"))
+                .append(" \t|\t ").append(rs.getInt("depth"))
+                .append(" \t|\t ").append(rs.getInt("numOfUnAvailableParkingSpacesPerQuarter"))
+                .append(" | ")
+        ;
+        report.append("\n").append(rowLine);
+        return String.valueOf(report);
     }
 
     /**
@@ -2269,6 +2311,29 @@ public class DBController {
         }catch (SQLException e){
             System.err.println("failed to mark car with id " + carID +" as parked");
             throw e;
+        }
+    }
+
+
+    /**
+     * Update the lot count of Unavailable for this quarterly.
+     * (will need to be cleaned after generating the report.
+     * @param parkingLotNumber the parking lot to update it for.
+     */
+    public void updateUnavailable(Integer parkingLotNumber) throws SQLException {
+
+        Statement stmt = db_conn.createStatement();
+        int result;
+        if (parkingLotNumber > 0)
+        { // Then this is a another Unavailable space.
+            stmt.executeUpdate(String.format("UPDATE ParkingLots SET numOfUnAvailableParkingSpacesPerQuarter = numOfUnAvailableParkingSpacesPerQuarter + 1 WHERE idParkingLots = %s",
+                    parkingLotNumber
+            ));
+        }
+        else
+        { // Then we want to reset the count!
+            stmt.executeUpdate(String.format("UPDATE ParkingLots SET numOfUnAvailableParkingSpacesPerQuarter = 0"
+            ));
         }
     }
     //endregion

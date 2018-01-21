@@ -330,8 +330,12 @@ public class ParkingController {
      * @param height The parking space coordinate in height axes.
      * @param depth The parking space coordinate in depth axes.
      */
-    public void setParkingSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer width, Integer height, Integer depth){
+    public void setParkingSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer width, Integer height, Integer depth) throws SQLException {
         this._parkingLotList.get(parkingLotNumber).getParkingSpaceMatrix()[depth][width][height].setStatus(status);
+        if (status  == ParkingSpace.ParkingStatus.UNAVAILABLE && _parkingLotList.containsKey(parkingLotNumber))
+        {
+            dbController.updateUnavailable(parkingLotNumber);
+        }
     }
 
     //TODO: Try to wrap those 2 calls in one function.

@@ -79,7 +79,7 @@ public class EmployeeController {
      * @param y The parking space coordinate in height axes.
      * @param z The parking space coordinate in depth axes.
      */
-    public void setSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer x, Integer y, Integer z){
+    public void setSpaceStatus(Integer parkingLotNumber, ParkingSpace.ParkingStatus status, Integer x, Integer y, Integer z) throws SQLException {
         parkingController.setParkingSpaceStatus(parkingLotNumber,status, x,y,z);
     }
 
