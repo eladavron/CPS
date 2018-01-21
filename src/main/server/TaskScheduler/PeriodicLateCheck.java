@@ -1,5 +1,6 @@
 package TaskScheduler;
 
+import controller.Controllers;
 import entity.PreOrder;
 
 import java.sql.SQLException;
@@ -45,7 +46,10 @@ public class PeriodicLateCheck extends scheduledTask{
                     try {
                         orderController.deleteOrder(thisPreOrder.getOrderID());
                     } catch (SQLException e) {
-                        e.printStackTrace();
+                        if (Controllers.IS_DEBUG_CONTROLLER)
+                        {
+                            e.printStackTrace();
+                        }
                         System.err.println("An error occurred processing that command.");
                     }
                     printScheduledTaskExecution("Order #" + thisPreOrder.getOrderID() + " was deleted due to late customer");

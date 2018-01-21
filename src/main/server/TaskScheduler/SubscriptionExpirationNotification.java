@@ -27,14 +27,15 @@ public class SubscriptionExpirationNotification {
             printScheduledTaskExecution("Checking for subscriptions expirations");
             for (Subscription subscription : subscriptionController.getSubscriptionsMap().values())
             {
+                long now                        = new Date().getTime();
                 long subscriptionExpirationTime = subscription.getExpiration().getTime();
-                long now = new Date().getTime();
+                long timeBeforeExpiration       = subscriptionExpirationTime - now;
 
-                if (subscriptionExpirationTime - now > 7*DAYS_IN_MS)
+                if (timeBeforeExpiration < 7*DAYS_IN_MS)
                 {
                     customerController.sendSubscriptionUpcomingExpiryNotification(subscription);
-                    printScheduledTaskExecution("Subscription #" + subscription.getSubscriptionID()
-                    + "Upcoming expiry notification send to customer " + customerController.getCustomer(subscription.getUserID()).getName()) ;
+                    printScheduledTaskExecution("Subscription #:" + subscription.getSubscriptionID()
+                    + " Upcoming expiry notification sent to customer " + customerController.getCustomer(subscription.getUserID()).getName()) ;
                 }
             }
         };

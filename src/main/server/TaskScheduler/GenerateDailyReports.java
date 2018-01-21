@@ -33,7 +33,7 @@ public class GenerateDailyReports extends scheduledTask {
         };
 
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(runnable,  //TASK DID NOT START - DEBUGGING
+        service.scheduleAtFixedRate(runnable,
                              getNumMilliSecsTillHour(REPORTS_GENERATION_HOUR),
                             24 * HOURS_IN_MS,
                                     TimeUnit.MILLISECONDS);

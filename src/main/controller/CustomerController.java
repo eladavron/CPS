@@ -512,7 +512,6 @@ public class CustomerController {
                 "Towing notification for " + forgetfulCustomer.getName() + " was sent to " + forgetfulCustomer.getEmail());
         orderTowingTruckForPickUpCar(order.getCostumerID(), order.getCarID(), order.getParkingLotNumber());
         mailCustomerNotification(forgetfulCustomer, FULL_SUBSCRIPTION_MAX_PARK_TIME_BREACHED);
-
          //Assuming order a towing truck and mailing the customer always work
     }
 
@@ -524,7 +523,7 @@ public class CustomerController {
     {
         Customer customer = getCustomer(subscription.getUserID());
         System.out.println( "Subscription #" + subscription.getSubscriptionID() + ": Subscription will expire in 1 week."
-                + "Renewal reminder for " + customer.getName() + " was sent to " + customer.getEmail());
+                + " Renewal reminder for " + customer.getName() + " was sent to " + customer.getEmail());
         mailCustomerNotification(customer,SUBSCRIPTION_EXPIRY_REMINDER);
     }
 
@@ -536,7 +535,7 @@ public class CustomerController {
      * @param parkingLotNumber the number of the parking lot.
      */
     private void orderTowingTruckForPickUpCar(Integer customerID, Integer carID, Integer parkingLotNumber) {
-        //assuming always works
+        //assuming tow truck order always succeeds. Car will be exited from parking lot when truck arrives.
     }
 
     /**
